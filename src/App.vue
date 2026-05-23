@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
 import TruckFitScene from './components/TruckFitScene.vue';
+import HouseScene from './components/HouseScene.vue';
 import objectClassifications from './data/objectClassifications.json';
 import objectStackingAttributes from './data/objectStackingAttributes.json';
 
@@ -319,6 +320,7 @@ const placeUnit = (grid, unit, placement) => {
 
 const step = ref(0);
 const selectedHouseType = ref(null);
+const previewedHouseType = ref(null);
 const activeRoomId = ref('bedroom');
 const roomPresence = reactive(Object.fromEntries(rooms.map((room) => [room.id, null])));
 const quantities = reactive({});
@@ -589,21 +591,32 @@ const resetQuote = () => {
         <button class="ghost-button" type="button" @click="resetQuote">Reset</button>
       </header>
 
-      <section v-if="step === 0" class="content-flow">
-        <div class="house-grid">
+      <section v-if="step === 0" class="content-flow house-picker-flow">
+        <div class="house-preview-wrap">
+          <HouseScene :layout-id="previewedHouseType || selectedHouseType || 'studio'" />
+        </div>
+
+        <div class="house-type-row">
           <button
             v-for="house in houseTypes"
             :key="house.id"
-            class="house-option"
-            :class="{ selected: selectedHouseType === house.id }"
+            class="house-type-pill"
+            :class="{ selected: selectedHouseType === house.id, previewed: previewedHouseType === house.id && selectedHouseType !== house.id }"
             type="button"
+            @mouseenter="previewedHouseType = house.id"
+            @mouseleave="previewedHouseType = null"
             @click="chooseHouse(house.id)"
           >
-            <span>{{ house.name }}</span>
-            <small>{{ house.detail }}</small>
+            <span class="pill-name">{{ house.name }}</span>
+            <small class="pill-detail">{{ house.detail }}</small>
           </button>
         </div>
-        <footer class="action-row">
+
+        <footer class="action-row split">
+          <p v-if="selectedHouse" class="selected-house-note">
+            <strong>{{ selectedHouse.name }}</strong> — {{ selectedHouse.rooms.length }} rooms
+          </p>
+          <span v-else />
           <button class="primary-button" type="button" :disabled="!selectedHouseType" @click="step = 1">
             Continue
           </button>

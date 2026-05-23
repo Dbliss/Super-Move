@@ -1,0 +1,260 @@
+{
+  "studio": {
+    "name": "Studio",
+    "pieces": [
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 1 },
+
+      { "model": "wall-doorway-square", "gx": 0, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall-window-square",  "gx": 1, "gy": 0, "gz": -1, "ry": 0 },
+
+      { "model": "wall", "gx": 0, "gy": 0, "gz": 2, "ry": 180 },
+      { "model": "wall", "gx": 1, "gy": 0, "gz": 2, "ry": 180 },
+
+      { "model": "wall",               "gx": -1, "gy": 0, "gz": 0, "ry": 90 },
+      { "model": "wall-window-square", "gx": -1, "gy": 0, "gz": 1, "ry": 90 },
+
+      { "model": "wall", "gx": 2, "gy": 0, "gz": 0, "ry": 270 },
+      { "model": "wall", "gx": 2, "gy": 0, "gz": 1, "ry": 270 },
+
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz": -1, "ry": 0   },
+      { "model": "wall-corner", "gx":  2, "gy": 0, "gz": -1, "ry": 270 },
+      { "model": "wall-corner", "gx":  2, "gy": 0, "gz":  2, "ry": 180 },
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz":  2, "ry": 90  },
+
+      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 1 },
+
+      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  0, "ry": 90  },
+      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  1, "ry": 90  },
+      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz":  0, "ry": 270 },
+      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz":  1, "ry": 270 },
+
+      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-corner", "gx":  2, "gy": 1, "gz": -1, "ry": 270 },
+      { "model": "roof-flat-corner", "gx":  2, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz":  2, "ry": 90  }
+    ]
+  },
+
+  "apartment": {
+    "name": "Apartment",
+    "pieces": [
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 2, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 2, "gy": 0, "gz": 1 },
+
+      { "model": "wall-doorway-square", "gx": 0, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall",               "gx": 1, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall-window-square", "gx": 2, "gy": 0, "gz": -1, "ry": 0 },
+
+      { "model": "wall", "gx": 0, "gy": 0, "gz": 2, "ry": 180 },
+      { "model": "wall", "gx": 1, "gy": 0, "gz": 2, "ry": 180 },
+      { "model": "wall", "gx": 2, "gy": 0, "gz": 2, "ry": 180 },
+
+      { "model": "wall",               "gx": -1, "gy": 0, "gz": 0, "ry": 90 },
+      { "model": "wall-window-square", "gx": -1, "gy": 0, "gz": 1, "ry": 90 },
+
+      { "model": "wall", "gx": 3, "gy": 0, "gz": 0, "ry": 270 },
+      { "model": "wall", "gx": 3, "gy": 0, "gz": 1, "ry": 270 },
+
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz": -1, "ry": 0   },
+      { "model": "wall-corner", "gx":  3, "gy": 0, "gz": -1, "ry": 270 },
+      { "model": "wall-corner", "gx":  3, "gy": 0, "gz":  2, "ry": 180 },
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz":  2, "ry": 90  },
+
+      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 1 },
+
+      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  0, "ry": 90  },
+      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  1, "ry": 90  },
+      { "model": "roof-flat-side", "gx":  3, "gy": 1, "gz":  0, "ry": 270 },
+      { "model": "roof-flat-side", "gx":  3, "gy": 1, "gz":  1, "ry": 270 },
+
+      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-corner", "gx":  3, "gy": 1, "gz": -1, "ry": 270 },
+      { "model": "roof-flat-corner", "gx":  3, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz":  2, "ry": 90  }
+    ]
+  },
+
+  "townhouse": {
+    "name": "Townhouse",
+    "pieces": [
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 2, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 2, "gy": 0, "gz": 1 },
+
+      { "model": "wall-doorway-square", "gx": 0, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall",               "gx": 1, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall-window-square", "gx": 2, "gy": 0, "gz": -1, "ry": 0 },
+
+      { "model": "wall", "gx": 0, "gy": 0, "gz": 2, "ry": 180 },
+      { "model": "wall", "gx": 1, "gy": 0, "gz": 2, "ry": 180 },
+      { "model": "wall", "gx": 2, "gy": 0, "gz": 2, "ry": 180 },
+
+      { "model": "wall",               "gx": -1, "gy": 0, "gz": 0, "ry": 90 },
+      { "model": "wall-window-square", "gx": -1, "gy": 0, "gz": 1, "ry": 90 },
+
+      { "model": "wall", "gx": 3, "gy": 0, "gz": 0, "ry": 270 },
+      { "model": "wall", "gx": 3, "gy": 0, "gz": 1, "ry": 270 },
+
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz": -1, "ry": 0   },
+      { "model": "wall-corner", "gx":  3, "gy": 0, "gz": -1, "ry": 270 },
+      { "model": "wall-corner", "gx":  3, "gy": 0, "gz":  2, "ry": 180 },
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz":  2, "ry": 90  },
+
+      { "model": "stairs-open", "gx": 2, "gy": 0, "gz": 0, "ry": 90 },
+
+      { "model": "floor", "gx": 0, "gy": 1, "gz": 0 },
+      { "model": "floor", "gx": 1, "gy": 1, "gz": 0 },
+      { "model": "floor", "gx": 0, "gy": 1, "gz": 1 },
+      { "model": "floor", "gx": 1, "gy": 1, "gz": 1 },
+
+      { "model": "wall-window-square", "gx": 0, "gy": 1, "gz": -1, "ry": 0 },
+      { "model": "wall-window-square", "gx": 1, "gy": 1, "gz": -1, "ry": 0 },
+
+      { "model": "wall", "gx": 0, "gy": 1, "gz": 2, "ry": 180 },
+      { "model": "wall", "gx": 1, "gy": 1, "gz": 2, "ry": 180 },
+
+      { "model": "wall", "gx": -1, "gy": 1, "gz": 0, "ry": 90 },
+      { "model": "wall", "gx": -1, "gy": 1, "gz": 1, "ry": 90 },
+
+      { "model": "wall", "gx": 2, "gy": 1, "gz": 0, "ry": 270 },
+      { "model": "wall", "gx": 2, "gy": 1, "gz": 1, "ry": 270 },
+
+      { "model": "wall-corner", "gx": -1, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "wall-corner", "gx":  2, "gy": 1, "gz": -1, "ry": 270 },
+      { "model": "wall-corner", "gx":  2, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "wall-corner", "gx": -1, "gy": 1, "gz":  2, "ry": 90  },
+
+      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 1 },
+
+      { "model": "roof-flat-side", "gx": 2, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx": 2, "gy": 1, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx": 3, "gy": 1, "gz":  0, "ry": 270 },
+      { "model": "roof-flat-side", "gx": 3, "gy": 1, "gz":  1, "ry": 270 },
+
+      { "model": "roof-flat-corner", "gx": 3, "gy": 1, "gz": -1, "ry": 270 },
+      { "model": "roof-flat-corner", "gx": 3, "gy": 1, "gz":  2, "ry": 180 },
+
+      { "model": "roof-flat-center", "gx": 0, "gy": 2, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 2, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 0, "gy": 2, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 2, "gz": 1 },
+
+      { "model": "roof-flat-side", "gx":  0, "gy": 2, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  1, "gy": 2, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  0, "gy": 2, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx":  1, "gy": 2, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-side", "gx": -1, "gy": 2, "gz":  0, "ry": 90  },
+      { "model": "roof-flat-side", "gx": -1, "gy": 2, "gz":  1, "ry": 90  },
+      { "model": "roof-flat-side", "gx":  2, "gy": 2, "gz":  0, "ry": 270 },
+      { "model": "roof-flat-side", "gx":  2, "gy": 2, "gz":  1, "ry": 270 },
+
+      { "model": "roof-flat-corner", "gx": -1, "gy": 2, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-corner", "gx":  2, "gy": 2, "gz": -1, "ry": 270 },
+      { "model": "roof-flat-corner", "gx":  2, "gy": 2, "gz":  2, "ry": 180 },
+      { "model": "roof-flat-corner", "gx": -1, "gy": 2, "gz":  2, "ry": 90  }
+    ]
+  },
+
+  "house": {
+    "name": "House",
+    "pieces": [
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 2, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 3, "gy": 0, "gz": 0 },
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 2, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 3, "gy": 0, "gz": 1 },
+      { "model": "floor", "gx": 0, "gy": 0, "gz": 2 },
+      { "model": "floor", "gx": 1, "gy": 0, "gz": 2 },
+      { "model": "floor", "gx": 2, "gy": 0, "gz": 2 },
+      { "model": "floor", "gx": 3, "gy": 0, "gz": 2 },
+
+      { "model": "wall-doorway-square", "gx": 0, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall-window-square", "gx": 1, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall",               "gx": 2, "gy": 0, "gz": -1, "ry": 0 },
+      { "model": "wall-window-square", "gx": 3, "gy": 0, "gz": -1, "ry": 0 },
+
+      { "model": "wall", "gx": 0, "gy": 0, "gz": 3, "ry": 180 },
+      { "model": "wall", "gx": 1, "gy": 0, "gz": 3, "ry": 180 },
+      { "model": "wall", "gx": 2, "gy": 0, "gz": 3, "ry": 180 },
+      { "model": "wall", "gx": 3, "gy": 0, "gz": 3, "ry": 180 },
+
+      { "model": "wall-window-square", "gx": -1, "gy": 0, "gz": 0, "ry": 90 },
+      { "model": "wall",               "gx": -1, "gy": 0, "gz": 1, "ry": 90 },
+      { "model": "wall",               "gx": -1, "gy": 0, "gz": 2, "ry": 90 },
+
+      { "model": "wall-window-square", "gx": 4, "gy": 0, "gz": 0, "ry": 270 },
+      { "model": "wall",               "gx": 4, "gy": 0, "gz": 1, "ry": 270 },
+      { "model": "wall",               "gx": 4, "gy": 0, "gz": 2, "ry": 270 },
+
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz": -1, "ry": 0   },
+      { "model": "wall-corner", "gx":  4, "gy": 0, "gz": -1, "ry": 270 },
+      { "model": "wall-corner", "gx":  4, "gy": 0, "gz":  3, "ry": 180 },
+      { "model": "wall-corner", "gx": -1, "gy": 0, "gz":  3, "ry": 90  },
+
+      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 3, "gy": 1, "gz": 0 },
+      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 3, "gy": 1, "gz": 1 },
+      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 2 },
+      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 2 },
+      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 2 },
+      { "model": "roof-flat-center", "gx": 3, "gy": 1, "gz": 2 },
+
+      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  3, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz":  3, "ry": 180 },
+      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz":  3, "ry": 180 },
+      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz":  3, "ry": 180 },
+      { "model": "roof-flat-side", "gx":  3, "gy": 1, "gz":  3, "ry": 180 },
+      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  0, "ry": 90  },
+      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  1, "ry": 90  },
+      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  2, "ry": 90  },
+      { "model": "roof-flat-side", "gx":  4, "gy": 1, "gz":  0, "ry": 270 },
+      { "model": "roof-flat-side", "gx":  4, "gy": 1, "gz":  1, "ry": 270 },
+      { "model": "roof-flat-side", "gx":  4, "gy": 1, "gz":  2, "ry": 270 },
+
+      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz": -1, "ry": 0   },
+      { "model": "roof-flat-corner", "gx":  4, "gy": 1, "gz": -1, "ry": 270 },
+      { "model": "roof-flat-corner", "gx":  4, "gy": 1, "gz":  3, "ry": 180 },
+      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz":  3, "ry": 90  }
+    ]
+  }
+}
