@@ -233,10 +233,55 @@ const mode = ref('place');           // 'place' | 'erase'
 const currentRy = ref(0);
 const currentGy = ref(0);
 const layoutId = ref('studio');
-const pieces = ref([]);              // { model, source, gx, gy, gz, ry, key }
+const pieces = ref([]);              // { model, source, gx, gy, gz, ry, scale, key }
 const statusText = ref('Pick a tile from the left panel to start placing');
 const copyLabel = ref('Copy JSON');
 const loadingPreset = ref(false);
+
+// ── Real-world scale ──────────────────────────────────────────────────────────
+// Anchor: one tile (the cube floor) = 1.7 m × 1.7 m. `cmPerUnit` is derived
+// from the measured tileW once GLBs load.
+const TILE_SIZE_CM = 170;
+const FURNITURE_DEFAULT_SCALE = 2.2; // chosen so default furniture reads at human scale
+const furnitureScale = ref(FURNITURE_DEFAULT_SCALE);
+const cmPerUnit = ref(TILE_SIZE_CM / 2); // updated once tileW is measured
+
+// Natural (unscaled) bounding box of the currently selected model, in three.js units.
+const selectedNaturalSize = ref(null); // { x, y, z } | null
+
+const gyStep = computed(() => (selectedSource.value === 'furniture' ? 0.01 : 0.1));
+const gyMax = 5;
+
+const effectiveScaleForSelected = computed(() => (
+  selectedSource.value === 'furniture' ? furnitureScale.value : 1
+));
+
+// Selected piece's real-world W × D × H in cm at the active scale.
+const selectedDimsCm = computed(() => {
+  const n = selectedNaturalSize.value;
+  if (!n) return null;
+  const s = effectiveScaleForSelected.value;
+  const cm = cmPerUnit.value;
+  return {
+    w: n.x * cm * s,
+    d: n.z * cm * s,
+    h: n.y * cm * s,
+  };
+});
+
+// Rescale by setting one target dimension (cm). Uniform scale → other dims follow.
+const setDimCm = (axis, value) => {
+  const n = selectedNaturalSize.value;
+  const cm = cmPerUnit.value;
+  if (!n || !cm) return;
+  const targetCm = Number(value);
+  if (!Number.isFinite(targetCm) || targetCm <= 0) return;
+  const natural = axis === 'w' ? n.x : axis === 'd' ? n.z : n.y;
+  if (!natural) return;
+  const nextScale = targetCm / (natural * cm);
+  if (selectedSource.value !== 'furniture') return; // only furniture is user-scalable
+  furnitureScale.value = Math.max(0.1, Math.min(10, Number(nextScale.toFixed(3))));
+};
 
 let pieceKeyCounter = 0;
 const undoStack = [];
@@ -247,6 +292,7 @@ const jsonOutput = computed(() => {
   const piecesClean = pieces.value.map(({ key, ...p }) => {
     const out = { ...p };
     if (!out.ry) delete out.ry;
+    if (out.scale == null || out.scale === 1) delete out.scale;
     if (out.source === 'house') delete out.source; // house is the default; omit for tidiness
     return out;
   });
@@ -348,6 +394,7 @@ const isWindowOrDoor = (name) => (
 
 const placementKindFor = (name, source) => {
   if (source === 'furniture') return 'fine';
+  if (name.startsWith('stairs-')) return 'fine';
   if (FINE_HOUSE_MODELS.has(name) || name.includes('small')) return 'fine';
   if (WIDE_EDGE_LINE_MODELS.has(name)) return 'wide-edge-line';
   if (EDGE_POINT_MODELS.has(name)) return 'edge-point';
@@ -371,6 +418,7 @@ const applyGhostMaterial = (obj) => {
 const rebuildGhost = async (name, source) => {
   if (ghostGroup && scene) scene.remove(ghostGroup);
   ghostGroup = null;
+  selectedNaturalSize.value = null;
   if (!name || !scene) return;
 
   const src = await getModelSource(name, source);
@@ -381,6 +429,11 @@ const rebuildGhost = async (name, source) => {
   applyGhostMaterial(ghostGroup);
   ghostGroup.rotation.y = (currentRy.value * Math.PI) / 180;
   ghostGroup.position.set(ghostGx * tileW, currentGy.value * wallH, ghostGz * tileD);
+  // Measure natural (unscaled) bounding box BEFORE applying scale.
+  const naturalBox = new THREE.Box3().setFromObject(ghostGroup);
+  const naturalSize = naturalBox.getSize(new THREE.Vector3());
+  selectedNaturalSize.value = { x: naturalSize.x, y: naturalSize.y, z: naturalSize.z };
+  ghostGroup.scale.setScalar(source === 'furniture' ? furnitureScale.value : 1);
   ghostGroup.visible = false;
   scene.add(ghostGroup);
 };
@@ -466,6 +519,8 @@ const setupScene = async () => {
     const b = new THREE.Box3().setFromObject(wallSrc);
     wallH = b.getSize(new THREE.Vector3()).y || 2;
   }
+  // One cube tile = 1.7 m in real-world dimensions.
+  cmPerUnit.value = TILE_SIZE_CM / tileW;
 
   // Resize grids so each cell = one tile, then offset by half-tile so
   // grid LINES land at tile EDGES (not tile centres).
@@ -602,6 +657,11 @@ const onPointerDown = (e) => {
 };
 
 // ── Piece management ──────────────────────────────────────────────────────────
+const scaleForPiece = (piece) => {
+  if (piece.scale != null) return piece.scale;
+  return piece.source === 'furniture' ? FURNITURE_DEFAULT_SCALE : 1;
+};
+
 const addMeshForPiece = async (piece) => {
   const src = await getModelSource(piece.model, piece.source || 'house');
   if (!src || disposed) return;
@@ -612,16 +672,19 @@ const addMeshForPiece = async (piece) => {
   mesh.userData.pieceKey = piece.key;
   mesh.rotation.y = ((piece.ry || 0) * Math.PI) / 180;
   mesh.position.set(piece.gx * tileW, piece.gy * wallH, piece.gz * tileD);
+  mesh.scale.setScalar(scaleForPiece(piece));
   houseGroup.add(mesh);
   pieceKeyToMesh.set(piece.key, mesh);
 };
 
 const placePiece = () => {
+  const isFurniture = selectedSource.value === 'furniture';
   const piece = {
     model: selectedModel.value,
     source: selectedSource.value,
     gx: ghostGx, gy: currentGy.value, gz: ghostGz,
     ry: currentRy.value,
+    scale: cleanCoord(isFurniture ? furnitureScale.value : 1),
     key: ++pieceKeyCounter,
   };
   pieces.value.push(piece);
@@ -707,6 +770,12 @@ const saveJson = () => {
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 const rotateBy = (deg) => { currentRy.value = ((currentRy.value + deg) % 360 + 360) % 360; };
 
+const stepGy = (sign, opts = {}) => {
+  const inc = opts.coarse ? 1 : gyStep.value;
+  const next = Math.max(0, Math.min(gyMax, currentGy.value + sign * inc));
+  currentGy.value = cleanCoord(next);
+};
+
 const handleKeyDown = (e) => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
   if (e.key === 'r' || e.key === 'R') { rotateBy(e.shiftKey ? -90 : 90); }
@@ -716,8 +785,8 @@ const handleKeyDown = (e) => {
   }
   else if (e.key === 'Escape') { mode.value === 'erase' ? (mode.value = 'place') : (selectedModel.value = null); }
   else if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
-  else if (e.key === '[') { currentGy.value = Math.max(0, currentGy.value - 1); }
-  else if (e.key === ']') { currentGy.value = Math.min(5, currentGy.value + 1); }
+  else if (e.key === '[') { stepGy(-1, { coarse: e.shiftKey }); }
+  else if (e.key === ']') { stepGy(1, { coarse: e.shiftKey }); }
 };
 
 // ── Watches ───────────────────────────────────────────────────────────────────
@@ -732,6 +801,10 @@ watch([selectedModel, selectedSource], async ([name, src]) => {
 watch(currentRy, (ry) => {
   if (!ghostGroup) return;
   ghostGroup.rotation.y = (ry * Math.PI) / 180;
+});
+
+watch(furnitureScale, (s) => {
+  if (ghostGroup && selectedSource.value === 'furniture') ghostGroup.scale.setScalar(s);
 });
 
 watch(currentGy, (gy) => {
@@ -802,10 +875,11 @@ onBeforeUnmount(() => {
         <div class="ctrl-group">
           <label>Level <kbd>[</kbd><kbd>]</kbd></label>
           <div class="stepper">
-            <button @click="currentGy = Math.max(0, currentGy - 1)">−</button>
-            <span>{{ currentGy }}</span>
-            <button @click="currentGy = Math.min(5, currentGy + 1)">+</button>
+            <button @click="stepGy(-1, { coarse: $event.shiftKey })" title="Shift-click for whole-level step">−</button>
+            <span>{{ currentGy.toFixed(selectedSource === 'furniture' ? 2 : 1) }}</span>
+            <button @click="stepGy(1, { coarse: $event.shiftKey })" title="Shift-click for whole-level step">+</button>
           </div>
+          <span class="ctrl-hint">step {{ gyStep }} · shift = 1.0</span>
         </div>
         <div class="ctrl-group">
           <label>Rotate <kbd>R</kbd></label>
@@ -814,6 +888,67 @@ onBeforeUnmount(() => {
             <span>{{ currentRy }}°</span>
             <button @click="rotateBy(90)">↷</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Furniture scale (visible only on Furniture tab) -->
+      <div v-if="selectedSource === 'furniture'" class="scale-row">
+        <div class="scale-row-head">
+          <label>Furniture scale</label>
+          <span class="scale-value">{{ (furnitureScale * 100).toFixed(0) }}%</span>
+        </div>
+        <input
+          type="range"
+          min="0.25"
+          max="5"
+          step="0.05"
+          v-model.number="furnitureScale"
+          class="scale-slider"
+        />
+        <div class="scale-row-foot">
+          <button class="mini-btn" @click="furnitureScale = 1">100%</button>
+          <button class="mini-btn" @click="furnitureScale = FURNITURE_DEFAULT_SCALE">220%</button>
+          <span class="dim-hint">1 tile = 1.7 m</span>
+        </div>
+      </div>
+
+      <!-- Selected piece size — visible whenever a model is selected -->
+      <div v-if="selectedDimsCm" class="dims-row">
+        <div class="dims-head">
+          <label>Size (cm)</label>
+          <span class="dims-meta">W × D × H</span>
+        </div>
+        <div class="dims-inputs">
+          <input
+            type="number"
+            min="1"
+            step="1"
+            :value="selectedDimsCm.w.toFixed(0)"
+            :disabled="selectedSource !== 'furniture'"
+            @change="setDimCm('w', $event.target.value)"
+          />
+          <span class="dims-x">×</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            :value="selectedDimsCm.d.toFixed(0)"
+            :disabled="selectedSource !== 'furniture'"
+            @change="setDimCm('d', $event.target.value)"
+          />
+          <span class="dims-x">×</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            :value="selectedDimsCm.h.toFixed(0)"
+            :disabled="selectedSource !== 'furniture'"
+            @change="setDimCm('h', $event.target.value)"
+          />
+        </div>
+        <div class="dims-foot">
+          {{ (selectedDimsCm.w / 100).toFixed(2) }} × {{ (selectedDimsCm.d / 100).toFixed(2) }} × {{ (selectedDimsCm.h / 100).toFixed(2) }} m
+          <span v-if="selectedSource !== 'furniture'" class="dims-locked">(structure pieces are fixed)</span>
         </div>
       </div>
 
@@ -862,7 +997,7 @@ onBeforeUnmount(() => {
       <div :class="['status-bar', { erase: mode === 'erase' }]">
         <span class="status-text">{{ statusText }}</span>
         <span class="status-meta">
-          {{ pieces.length }} pieces · Level {{ currentGy }} · {{ currentRy }}°
+          {{ pieces.length }} pieces · Level {{ currentGy.toFixed(selectedSource === 'furniture' ? 2 : 1) }} · {{ currentRy }}° · 1 tile = 1.7 m
           <span v-if="loadingPreset" class="loading-badge">loading…</span>
         </span>
       </div>
@@ -964,6 +1099,61 @@ html, body { width: 100%; height: 100%; overflow: hidden; }
 }
 .stepper button:hover { background: #1a6058; }
 .stepper span { flex: 1; text-align: center; font-size: 12px; font-weight: 700; color: #c8f0e8; background: #192828; }
+
+.ctrl-hint { font-size: 9.5px; color: #527870; margin-top: 2px; }
+
+/* Furniture scale row */
+.scale-row {
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid #283838;
+  display: flex; flex-direction: column; gap: 6px;
+  flex-shrink: 0;
+}
+.scale-row-head {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.scale-row-head label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  color: #527870; letter-spacing: .5px;
+}
+.scale-value {
+  font-size: 11.5px; font-weight: 700; color: #8df4e8; font-family: monospace;
+}
+.scale-slider { width: 100%; accent-color: #28907e; }
+.scale-row-foot { display: flex; align-items: center; gap: 6px; }
+.mini-btn {
+  padding: 2px 6px; border: 1px solid #304848; border-radius: 4px;
+  background: #243232; color: #88b8b0; cursor: pointer;
+  font-size: 10px; font-weight: 600;
+}
+.mini-btn:hover { background: #1a6058; color: #c8f4ec; }
+.dim-hint { margin-left: auto; font-size: 9.5px; color: #527870; font-family: monospace; }
+
+/* Dimensions row */
+.dims-row {
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid #283838;
+  display: flex; flex-direction: column; gap: 5px;
+  flex-shrink: 0;
+}
+.dims-head { display: flex; align-items: center; justify-content: space-between; }
+.dims-head label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  color: #527870; letter-spacing: .5px;
+}
+.dims-meta { font-size: 9.5px; color: #527870; font-family: monospace; }
+.dims-inputs { display: flex; align-items: center; gap: 4px; }
+.dims-inputs input {
+  flex: 1; min-width: 0; width: 100%;
+  padding: 4px 6px; background: #192022; border: 1px solid #304848;
+  border-radius: 4px; color: #c8e0dc; font-size: 11.5px;
+  font-family: monospace; outline: none; text-align: center;
+}
+.dims-inputs input:focus { border-color: #2a9080; }
+.dims-inputs input:disabled { opacity: .55; cursor: not-allowed; }
+.dims-x { color: #527870; font-size: 11px; }
+.dims-foot { font-size: 9.5px; color: #527870; font-family: monospace; }
+.dims-locked { margin-left: 6px; color: #406050; }
 
 .section-tabs { display: flex; flex-shrink: 0; border-bottom: 1px solid #283838; }
 .section-tab {
