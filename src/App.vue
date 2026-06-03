@@ -1,9 +1,34 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import TruckFitScene from './components/TruckFitScene.vue';
 import HouseScene from './components/HouseScene.vue';
-import objectClassifications from './data/objectClassifications.json';
-import objectStackingAttributes from './data/objectStackingAttributes.json';
+import objectShapes from './data/objectShapes.json';
+import furnitureCsvRaw from './data/furniture.csv?raw';
+import { buildShape } from './utils/shapes.js';
+import { planAndPack } from './utils/packing.js';
+import { measureAsset } from './utils/assetDimensions.js';
+
+const parseFurnitureCsv = (raw) => {
+  const map = new Map();
+  const lines = raw.trim().split(/\r?\n/);
+  if (!lines.length) return map;
+  const headers = lines[0].split(',').map((h) => h.trim());
+  const nameIdx = headers.indexOf('name');
+  const weightIdx = headers.indexOf('weight');
+  const openTopIdx = headers.indexOf('open_top');
+  for (let i = 1; i < lines.length; i += 1) {
+    const cells = lines[i].split(',').map((c) => c.trim());
+    if (!cells[nameIdx]) continue;
+    map.set(cells[nameIdx], {
+      weight: Number(cells[weightIdx]) || 50,
+      openTop: String(cells[openTopIdx]).toLowerCase() === 'true',
+    });
+  }
+  return map;
+};
+
+const furnitureCatalog = parseFurnitureCsv(furnitureCsvRaw);
+const defaultFurnitureRow = { weight: 50, openTop: true };
 
 const sideImages = import.meta.glob('../Kenny/Side/*.png', {
   eager: true,
@@ -181,142 +206,49 @@ const truckSizes = [
 ];
 
 const packingCellCm = 10;
-const modelScales = {
-  small: 0.84,
-  medium: 1,
-  large: 1.12,
-};
+const fallbackDimensions = { widthCm: 60, depthCm: 60, heightCm: 60 };
 
 const toCells = (centimeters) => Math.max(1, Math.ceil(centimeters / packingCellCm));
 
+// Measured GLTF dims, keyed by asset name. Populated lazily as items enter the inventory.
+const measuredAssetDims = reactive({});
+
+const dimsForAsset = (asset) => measuredAssetDims[asset] || fallbackDimensions;
+
 const profileForItem = (item) => {
-  const sizeClass = objectClassifications.items[item.id] || objectClassifications.defaultSizeClass;
-  const dimensions = objectClassifications.boxSizes[sizeClass] || objectClassifications.boxSizes.medium;
-  const attributes = {
-    ...objectStackingAttributes.defaults,
-    ...(objectStackingAttributes.items[item.id] || {}),
-  };
+  const dimensions = dimsForAsset(item.asset);
+  const templateName = objectShapes.items[item.id] || objectShapes.default || 'box';
+  const csv = furnitureCatalog.get(item.id) || defaultFurnitureRow;
+  const width = toCells(dimensions.widthCm);
+  const depth = toCells(dimensions.depthCm);
+  const height = toCells(dimensions.heightCm);
+  const shape = buildShape(templateName, width, depth, height);
+  const realVolume = (dimensions.widthCm * dimensions.depthCm * dimensions.heightCm) / 1_000_000;
 
   return {
-    sizeClass,
+    templateName,
     dimensionsCm: dimensions,
-    width: toCells(dimensions.widthCm),
-    depth: toCells(dimensions.depthCm),
-    height: toCells(dimensions.heightCm),
+    width,
+    depth,
+    height,
     widthMeters: dimensions.widthCm / 100,
     depthMeters: dimensions.depthCm / 100,
     heightMeters: dimensions.heightCm / 100,
-    modelScale: modelScales[sizeClass] || 1,
-    ...attributes,
+    modelScale: 1,
+    weight: csv.weight,
+    openTop: csv.openTop,
+    shape,
+    volume: realVolume,
   };
 };
 
-const makePackingGrid = (truck) => {
-  const columns = Math.max(1, Math.floor((truck.cargoLength * 100) / packingCellCm));
-  const rows = Math.max(1, Math.floor((truck.cargoWidth * 100) / packingCellCm));
-
-  return {
-    columns,
-    rows,
-    maxHeight: Math.max(1, Math.floor((truck.cargoHeight * 100) / packingCellCm)),
-    heights: Array.from({ length: rows }, () => Array.from({ length: columns }, () => 0)),
-    topItems: Array.from({ length: rows }, () => Array.from({ length: columns }, () => null)),
-  };
-};
-
-const uniqueOrientations = (unit) =>
-  [
-    { width: unit.width, depth: unit.depth, rotated: false },
-    { width: unit.depth, depth: unit.width, rotated: true },
-  ].filter((orientation, index, list) =>
-    index === list.findIndex((candidate) => candidate.width === orientation.width && candidate.depth === orientation.depth),
-  );
-
-const isBetterScore = (score, bestScore) => {
-  for (let index = 0; index < score.length; index += 1) {
-    if (score[index] < bestScore[index]) return true;
-    if (score[index] > bestScore[index]) return false;
-  }
-  return false;
-};
-
-const supportAt = (grid, unit, orientation, x, y) => {
-  if (x + orientation.width > grid.columns || y + orientation.depth > grid.rows) return null;
-
-  let baseHeight = 0;
-  const supports = new Map();
-
-  for (let row = y; row < y + orientation.depth; row += 1) {
-    for (let column = x; column < x + orientation.width; column += 1) {
-      baseHeight = Math.max(baseHeight, grid.heights[row][column]);
-    }
-  }
-
-  if (baseHeight + unit.height > grid.maxHeight) return null;
-
-  for (let row = y; row < y + orientation.depth; row += 1) {
-    for (let column = x; column < x + orientation.width; column += 1) {
-      if (grid.heights[row][column] !== baseHeight) return null;
-      const support = grid.topItems[row][column];
-      if (baseHeight > 0) {
-        if (!support?.canStackOnTop) return null;
-        supports.set(support.key, support);
-      }
-    }
-  }
-
-  return { baseHeight, supportCount: supports.size };
-};
-
-const findPlacement = (grid, unit) => {
-  let best = null;
-
-  for (const orientation of uniqueOrientations(unit)) {
-    for (let y = 0; y <= grid.rows - orientation.depth; y += 1) {
-      for (let x = 0; x <= grid.columns - orientation.width; x += 1) {
-        const support = supportAt(grid, unit, orientation, x, y);
-        if (!support) continue;
-
-        const placement = {
-          x,
-          y,
-          z: support.baseHeight,
-          supportCount: support.supportCount,
-          ...orientation,
-        };
-
-        const score = [
-          placement.z,
-          y + orientation.depth,
-          x + orientation.width,
-          orientation.width * orientation.depth,
-          support.supportCount,
-        ];
-
-        if (!best || isBetterScore(score, best.score)) {
-          best = { ...placement, score };
-        }
-      }
-    }
-  }
-
-  if (!best) return null;
-  const { score, ...placement } = best;
-  return placement;
-};
-
-const placeUnit = (grid, unit, placement) => {
-  const topHeight = placement.z + unit.height;
-  for (let row = placement.y; row < placement.y + placement.depth; row += 1) {
-    for (let column = placement.x; column < placement.x + placement.width; column += 1) {
-      grid.heights[row][column] = topHeight;
-      grid.topItems[row][column] = {
-        key: unit.key,
-        canStackOnTop: unit.canStackOnTop,
-      };
-    }
-  }
-};
+const buildTruckTemplate = (truck, count = 1) => ({
+  ...truck,
+  count,
+  cellsX: Math.max(1, Math.round((truck.cargoLength * 100) / packingCellCm)),
+  cellsY: Math.max(1, Math.round((truck.cargoWidth * 100) / packingCellCm)),
+  cellsZ: Math.max(1, Math.round((truck.cargoHeight * 100) / packingCellCm)),
+});
 
 const step = ref(0);
 const selectedHouseType = ref(null);
@@ -336,9 +268,29 @@ const activeRoom = computed(() => includedRooms.value.find((room) => room.id ===
 const inventory = computed(() => {
   const allItems = rooms.flatMap((room) => room.items.map((item) => ({ ...item, room: room.name })));
   return allItems
-    .map((item) => ({ ...item, quantity: quantities[item.id] || 0 }))
+    .map((item) => {
+      const dims = dimsForAsset(item.asset);
+      const realVolume = (dims.widthCm * dims.depthCm * dims.heightCm) / 1_000_000;
+      return { ...item, volume: realVolume, quantity: quantities[item.id] || 0 };
+    })
     .filter((item) => item.quantity > 0);
 });
+
+// Kick off bounding-box measurement for every asset that lands in the inventory.
+// Each result populates measuredAssetDims (reactive), which re-runs the packer.
+watch(
+  inventory,
+  (items) => {
+    const assets = new Set(items.map((i) => i.asset));
+    for (const asset of assets) {
+      if (measuredAssetDims[asset]) continue;
+      measureAsset(asset).then((dims) => {
+        if (dims) measuredAssetDims[asset] = dims;
+      });
+    }
+  },
+  { immediate: true },
+);
 
 const totalItems = computed(() => inventory.value.reduce((sum, item) => sum + item.quantity, 0));
 
@@ -387,8 +339,8 @@ const fillPercent = computed(() => {
   return Math.min(100, Math.round((totalVolume.value / totalTruckCapacity.value) * 100));
 });
 
-const packedUnits = computed(() => {
-  const expanded = inventory.value.flatMap((item) =>
+const packedUnits = computed(() =>
+  inventory.value.flatMap((item) =>
     Array.from({ length: item.quantity }, (_, index) => ({
       key: `${item.id}-${index}`,
       id: item.id,
@@ -398,92 +350,55 @@ const packedUnits = computed(() => {
       volume: item.volume,
       ...profileForItem(item),
     })),
-  );
-
-  return expanded.sort((a, b) => {
-    const weightDifference = b.stackingWeight - a.stackingWeight;
-    if (weightDifference !== 0) return weightDifference;
-    const areaDifference = b.width * b.depth - a.width * a.depth;
-    if (areaDifference !== 0) return areaDifference;
-    return b.height - a.height;
-  });
-});
-
-const plannedTrucks = computed(() =>
-  recommendedPlan.value.flatMap((truck) =>
-    Array.from({ length: truck.count }, (_, index) => ({
-      ...truck,
-      key: `${truck.id}-${index}`,
-      label: truck.count > 1 ? `${truck.name} Truck ${index + 1}` : `${truck.name} Truck`,
-      usedVolume: 0,
-      items: [],
-      packingGrid: makePackingGrid(truck),
-    })),
   ),
 );
 
 const packedTrucks = computed(() => {
   if (!packedUnits.value.length) return [];
 
-  const trucks = plannedTrucks.value.map((truck) => ({
-    ...truck,
-    items: [],
-    packingGrid: makePackingGrid(truck),
-  }));
-  const largeTruck = truckSizes.find((truck) => truck.id === 'large');
+  const planTemplates = recommendedPlan.value.map((truck) => buildTruckTemplate(truck, truck.count));
+  const fallbackTruck = buildTruckTemplate(truckSizes[truckSizes.length - 1], 1);
+  const truckSizesWithCells = truckSizes.map((truck) => buildTruckTemplate(truck, 1));
 
-  packedUnits.value.forEach((unit, sequence) => {
-    let targetTruck = null;
-    let targetPlacement = null;
-
-    for (const truck of trucks) {
-      const placement = findPlacement(truck.packingGrid, unit);
-      if (placement && truck.usedVolume + unit.volume <= truck.capacity + 0.01) {
-        targetTruck = truck;
-        targetPlacement = placement;
-        break;
-      }
-    }
-
-    if (!targetTruck) {
-      targetTruck = {
-        ...largeTruck,
-        key: `overflow-large-${trucks.length}`,
-        label: `Large Truck ${trucks.length + 1}`,
-        usedVolume: 0,
-        items: [],
-        packingGrid: makePackingGrid(largeTruck),
-      };
-      trucks.push(targetTruck);
-      targetPlacement = findPlacement(targetTruck.packingGrid, unit);
-    }
-
-    if (!targetPlacement) return;
-
-    placeUnit(targetTruck.packingGrid, unit, targetPlacement);
-    targetTruck.usedVolume += unit.volume;
-    targetTruck.items.push({
-      ...unit,
-      x: targetPlacement.x,
-      y: targetPlacement.y,
-      z: targetPlacement.z,
-      width: targetPlacement.width,
-      depth: targetPlacement.depth,
-      height: unit.height,
-      rotated: targetPlacement.rotated,
-      sequence,
-      batch: Math.floor(sequence / 4),
-      zIndex: 20 + targetPlacement.z * targetTruck.packingGrid.columns * targetTruck.packingGrid.rows + targetPlacement.y * targetTruck.packingGrid.columns + targetPlacement.x,
-    });
+  const { trucks } = planAndPack(packedUnits.value, {
+    truckSizes: truckSizesWithCells,
+    recommendedPlan: planTemplates,
+    fallbackTruck,
   });
 
-  return trucks.filter((truck) => truck.items.length);
+  return trucks.map((truck) => ({
+    ...truck,
+    packingGrid: {
+      columns: truck.cellsX,
+      rows: truck.cellsY,
+      maxHeight: truck.cellsZ,
+    },
+    items: truck.items.map((item) => ({
+      ...item,
+      batch: Math.floor(item.sequence / 4),
+      zIndex:
+        20 +
+        item.z * truck.cellsX * truck.cellsY +
+        item.y * truck.cellsX +
+        item.x,
+    })),
+  }));
 });
 
 const recommendationCardText = computed(() => {
-  if (!recommendedPlan.value.length) return 'Add furniture to calculate a truck';
-  return recommendedPlan.value
-    .map((truck) => `${truck.count > 1 ? `${truck.count} x ` : ''}${truck.name} Truck`)
+  if (!packedTrucks.value.length) {
+    if (!recommendedPlan.value.length) return 'Add furniture to calculate a truck';
+    return recommendedPlan.value
+      .map((truck) => `${truck.count > 1 ? `${truck.count} x ` : ''}${truck.name} Truck`)
+      .join(' + ');
+  }
+  // Summarise the actual packed trucks (collapse duplicate sizes).
+  const counts = new Map();
+  for (const truck of packedTrucks.value) {
+    counts.set(truck.name, (counts.get(truck.name) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([name, count]) => `${count > 1 ? `${count} x ` : ''}${name} Truck`)
     .join(' + ');
 });
 

@@ -2,6 +2,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const props = defineProps({
   trucks: {
@@ -26,6 +27,7 @@ const status = ref('Loading 3D truck fit');
 let renderer;
 let scene;
 let camera;
+let controls;
 let resizeObserver;
 let animationFrame;
 let disposed = false;
@@ -137,11 +139,17 @@ const normalizeModel = (source, item) => {
 
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
-  const maxWidth = Math.max(item.widthMeters * 0.82, 0.22);
-  const maxDepth = Math.max(item.depthMeters * 0.82, 0.22);
-  const maxHeight = Math.max(item.heightMeters * 0.9, 0.28);
-  const scale = Math.min(maxWidth / Math.max(size.x, 0.01), maxHeight / Math.max(size.y, 0.01), maxDepth / Math.max(size.z, 0.01)) * item.modelScale;
-  model.scale.multiplyScalar(scale);
+  // Cell dims are derived from this same mesh (measured + rounded up to the cell grid),
+  // so we can scale each axis independently to fill the cell exactly. The stretch is
+  // never more than 10 cm per axis and the model lands flush with its packed neighbours.
+  const targetWidth = Math.max(item.widthMeters, 0.05);
+  const targetHeight = Math.max(item.heightMeters, 0.05);
+  const targetDepth = Math.max(item.depthMeters, 0.05);
+  model.scale.set(
+    targetWidth / Math.max(size.x, 0.01),
+    targetHeight / Math.max(size.y, 0.01),
+    targetDepth / Math.max(size.z, 0.01),
+  );
 
   const scaledBox = new THREE.Box3().setFromObject(model);
   const center = scaledBox.getCenter(new THREE.Vector3());
@@ -209,6 +217,16 @@ const setupScene = async () => {
   renderer.shadowMap.type = THREE.PCFShadowMap;
   container.value.replaceChildren(renderer.domElement);
 
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 1.0, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minZoom = 0.4;
+  controls.maxZoom = 4.0;
+  controls.minPolarAngle = 0.05;
+  controls.maxPolarAngle = Math.PI / 2 - 0.02; // stop just above the ground plane
+  controls.update();
+
   const ambient = new THREE.HemisphereLight(0xffffff, 0xa9b9b5, 2.7);
   scene.add(ambient);
 
@@ -259,7 +277,7 @@ const animate = () => {
     }
   });
 
-  scene.rotation.y = Math.sin(elapsed * 0.24) * 0.025;
+  if (controls) controls.update();
   renderer.render(scene, camera);
   animationFrame = requestAnimationFrame(animate);
 };
@@ -283,6 +301,8 @@ const teardown = () => {
   animationFrame = null;
   if (resizeObserver) resizeObserver.disconnect();
   resizeObserver = null;
+  if (controls) controls.dispose();
+  controls = null;
   if (scene) disposeObject(scene);
   if (renderer) renderer.dispose();
   if (container.value) container.value.replaceChildren();
