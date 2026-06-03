@@ -237,6 +237,7 @@ const pieces = ref([]);              // { model, source, gx, gy, gz, ry, scale, 
 const statusText = ref('Pick a tile from the left panel to start placing');
 const copyLabel = ref('Copy JSON');
 const loadingPreset = ref(false);
+const cameraMoveEnabled = ref(false);
 
 // ── Real-world scale ──────────────────────────────────────────────────────────
 // Anchor: one tile (the cube floor) = 1.7 m × 1.7 m. `cmPerUnit` is derived
@@ -776,8 +777,53 @@ const stepGy = (sign, opts = {}) => {
   currentGy.value = cleanCoord(next);
 };
 
+const moveCameraBy = (forwardStep, strafeStep, heightStep = 0) => {
+  if (!camera || !controls) return;
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  if (forward.lengthSq() === 0) forward.set(0, 0, -1);
+  forward.normalize();
+
+  const strafe = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+  const delta = new THREE.Vector3()
+    .addScaledVector(forward, forwardStep)
+    .addScaledVector(strafe, strafeStep);
+  delta.y += heightStep;
+
+  camera.position.add(delta);
+  controls.target.add(delta);
+  controls.update();
+};
+
+const rotateCameraBy = (yawStep, pitchStep) => {
+  if (!camera || !controls) return;
+  const view = controls.target.clone().sub(camera.position);
+  const distance = Math.max(view.length(), 1);
+  const spherical = new THREE.Spherical().setFromVector3(view);
+  spherical.theta += yawStep;
+  spherical.phi = Math.max(0.15, Math.min(Math.PI - 0.15, spherical.phi + pitchStep));
+  controls.target.copy(camera.position).add(new THREE.Vector3().setFromSpherical(spherical).setLength(distance));
+  controls.update();
+};
+
 const handleKeyDown = (e) => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+  if (cameraMoveEnabled.value) {
+    const step = 0.65;
+    const heightStep = 0.45;
+    const rotateStep = 0.08;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); moveCameraBy(0, -step); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); moveCameraBy(0, step); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); moveCameraBy(step, 0); return; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveCameraBy(-step, 0); return; }
+    if (e.key === 'a' || e.key === 'A') { e.preventDefault(); rotateCameraBy(-rotateStep, 0); return; }
+    if (e.key === 'd' || e.key === 'D') { e.preventDefault(); rotateCameraBy(rotateStep, 0); return; }
+    if (e.key === 'w' || e.key === 'W') { e.preventDefault(); rotateCameraBy(0, -rotateStep); return; }
+    if (e.key === 's' || e.key === 'S') { e.preventDefault(); rotateCameraBy(0, rotateStep); return; }
+    if (e.key === 'Shift') { e.preventDefault(); moveCameraBy(0, 0, -heightStep); return; }
+    if (e.key === ' ') { e.preventDefault(); moveCameraBy(0, 0, heightStep); return; }
+  }
   if (e.key === 'r' || e.key === 'R') { rotateBy(e.shiftKey ? -90 : 90); }
   else if (e.key === 'e' || e.key === 'E') {
     mode.value = mode.value === 'erase' ? 'place' : 'erase';
@@ -821,6 +867,14 @@ watch(mode, (m) => {
   if (ghostGroup) ghostGroup.visible = m === 'place' && isOnCanvas && !!selectedModel.value;
   statusText.value = m === 'erase' ? 'Erase mode — left-click a tile to remove it  ·  E or Esc to exit'
     : (selectedModel.value ? `"${selectedModel.value}" selected` : 'Pick a tile');
+});
+
+watch(cameraMoveEnabled, (enabled) => {
+  if (enabled) {
+    statusText.value = 'Camera keys enabled — arrows move  ·  WASD rotate  ·  Shift down  ·  Space up';
+  } else {
+    statusText.value = selectedModel.value ? `"${selectedModel.value}" selected` : 'Pick a tile';
+  }
 });
 
 // ── Resize & teardown ─────────────────────────────────────────────────────────
@@ -871,6 +925,13 @@ onBeforeUnmount(() => {
         <button :class="['tool-btn', { active: mode === 'place' }]" @click="mode = 'place'">✏️ Place</button>
         <button :class="['tool-btn', { active: mode === 'erase' }]" @click="mode = 'erase'">🗑 Erase</button>
       </div>
+      <button
+        :class="['move-toggle', { active: cameraMoveEnabled }]"
+        @click="cameraMoveEnabled = !cameraMoveEnabled"
+      >
+        <span>Camera keys</span>
+        <span class="move-toggle-state">{{ cameraMoveEnabled ? 'On' : 'Off' }}</span>
+      </button>
       <div class="controls-row">
         <div class="ctrl-group">
           <label>Level <kbd>[</kbd><kbd>]</kbd></label>
@@ -1038,6 +1099,8 @@ onBeforeUnmount(() => {
         <strong>Shortcuts</strong>
         <div><kbd>R</kbd> rotate CW · <kbd>Shift+R</kbd> CCW</div>
         <div><kbd>[</kbd> <kbd>]</kbd> level down / up</div>
+        <div><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> move camera · <kbd>WASD</kbd> rotate</div>
+        <div><kbd>Shift</kbd> lower · <kbd>Space</kbd> raise</div>
         <div><kbd>E</kbd> toggle erase · <kbd>Esc</kbd> deselect</div>
         <div><kbd>Ctrl+Z</kbd> undo · right-drag orbit · scroll zoom</div>
       </div>
@@ -1082,6 +1145,20 @@ html, body { width: 100%; height: 100%; overflow: hidden; }
 }
 .tool-btn:hover { background: #2a3e3e; }
 .tool-btn.active { background: #1a6058; border-color: #28907e; color: #c8f4ec; }
+
+.move-toggle {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 0 12px 10px; padding: 7px 9px; border: 1px solid #304848; border-radius: 6px;
+  background: #202c2e; color: #88b8b0; cursor: pointer; font-size: 12px; font-weight: 700;
+  flex-shrink: 0; transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.move-toggle:hover { background: #2a3e3e; }
+.move-toggle.active { background: #1a5848; border-color: #248070; color: #c8f0e8; }
+.move-toggle-state {
+  min-width: 30px; padding: 2px 6px; border-radius: 4px; background: #192022;
+  color: #6aa098; font-size: 10px; line-height: 1.2; text-align: center; text-transform: uppercase;
+}
+.move-toggle.active .move-toggle-state { color: #8df4e8; }
 
 .controls-row {
   display: flex; gap: 8px; padding: 0 12px 10px; flex-shrink: 0; border-bottom: 1px solid #283838;
