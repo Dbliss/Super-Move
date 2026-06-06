@@ -3,32 +3,13 @@ import { computed, reactive, ref, watch } from 'vue';
 import TruckFitScene from './components/TruckFitScene.vue';
 import HouseScene from './components/HouseScene.vue';
 import objectShapes from './data/objectShapes.json';
-import furnitureCsvRaw from './data/furniture.csv?raw';
-import { buildShape } from './utils/shapes.js';
-import { planAndPack } from './utils/packing.js';
+import savedDimensions from './data/objectDimensions.json';
+import savedAttributes from './data/objectAttributes.json';
+import { rooms } from './data/rooms.js';
+import { resolveAttributes } from './data/attributes.js';
+import { buildShape, buildComposite } from './utils/shapes.js';
+import { planAndPack, estimateFleet } from './utils/packing.js';
 import { measureAsset } from './utils/assetDimensions.js';
-
-const parseFurnitureCsv = (raw) => {
-  const map = new Map();
-  const lines = raw.trim().split(/\r?\n/);
-  if (!lines.length) return map;
-  const headers = lines[0].split(',').map((h) => h.trim());
-  const nameIdx = headers.indexOf('name');
-  const weightIdx = headers.indexOf('weight');
-  const openTopIdx = headers.indexOf('open_top');
-  for (let i = 1; i < lines.length; i += 1) {
-    const cells = lines[i].split(',').map((c) => c.trim());
-    if (!cells[nameIdx]) continue;
-    map.set(cells[nameIdx], {
-      weight: Number(cells[weightIdx]) || 50,
-      openTop: String(cells[openTopIdx]).toLowerCase() === 'true',
-    });
-  }
-  return map;
-};
-
-const furnitureCatalog = parseFurnitureCsv(furnitureCsvRaw);
-const defaultFurnitureRow = { weight: 50, openTop: true };
 
 const sideImages = import.meta.glob('../Kenny/Side/*.png', {
   eager: true,
@@ -44,128 +25,130 @@ const houseTypes = [
     name: 'Studio',
     detail: 'Compact move with fewer room types.',
     rooms: ['bedroom', 'living', 'kitchen', 'bathroom'],
+    // Starting furniture this home type usually has, by item id. Loaded into the quote
+    // when the house type is chosen, then the customer adjusts up or down.
+    defaults: {
+      bedDouble: 1,
+      cabinetBedDrawer: 1,
+      sideTableDrawers: 1,
+      cardboardBoxClosedBedroom: 4,
+      loungeSofaLong: 1,
+      televisionModern: 1,
+      cabinetTelevision: 1,
+      tableCoffee: 1,
+      kitchenFridge: 1,
+      kitchenMicrowave: 1,
+      cardboardBoxClosedKitchen: 3,
+      bathroomCabinet: 1,
+      cardboardBoxClosedBathroom: 1,
+    },
   },
   {
     id: 'apartment',
     name: 'Apartment',
     detail: 'Most common rooms, usually one truck load.',
     rooms: ['bedroom', 'living', 'dining', 'kitchen', 'laundry', 'bathroom'],
+    defaults: {
+      bedDouble: 1,
+      bedSingle: 1,
+      cabinetBedDrawer: 1,
+      sideTableDrawers: 2,
+      cardboardBoxClosedBedroom: 6,
+      loungeSofaLong: 1,
+      loungeChair: 1,
+      televisionModern: 1,
+      cabinetTelevision: 1,
+      tableCoffee: 1,
+      bookcaseOpen: 1,
+      table: 1,
+      chair: 4,
+      kitchenFridgeLarge: 1,
+      kitchenMicrowave: 1,
+      kitchenStove: 1,
+      cardboardBoxClosedKitchen: 5,
+      washer: 1,
+      dryer: 1,
+      bathroomCabinet: 1,
+      bathroomMirror: 1,
+      cardboardBoxClosedBathroom: 2,
+    },
   },
   {
     id: 'townhouse',
     name: 'Townhouse',
     detail: 'Multi-room home with office or garage items.',
     rooms: ['bedroom', 'living', 'dining', 'kitchen', 'office', 'laundry', 'bathroom', 'garage'],
+    defaults: {
+      bedDouble: 1,
+      bedSingle: 2,
+      cabinetBedDrawer: 2,
+      sideTableDrawers: 3,
+      cardboardBoxClosedBedroom: 10,
+      loungeSofaLong: 1,
+      loungeChair: 2,
+      televisionModern: 1,
+      cabinetTelevision: 1,
+      tableCoffee: 1,
+      bookcaseOpen: 1,
+      table: 1,
+      chair: 6,
+      kitchenFridgeLarge: 1,
+      kitchenMicrowave: 1,
+      kitchenStove: 1,
+      cardboardBoxClosedKitchen: 8,
+      desk: 1,
+      chairDesk: 1,
+      computerScreen: 1,
+      cardboardBoxClosedOffice: 4,
+      washer: 1,
+      dryer: 1,
+      bathroomCabinet: 1,
+      bathroomMirror: 1,
+      cardboardBoxClosedBathroom: 2,
+      bench: 1,
+      bookcaseClosedGarage: 1,
+      cardboardBoxClosedGarage: 6,
+    },
   },
   {
     id: 'house',
     name: 'House',
     detail: 'Full home inventory across all common spaces.',
     rooms: ['bedroom', 'living', 'dining', 'kitchen', 'office', 'laundry', 'bathroom', 'garage'],
-  },
-];
-
-const rooms = [
-  {
-    id: 'bedroom',
-    name: 'Bedroom',
-    prompt: 'Beds, side tables, storage, and boxed personal items.',
-    items: [
-      { id: 'bedDouble', name: 'Double bed', asset: 'bedDouble', volume: 3.2 },
-      { id: 'bedSingle', name: 'Single bed', asset: 'bedSingle', volume: 2.1 },
-      { id: 'bedBunk', name: 'Bunk bed', asset: 'bedBunk', volume: 3.8 },
-      { id: 'cabinetBedDrawer', name: 'Tall drawers', asset: 'cabinetBedDrawer', volume: 1.7 },
-      { id: 'sideTableDrawers', name: 'Bedside drawers', asset: 'sideTableDrawers', volume: 0.5 },
-      { id: 'cardboardBoxClosedBedroom', name: 'Packed box', asset: 'cardboardBoxClosed', volume: 0.35 },
-    ],
-  },
-  {
-    id: 'living',
-    name: 'Living Room',
-    prompt: 'Sofas, TV units, bookcases, tables, and decor.',
-    items: [
-      { id: 'loungeSofaLong', name: 'Long sofa', asset: 'loungeSofaLong', volume: 3.0 },
-      { id: 'loungeSofaCorner', name: 'Corner sofa', asset: 'loungeSofaCorner', volume: 4.2 },
-      { id: 'loungeChair', name: 'Armchair', asset: 'loungeChair', volume: 1.1 },
-      { id: 'televisionModern', name: 'Television', asset: 'televisionModern', volume: 0.45 },
-      { id: 'cabinetTelevision', name: 'TV cabinet', asset: 'cabinetTelevision', volume: 1.1 },
-      { id: 'tableCoffee', name: 'Coffee table', asset: 'tableCoffee', volume: 0.7 },
-      { id: 'bookcaseOpen', name: 'Bookcase', asset: 'bookcaseOpen', volume: 1.6 },
-      { id: 'pottedPlantLiving', name: 'Large plant', asset: 'pottedPlant', volume: 0.45 },
-    ],
-  },
-  {
-    id: 'dining',
-    name: 'Dining',
-    prompt: 'Dining tables, chairs, stools, and display cabinets.',
-    items: [
-      { id: 'table', name: 'Dining table', asset: 'table', volume: 1.8 },
-      { id: 'tableRound', name: 'Round table', asset: 'tableRound', volume: 1.4 },
-      { id: 'chair', name: 'Dining chair', asset: 'chair', volume: 0.35 },
-      { id: 'stoolBar', name: 'Bar stool', asset: 'stoolBar', volume: 0.3 },
-      { id: 'bookcaseClosedWideDining', name: 'Display cabinet', asset: 'bookcaseClosedWide', volume: 2.1 },
-    ],
-  },
-  {
-    id: 'kitchen',
-    name: 'Kitchen',
-    prompt: 'Fridges, appliances, cabinets, and packed kitchen boxes.',
-    items: [
-      { id: 'kitchenFridgeLarge', name: 'Large fridge', asset: 'kitchenFridgeLarge', volume: 2.0 },
-      { id: 'kitchenFridge', name: 'Fridge', asset: 'kitchenFridge', volume: 1.5 },
-      { id: 'kitchenMicrowave', name: 'Microwave', asset: 'kitchenMicrowave', volume: 0.25 },
-      { id: 'kitchenStove', name: 'Stove', asset: 'kitchenStove', volume: 1.0 },
-      { id: 'kitchenCoffeeMachine', name: 'Coffee machine', asset: 'kitchenCoffeeMachine', volume: 0.18 },
-      { id: 'cardboardBoxClosedKitchen', name: 'Kitchen box', asset: 'cardboardBoxClosed', volume: 0.35 },
-    ],
-  },
-  {
-    id: 'office',
-    name: 'Office',
-    prompt: 'Desks, task chairs, screens, and office boxes.',
-    items: [
-      { id: 'desk', name: 'Desk', asset: 'desk', volume: 1.2 },
-      { id: 'deskCorner', name: 'Corner desk', asset: 'deskCorner', volume: 1.8 },
-      { id: 'chairDesk', name: 'Desk chair', asset: 'chairDesk', volume: 0.65 },
-      { id: 'computerScreen', name: 'Monitor', asset: 'computerScreen', volume: 0.16 },
-      { id: 'bookcaseOpenOffice', name: 'Office bookcase', asset: 'bookcaseOpenLow', volume: 1.1 },
-      { id: 'cardboardBoxClosedOffice', name: 'Office box', asset: 'cardboardBoxClosed', volume: 0.35 },
-    ],
-  },
-  {
-    id: 'laundry',
-    name: 'Laundry',
-    prompt: 'Laundry appliances and utility storage.',
-    items: [
-      { id: 'washer', name: 'Washing machine', asset: 'washer', volume: 0.9 },
-      { id: 'dryer', name: 'Dryer', asset: 'dryer', volume: 0.85 },
-      { id: 'washerDryerStacked', name: 'Washer dryer stack', asset: 'washerDryerStacked', volume: 1.5 },
-      { id: 'trashcanLaundry', name: 'Utility bin', asset: 'trashcan', volume: 0.25 },
-    ],
-  },
-  {
-    id: 'bathroom',
-    name: 'Bathroom',
-    prompt: 'Cabinets, mirrors, and bathroom storage.',
-    items: [
-      { id: 'bathroomCabinet', name: 'Bathroom cabinet', asset: 'bathroomCabinet', volume: 0.85 },
-      { id: 'bathroomCabinetDrawer', name: 'Drawer cabinet', asset: 'bathroomCabinetDrawer', volume: 0.7 },
-      { id: 'bathroomMirror', name: 'Mirror', asset: 'bathroomMirror', volume: 0.18 },
-      { id: 'cardboardBoxClosedBathroom', name: 'Bathroom box', asset: 'cardboardBoxClosed', volume: 0.35 },
-    ],
-  },
-  {
-    id: 'garage',
-    name: 'Garage / Outdoor',
-    prompt: 'Benches, storage, spare furniture, and miscellaneous boxes.',
-    items: [
-      { id: 'bench', name: 'Bench', asset: 'bench', volume: 1.4 },
-      { id: 'coatRackStanding', name: 'Standing rack', asset: 'coatRackStanding', volume: 0.5 },
-      { id: 'bookcaseClosedGarage', name: 'Storage cabinet', asset: 'bookcaseClosed', volume: 1.7 },
-      { id: 'speaker', name: 'Large speaker', asset: 'speaker', volume: 0.6 },
-      { id: 'cardboardBoxOpenGarage', name: 'Open box', asset: 'cardboardBoxOpen', volume: 0.35 },
-      { id: 'cardboardBoxClosedGarage', name: 'Packed box', asset: 'cardboardBoxClosed', volume: 0.35 },
-    ],
+    defaults: {
+      bedDouble: 2,
+      bedSingle: 2,
+      cabinetBedDrawer: 3,
+      sideTableDrawers: 4,
+      cardboardBoxClosedBedroom: 14,
+      loungeSofaLong: 1,
+      loungeSofaCorner: 1,
+      loungeChair: 2,
+      televisionModern: 2,
+      cabinetTelevision: 1,
+      tableCoffee: 1,
+      bookcaseOpen: 2,
+      table: 1,
+      chair: 8,
+      bookcaseClosedWideDining: 1,
+      kitchenFridgeLarge: 1,
+      kitchenMicrowave: 1,
+      kitchenStove: 1,
+      cardboardBoxClosedKitchen: 12,
+      desk: 1,
+      deskCorner: 1,
+      chairDesk: 2,
+      computerScreen: 2,
+      bookcaseOpenOffice: 1,
+      cardboardBoxClosedOffice: 6,
+      washerDryerStacked: 1,
+      bathroomCabinet: 2,
+      bathroomMirror: 2,
+      cardboardBoxClosedBathroom: 3,
+      bench: 1,
+      bookcaseClosedGarage: 2,
+      cardboardBoxClosedGarage: 10,
+    },
   },
 ];
 
@@ -213,30 +196,74 @@ const toCells = (centimeters) => Math.max(1, Math.ceil(centimeters / packingCell
 // Measured GLTF dims, keyed by asset name. Populated lazily as items enter the inventory.
 const measuredAssetDims = reactive({});
 
-const dimsForAsset = (asset) => measuredAssetDims[asset] || fallbackDimensions;
+// Overall bounding-box extent (cm) of a saved entry, whether it's a single box or a
+// composite collection of rectangles.
+const overallDims = (entry) => {
+  if (entry?.type === 'composite' && Array.isArray(entry.boxes)) {
+    let widthCm = 1;
+    let depthCm = 1;
+    let heightCm = 1;
+    for (const b of entry.boxes) {
+      widthCm = Math.max(widthCm, b.x + b.w);
+      depthCm = Math.max(depthCm, b.y + b.d);
+      heightCm = Math.max(heightCm, b.z + b.h);
+    }
+    return { widthCm, depthCm, heightCm };
+  }
+  return entry;
+};
+
+// Dimensions hand-tuned in the /dimensions editor always win over the auto-measured guess,
+// which only ever applies a blanket scale and is wrong for many models.
+const dimsForAsset = (asset) => {
+  const saved = savedDimensions[asset];
+  if (saved) return overallDims(saved);
+  return measuredAssetDims[asset] || fallbackDimensions;
+};
+
+// Convert a composite box (cm offsets/sizes) into cell units for the voxel packer.
+const compositeBoxToCells = (box) => ({
+  x: Math.max(0, Math.floor(box.x / packingCellCm)),
+  y: Math.max(0, Math.floor(box.y / packingCellCm)),
+  z: Math.max(0, Math.floor(box.z / packingCellCm)),
+  w: toCells(box.w),
+  d: toCells(box.d),
+  h: toCells(box.h),
+});
 
 const profileForItem = (item) => {
+  const saved = savedDimensions[item.asset];
   const dimensions = dimsForAsset(item.asset);
-  const templateName = objectShapes.items[item.id] || objectShapes.default || 'box';
-  const csv = furnitureCatalog.get(item.id) || defaultFurnitureRow;
-  const width = toCells(dimensions.widthCm);
-  const depth = toCells(dimensions.depthCm);
-  const height = toCells(dimensions.heightCm);
-  const shape = buildShape(templateName, width, depth, height);
-  const realVolume = (dimensions.widthCm * dimensions.depthCm * dimensions.heightCm) / 1_000_000;
+  const attributes = resolveAttributes(item.id, savedAttributes);
+
+  let templateName;
+  let shape;
+  let realVolume;
+  if (saved?.type === 'composite' && Array.isArray(saved.boxes)) {
+    // Hand-built collection of rectangles wins outright — use its exact occupied volume.
+    templateName = 'composite';
+    shape = buildComposite(saved.boxes.map(compositeBoxToCells));
+    realVolume = (shape.voxels.length * packingCellCm ** 3) / 1_000_000;
+  } else {
+    // A defined regular box is taken literally (plain box); only undefined assets fall back to
+    // the parametric objectShapes template applied to the auto-measured dimensions.
+    templateName = saved ? 'box' : objectShapes.items[item.id] || objectShapes.default || 'box';
+    shape = buildShape(templateName, toCells(dimensions.widthCm), toCells(dimensions.depthCm), toCells(dimensions.heightCm));
+    realVolume = (dimensions.widthCm * dimensions.depthCm * dimensions.heightCm) / 1_000_000;
+  }
 
   return {
     templateName,
     dimensionsCm: dimensions,
-    width,
-    depth,
-    height,
+    width: shape.width,
+    depth: shape.depth,
+    height: shape.height,
     widthMeters: dimensions.widthCm / 100,
     depthMeters: dimensions.depthCm / 100,
     heightMeters: dimensions.heightCm / 100,
     modelScale: 1,
-    weight: csv.weight,
-    openTop: csv.openTop,
+    stackLevel: attributes.stackLevel,
+    openTop: attributes.openTop,
     shape,
     volume: realVolume,
   };
@@ -283,7 +310,7 @@ watch(
   (items) => {
     const assets = new Set(items.map((i) => i.asset));
     for (const asset of assets) {
-      if (measuredAssetDims[asset]) continue;
+      if (savedDimensions[asset] || measuredAssetDims[asset]) continue;
       measureAsset(asset).then((dims) => {
         if (dims) measuredAssetDims[asset] = dims;
       });
@@ -304,26 +331,15 @@ const roomProgressLabel = computed(() => {
   return `Room ${currentIndex + 1} of ${includedRooms.value.length}`;
 });
 
-const recommendedPlan = computed(() => {
-  const volume = totalVolume.value;
-  if (volume <= 0) return [];
+// Truck catalog with cell grids, derived once for the packer/selector to consume.
+const truckSizesWithCells = computed(() => truckSizes.map((truck) => buildTruckTemplate(truck, 1)));
 
-  const singleTruck = truckSizes.find((truck) => volume <= truck.capacity);
-  if (singleTruck) return [{ ...singleTruck, count: 1 }];
-
-  const plan = [];
-  const large = truckSizes[2];
-  const fullLargeCount = Math.floor(volume / large.capacity);
-  const remainder = Number((volume - fullLargeCount * large.capacity).toFixed(2));
-
-  if (fullLargeCount > 0) plan.push({ ...large, count: fullLargeCount });
-  if (remainder > 0) {
-    const remainderTruck = truckSizes.find((truck) => remainder <= truck.capacity) || large;
-    plan.push({ ...remainderTruck, count: 1 });
-  }
-
-  return plan;
-});
+// Live fleet recommendation. A cheap lower-bound estimate (dimensional floor + volume + base
+// floor-area) — no voxel packing — so it stays snappy as items are added. The authoritative
+// fleet comes from planAndPack below; recommendationCardText reads that.
+const recommendedPlan = computed(() =>
+  estimateFleet(packedUnits.value, truckSizesWithCells.value),
+);
 
 const recommendedTruckText = computed(() => {
   if (!recommendedPlan.value.length) return 'Add furniture to calculate a truck';
@@ -356,14 +372,8 @@ const packedUnits = computed(() =>
 const packedTrucks = computed(() => {
   if (!packedUnits.value.length) return [];
 
-  const planTemplates = recommendedPlan.value.map((truck) => buildTruckTemplate(truck, truck.count));
-  const fallbackTruck = buildTruckTemplate(truckSizes[truckSizes.length - 1], 1);
-  const truckSizesWithCells = truckSizes.map((truck) => buildTruckTemplate(truck, 1));
-
   const { trucks } = planAndPack(packedUnits.value, {
-    truckSizes: truckSizesWithCells,
-    recommendedPlan: planTemplates,
-    fallbackTruck,
+    truckSizes: truckSizesWithCells.value,
   });
 
   return trucks.map((truck) => ({
@@ -385,6 +395,13 @@ const packedTrucks = computed(() => {
   }));
 });
 
+// Total cargo capacity of the fleet the packer actually returned (authoritative). Falls back to
+// the live lower-bound estimate before anything has been packed.
+const packedTruckCapacity = computed(() => {
+  if (!packedTrucks.value.length) return totalTruckCapacity.value;
+  return packedTrucks.value.reduce((sum, truck) => sum + truck.capacity, 0);
+});
+
 const recommendationCardText = computed(() => {
   if (!packedTrucks.value.length) {
     if (!recommendedPlan.value.length) return 'Add furniture to calculate a truck';
@@ -404,11 +421,21 @@ const recommendationCardText = computed(() => {
 
 const chooseHouse = (id) => {
   selectedHouseType.value = id;
-  const selectedRooms = new Set(houseTypes.find((house) => house.id === id)?.rooms || []);
+  const house = houseTypes.find((house) => house.id === id);
+  const selectedRooms = new Set(house?.rooms || []);
   rooms.forEach((room) => {
     roomPresence[room.id] = selectedRooms.has(room.id);
   });
   activeRoomId.value = rooms.find((room) => selectedRooms.has(room.id))?.id || rooms[0].id;
+
+  // Pre-fill a typical furniture selection for the chosen home so the customer starts
+  // from a sensible inventory and tweaks from there rather than a blank slate.
+  const defaults = house?.defaults || {};
+  rooms.forEach((room) => {
+    room.items.forEach((item) => {
+      quantities[item.id] = defaults[item.id] || 0;
+    });
+  });
 };
 
 const setRoomPresence = (roomId, value) => {
@@ -446,54 +473,6 @@ const resetQuote = () => {
 
 <template>
   <main class="app-shell">
-    <aside class="quote-summary" aria-label="Quote summary">
-      <div class="brand-lockup">
-        <span class="brand-mark">SM</span>
-        <div>
-          <p>Super Move</p>
-          <h1>Quote Builder</h1>
-        </div>
-      </div>
-
-      <div class="stepper" aria-label="Quote steps">
-        <button
-          v-for="(label, index) in ['Home', 'Rooms', 'Items', 'Truck']"
-          :key="label"
-          class="step-dot"
-          :class="{ active: step === index, complete: step > index }"
-          type="button"
-          @click="step = index"
-        >
-          <span>{{ index + 1 }}</span>
-          {{ label }}
-        </button>
-      </div>
-
-      <dl class="stats-list">
-        <div>
-          <dt>Home</dt>
-          <dd>{{ selectedHouse?.name || 'Not selected' }}</dd>
-        </div>
-        <div>
-          <dt>Rooms</dt>
-          <dd>{{ includedRooms.length }} included</dd>
-        </div>
-        <div>
-          <dt>Furniture</dt>
-          <dd>{{ totalItems }} items</dd>
-        </div>
-        <div>
-          <dt>Volume</dt>
-          <dd>{{ totalVolume.toFixed(1) }} m3</dd>
-        </div>
-      </dl>
-
-      <div class="truck-callout">
-        <span>Recommended</span>
-        <strong>{{ recommendedTruckText }}</strong>
-      </div>
-    </aside>
-
     <section class="builder-panel">
       <header class="panel-header">
         <div>
@@ -640,7 +619,7 @@ const resetQuote = () => {
             <div class="recommended-truck-card">
               <strong>{{ recommendationCardText }}</strong>
               <span>
-                Space: {{ totalTruckCapacity.toFixed(0) }} m3
+                Space: {{ packedTruckCapacity.toFixed(0) }} m3
                 <b>Used: {{ totalVolume.toFixed(1) }} m3</b>
               </span>
               <span>{{ totalItems }} items packed across {{ packedTrucks.length || recommendedPlan.length }} truck load{{ (packedTrucks.length || recommendedPlan.length) === 1 ? '' : 's' }}</span>
@@ -650,14 +629,6 @@ const resetQuote = () => {
               Get quote
             </button>
           </aside>
-        </div>
-
-        <div class="inventory-table">
-          <div v-for="item in inventory" :key="item.id" class="inventory-row">
-            <span>{{ item.room }}</span>
-            <strong>{{ item.quantity }} x {{ item.name }}</strong>
-            <em>{{ (item.volume * item.quantity).toFixed(1) }} m3</em>
-          </div>
         </div>
       </section>
     </section>

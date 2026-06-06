@@ -142,13 +142,19 @@ const normalizeModel = (source, item) => {
   // Cell dims are derived from this same mesh (measured + rounded up to the cell grid),
   // so we can scale each axis independently to fill the cell exactly. The stretch is
   // never more than 10 cm per axis and the model lands flush with its packed neighbours.
-  const targetWidth = Math.max(item.widthMeters, 0.05);
+  //
+  // item.widthMeters / depthMeters describe the footprint AFTER the packer's rotation
+  // (world X × Z). The wrapper re-applies that 90° spin below, so scale the mesh in its
+  // OWN un-rotated frame — swapping width/depth when rotated — otherwise the rendered box
+  // comes out transposed and pokes into its neighbours / past the truck wall.
+  const rotated = item.rotated;
+  const targetX = Math.max(rotated ? item.depthMeters : item.widthMeters, 0.05);
+  const targetZ = Math.max(rotated ? item.widthMeters : item.depthMeters, 0.05);
   const targetHeight = Math.max(item.heightMeters, 0.05);
-  const targetDepth = Math.max(item.depthMeters, 0.05);
   model.scale.set(
-    targetWidth / Math.max(size.x, 0.01),
+    targetX / Math.max(size.x, 0.01),
     targetHeight / Math.max(size.y, 0.01),
-    targetDepth / Math.max(size.z, 0.01),
+    targetZ / Math.max(size.z, 0.01),
   );
 
   const scaledBox = new THREE.Box3().setFromObject(model);
@@ -158,7 +164,7 @@ const normalizeModel = (source, item) => {
 
   const wrapper = new THREE.Group();
   wrapper.add(model);
-  wrapper.rotation.y = item.rotated ? Math.PI / 2 : 0;
+  wrapper.rotation.y = rotated ? Math.PI / 2 : 0;
   wrapper.userData.targetY = 0.08;
   wrapper.userData.delay = item.batch * 0.48 + (item.sequence % 4) * 0.08;
   wrapper.userData.settled = false;

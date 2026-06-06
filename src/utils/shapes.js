@@ -135,6 +135,25 @@ export const buildShape = (templateName, w, d, h) => {
   return builder(Math.max(1, w), Math.max(1, d), Math.max(1, h));
 };
 
+// Build a shape from a hand-authored collection of rectangles (the "non-regular object" mode
+// in the dimensions editor). Each box is in CELL units: { x, y, z, w, d, h } where x/y/z are the
+// offset along width/depth/height and w/d/h are the size. The union of every box becomes the
+// voxel mask, so an L-sofa, a table with legs, etc. pack by their true occupied volume.
+export const buildComposite = (boxes) => {
+  const voxels = [];
+  for (const box of boxes) {
+    const x0 = Math.max(0, Math.round(box.x));
+    const y0 = Math.max(0, Math.round(box.y));
+    const z0 = Math.max(0, Math.round(box.z));
+    const x1 = x0 + Math.max(1, Math.round(box.w));
+    const y1 = y0 + Math.max(1, Math.round(box.d));
+    const z1 = z0 + Math.max(1, Math.round(box.h));
+    fillBox(voxels, x0, x1, y0, y1, z0, z1);
+  }
+  if (!voxels.length) fillBox(voxels, 0, 1, 0, 1, 0, 1); // never return an empty shape
+  return fromVoxels(voxels);
+};
+
 // Rotate 90° clockwise around the vertical Z axis.
 // Old footprint W×D becomes D×W; cell (x, y) maps to (D - 1 - y, x).
 const rotateShape90CW = (shape) => {
