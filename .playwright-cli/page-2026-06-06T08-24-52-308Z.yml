@@ -1,0 +1,219 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - button "REMOVALIST ESTIMATE" [ref=e5] [cursor=pointer]:
+      - img [ref=e7]
+      - generic [ref=e11]:
+        - strong [ref=e12]: REMOVALIST
+        - generic [ref=e13]: ESTIMATE
+    - navigation "Quote steps" [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: ✓
+        - generic [ref=e17]: Home details
+      - generic [ref=e18]:
+        - generic [ref=e19]: "2"
+        - generic [ref=e20]: Furniture
+      - generic [ref=e21]:
+        - generic [ref=e22]: "3"
+        - generic [ref=e23]: Review
+      - generic [ref=e24]:
+        - generic [ref=e25]: "4"
+        - generic [ref=e26]: Quote
+    - generic [ref=e27]:
+      - button "? Need help?" [ref=e28] [cursor=pointer]:
+        - text: "?"
+        - generic [ref=e29]: Need help?
+      - button "Reset all" [ref=e30] [cursor=pointer]
+  - generic [ref=e204]:
+    - generic [ref=e205]:
+      - generic [ref=e206]:
+        - heading "Add furniture by room" [level=1] [ref=e207]
+        - paragraph [ref=e208]: Adjust the suggested inventory before reviewing the truck fit.
+      - navigation "Included rooms" [ref=e209]:
+        - button "Bedroom" [ref=e210] [cursor=pointer]
+        - button "Living Room" [ref=e211] [cursor=pointer]
+        - button "Dining" [ref=e212] [cursor=pointer]
+        - button "Kitchen" [ref=e213] [cursor=pointer]
+        - button "Laundry" [ref=e214] [cursor=pointer]
+        - button "Bathroom" [ref=e215] [cursor=pointer]
+      - generic [ref=e216]:
+        - generic [ref=e217]:
+          - generic [ref=e218]:
+            - text: Room 1 of 6
+            - heading "Bedroom" [level=2] [ref=e219]
+          - generic [ref=e220]:
+            - button "Reset furniture" [ref=e221] [cursor=pointer]
+            - button "Next room" [ref=e222] [cursor=pointer]
+        - generic [ref=e223]:
+          - article [ref=e224]:
+            - img "Double bed" [ref=e225]
+            - generic [ref=e226]:
+              - heading "Double bed" [level=3] [ref=e227]
+              - paragraph [ref=e228]: 3.20 m³ each
+            - generic [ref=e229]:
+              - button "Decrease quantity" [ref=e230] [cursor=pointer]: −
+              - strong [ref=e231]: "1"
+              - button "Increase quantity" [ref=e232] [cursor=pointer]: +
+          - article [ref=e233]:
+            - img "Single bed" [ref=e234]
+            - generic [ref=e235]:
+              - heading "Single bed" [level=3] [ref=e236]
+              - paragraph [ref=e237]: 2.10 m³ each
+            - generic [ref=e238]:
+              - button "Decrease quantity" [ref=e239] [cursor=pointer]: −
+              - strong [ref=e240]: "1"
+              - button "Increase quantity" [ref=e241] [cursor=pointer]: +
+          - article [ref=e242]:
+            - img "Bunk bed" [ref=e243]
+            - generic [ref=e244]:
+              - heading "Bunk bed" [level=3] [ref=e245]
+              - paragraph [ref=e246]: 3.80 m³ each
+            - generic [ref=e247]:
+              - button "Decrease quantity" [ref=e248] [cursor=pointer]: −
+              - strong [ref=e249]: "0"
+              - button "Increase quantity" [ref=e250] [cursor=pointer]: +
+          - article [ref=e251]:
+            - img "Tall drawers" [ref=e252]
+            - generic [ref=e253]:
+              - heading "Tall drawers" [level=3] [ref=e254]
+              - paragraph [ref=e255]: 1.70 m³ each
+            - generic [ref=e256]:
+              - button "Decrease quantity" [ref=e257] [cursor=pointer]: −
+              - strong [ref=e258]: "1"
+              - button "Increase quantity" [ref=e259] [cursor=pointer]: +
+          - article [ref=e260]:
+            - img "Bedside drawers" [ref=e261]
+            - generic [ref=e262]:
+              - heading "Bedside drawers" [level=3] [ref=e263]
+              - paragraph [ref=e264]: 0.50 m³ each
+            - generic [ref=e265]:
+              - button "Decrease quantity" [ref=e266] [cursor=pointer]: −
+              - strong [ref=e267]: "2"
+              - button "Increase quantity" [ref=e268] [cursor=pointer]: +
+          - article [ref=e269]:
+            - img "Packed box" [ref=e270]
+            - generic [ref=e271]:
+              - heading "Packed box" [level=3] [ref=e272]
+              - paragraph [ref=e273]: 0.35 m³ each
+            - generic [ref=e274]:
+              - button "Decrease quantity" [ref=e275] [cursor=pointer]: −
+              - strong [ref=e276]: "6"
+              - button "Increase quantity" [ref=e277] [cursor=pointer]: +
+        - generic [ref=e278]:
+          - generic [ref=e279]:
+            - heading "Custom item" [level=3] [ref=e280]
+            - paragraph [ref=e281]: Name it and add its outside dimensions.
+          - generic [ref=e282]:
+            - text: Name
+            - textbox "Name" [ref=e283]:
+              - /placeholder: e.g. Aquarium
+          - generic [ref=e284]:
+            - text: Width cm
+            - spinbutton "Width cm" [ref=e285]
+          - generic [ref=e286]:
+            - text: Depth cm
+            - spinbutton "Depth cm" [ref=e287]
+          - generic [ref=e288]:
+            - text: Height cm
+            - spinbutton "Height cm" [ref=e289]
+          - button "Add object" [ref=e290] [cursor=pointer]
+    - complementary [ref=e291]:
+      - heading "Item summary" [level=2] [ref=e292]
+      - generic [ref=e293]:
+        - generic [ref=e294]:
+          - strong [ref=e295]: "36"
+          - generic [ref=e296]: Items
+        - generic [ref=e297]:
+          - strong [ref=e298]: ~11 m³
+          - generic [ref=e299]: Estimated volume
+      - generic [ref=e300]:
+        - generic [ref=e301]:
+          - img "Double bed" [ref=e302]
+          - generic [ref=e303]: Double bed
+          - strong [ref=e304]: x1
+        - generic [ref=e305]:
+          - img "Single bed" [ref=e306]
+          - generic [ref=e307]: Single bed
+          - strong [ref=e308]: x1
+        - generic [ref=e309]:
+          - img "Tall drawers" [ref=e310]
+          - generic [ref=e311]: Tall drawers
+          - strong [ref=e312]: x1
+        - generic [ref=e313]:
+          - img "Bedside drawers" [ref=e314]
+          - generic [ref=e315]: Bedside drawers
+          - strong [ref=e316]: x2
+        - generic [ref=e317]:
+          - img "Packed box" [ref=e318]
+          - generic [ref=e319]: Packed box
+          - strong [ref=e320]: x6
+        - generic [ref=e321]:
+          - img "Long sofa" [ref=e322]
+          - generic [ref=e323]: Long sofa
+          - strong [ref=e324]: x1
+        - generic [ref=e325]:
+          - img "Armchair" [ref=e326]
+          - generic [ref=e327]: Armchair
+          - strong [ref=e328]: x1
+        - generic [ref=e329]:
+          - img "Television" [ref=e330]
+          - generic [ref=e331]: Television
+          - strong [ref=e332]: x1
+        - generic [ref=e333]:
+          - img "TV cabinet" [ref=e334]
+          - generic [ref=e335]: TV cabinet
+          - strong [ref=e336]: x1
+        - generic [ref=e337]:
+          - img "Coffee table" [ref=e338]
+          - generic [ref=e339]: Coffee table
+          - strong [ref=e340]: x1
+        - generic [ref=e341]:
+          - img "Bookcase" [ref=e342]
+          - generic [ref=e343]: Bookcase
+          - strong [ref=e344]: x1
+        - generic [ref=e345]:
+          - img "Dining table" [ref=e346]
+          - generic [ref=e347]: Dining table
+          - strong [ref=e348]: x1
+        - generic [ref=e349]:
+          - img "Dining chair" [ref=e350]
+          - generic [ref=e351]: Dining chair
+          - strong [ref=e352]: x4
+        - generic [ref=e353]:
+          - img "Large fridge" [ref=e354]
+          - generic [ref=e355]: Large fridge
+          - strong [ref=e356]: x1
+        - generic [ref=e357]:
+          - img "Microwave" [ref=e358]
+          - generic [ref=e359]: Microwave
+          - strong [ref=e360]: x1
+        - generic [ref=e361]:
+          - img "Stove" [ref=e362]
+          - generic [ref=e363]: Stove
+          - strong [ref=e364]: x1
+        - generic [ref=e365]:
+          - img "Kitchen box" [ref=e366]
+          - generic [ref=e367]: Kitchen box
+          - strong [ref=e368]: x5
+        - generic [ref=e369]:
+          - img "Washing machine" [ref=e370]
+          - generic [ref=e371]: Washing machine
+          - strong [ref=e372]: x1
+        - generic [ref=e373]:
+          - img "Dryer" [ref=e374]
+          - generic [ref=e375]: Dryer
+          - strong [ref=e376]: x1
+        - generic [ref=e377]:
+          - img "Bathroom cabinet" [ref=e378]
+          - generic [ref=e379]: Bathroom cabinet
+          - strong [ref=e380]: x1
+        - generic [ref=e381]:
+          - img "Mirror" [ref=e382]
+          - generic [ref=e383]: Mirror
+          - strong [ref=e384]: x1
+        - generic [ref=e385]:
+          - img "Bathroom box" [ref=e386]
+          - generic [ref=e387]: Bathroom box
+          - strong [ref=e388]: x2
+      - button "Review truck fit" [ref=e389] [cursor=pointer]:
+        - text: Review truck fit
+        - generic [ref=e390]: →

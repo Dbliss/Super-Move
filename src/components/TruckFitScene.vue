@@ -89,6 +89,78 @@ const makeBox = (width, height, depth, color, position, options = {}) => {
   return mesh;
 };
 
+const makeLabelTexture = (text) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#f8fbfa';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#1e8a7c';
+  ctx.lineWidth = 16;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+  ctx.fillStyle = '#172124';
+  ctx.font = '700 46px Inter, Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const words = String(text || 'Custom item').split(/\s+/);
+  const lines = [];
+  let current = '';
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (ctx.measureText(next).width > 420 && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  }
+  if (current) lines.push(current);
+  const visibleLines = lines.slice(0, 3);
+  visibleLines.forEach((line, index) => {
+    ctx.fillText(line, canvas.width / 2, canvas.height / 2 + (index - (visibleLines.length - 1) / 2) * 54);
+  });
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+};
+
+const buildCustomBox = (item) => {
+  const width = Math.max(item.widthMeters, 0.05);
+  const height = Math.max(item.heightMeters, 0.05);
+  const depth = Math.max(item.depthMeters, 0.05);
+  const labelMaterial = new THREE.MeshStandardMaterial({
+    map: makeLabelTexture(item.name),
+    roughness: 0.72,
+    metalness: 0.03,
+  });
+  const plainMaterial = makeMaterial(0xd9ece8);
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(width, height, depth),
+    [
+      labelMaterial.clone(),
+      labelMaterial.clone(),
+      plainMaterial.clone(),
+      plainMaterial.clone(),
+      labelMaterial.clone(),
+      labelMaterial.clone(),
+    ],
+  );
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.position.y = height / 2;
+
+  const wrapper = new THREE.Group();
+  wrapper.add(mesh);
+  wrapper.rotation.y = item.rotated ? Math.PI / 2 : 0;
+  wrapper.userData.targetY = 0.08;
+  wrapper.userData.delay = item.batch * 0.48 + (item.sequence % 4) * 0.08;
+  wrapper.userData.settled = false;
+  return wrapper;
+};
+
 const buildTruck = (truck, index) => {
   const group = new THREE.Group();
   const cargoLength = truck.cargoLength;
@@ -172,7 +244,7 @@ const normalizeModel = (source, item) => {
 };
 
 const addPackedItems = async (truckData, truckMesh) => {
-  const loaded = await Promise.all(truckData.items.map((item) => loadModel(item.asset)));
+  const loaded = await Promise.all(truckData.items.map((item) => (item.custom ? null : loadModel(item.asset))));
   if (disposed) return;
 
   truckData.items.forEach((item, index) => {
@@ -182,7 +254,7 @@ const addPackedItems = async (truckData, truckMesh) => {
       depthMeters: item.depth * truckMesh.cellDepth,
       heightMeters: item.height * truckMesh.cellHeight,
     };
-    const object = normalizeModel(loaded[index], packedItem);
+    const object = item.custom ? buildCustomBox(packedItem) : normalizeModel(loaded[index], packedItem);
     if (!object) return;
 
     const x = -truckMesh.cargoLength / 2 + (item.x + item.width / 2) * truckMesh.cellLength;

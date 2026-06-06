@@ -1,0 +1,139 @@
+- main [ref=e470]:
+  - generic [ref=e471]:
+    - button "REMOVALIST ESTIMATE" [ref=e472] [cursor=pointer]:
+      - img [ref=e474]
+      - generic [ref=e478]:
+        - strong [ref=e479]: REMOVALIST
+        - generic [ref=e480]: ESTIMATE
+    - navigation "Quote steps" [ref=e481]:
+      - generic [ref=e482]:
+        - generic [ref=e483]: "1"
+        - generic [ref=e484]: Home details
+      - generic [ref=e485]:
+        - generic [ref=e486]: "2"
+        - generic [ref=e487]: Furniture
+      - generic [ref=e488]:
+        - generic [ref=e489]: "3"
+        - generic [ref=e490]: Review
+      - generic [ref=e491]:
+        - generic [ref=e492]: "4"
+        - generic [ref=e493]: Quote
+    - generic [ref=e494]:
+      - button "? Need help?" [ref=e495] [cursor=pointer]:
+        - text: "?"
+        - generic [ref=e496]: Need help?
+      - button "Reset all" [ref=e497] [cursor=pointer]
+  - generic [ref=e498]:
+    - generic [ref=e499]:
+      - generic [ref=e500]:
+        - heading "Tell us about your home" [level=1] [ref=e501]
+        - paragraph [ref=e502]: Add a few details about your space so we can give you the most accurate quote.
+      - generic [ref=e525]:
+        - article [ref=e526]:
+          - generic [ref=e529]:
+            - heading "Bedrooms" [level=3] [ref=e530]
+            - paragraph [ref=e531]: How many bedrooms are you moving?
+          - generic "Number of bedrooms" [ref=e532]:
+            - button "1 Bedroom" [ref=e533] [cursor=pointer]:
+              - generic [ref=e535]: 1 Bedroom
+            - button "2 Bedrooms" [ref=e536] [cursor=pointer]:
+              - generic [ref=e538]: 2 Bedrooms
+              - generic [ref=e539]: ✓
+            - button "3 Bedrooms" [ref=e540] [cursor=pointer]:
+              - generic [ref=e542]: 3 Bedrooms
+            - button "4 Bedrooms" [ref=e543] [cursor=pointer]:
+              - generic [ref=e545]: 4 Bedrooms
+            - button "5 Bedrooms" [ref=e546] [cursor=pointer]:
+              - generic [ref=e548]: 5 Bedrooms
+        - article [ref=e549]:
+          - generic [ref=e552]:
+            - heading "Bathrooms" [level=3] [ref=e553]
+            - paragraph [ref=e554]: How many bathrooms are in your home?
+          - generic "Number of bathrooms" [ref=e555]:
+            - button "1 Bathroom" [ref=e556] [cursor=pointer]:
+              - generic [ref=e558]: 1 Bathroom
+              - generic [ref=e559]: ✓
+            - button "2 Bathrooms" [ref=e560] [cursor=pointer]:
+              - generic [ref=e562]: 2 Bathrooms
+            - button "3 Bathrooms" [ref=e563] [cursor=pointer]:
+              - generic [ref=e565]: 3 Bathrooms
+            - button "4 Bathrooms" [ref=e566] [cursor=pointer]:
+              - generic [ref=e568]: 4 Bathrooms
+        - article [ref=e569]:
+          - generic [ref=e572]:
+            - heading "Living rooms" [level=3] [ref=e573]
+            - paragraph [ref=e574]: How many living areas do you have?
+          - generic "Living rooms" [ref=e575]:
+            - button "1 Living room" [ref=e576] [cursor=pointer]:
+              - generic [ref=e578]: 1 Living room
+              - generic [ref=e579]: ✓
+            - button "2 Living rooms" [ref=e580] [cursor=pointer]:
+              - generic [ref=e582]: 2 Living rooms
+            - button "3 Living rooms" [ref=e583] [cursor=pointer]:
+              - generic [ref=e585]: 3 Living rooms
+        - article [ref=e586]:
+          - generic [ref=e589]:
+            - heading "Dining rooms" [level=3] [ref=e590]
+            - paragraph [ref=e591]: How many dining areas do you have?
+          - generic "Dining rooms" [ref=e592]:
+            - button "0 Dining rooms" [ref=e593] [cursor=pointer]:
+              - generic [ref=e595]: 0 Dining rooms
+            - button "1 Dining room" [ref=e596] [cursor=pointer]:
+              - generic [ref=e598]: 1 Dining room
+              - generic [ref=e599]: ✓
+            - button "2 Dining rooms" [ref=e600] [cursor=pointer]:
+              - generic [ref=e602]: 2 Dining rooms
+        - article [ref=e603]:
+          - generic [ref=e606]:
+            - heading "Office / study" [level=3] [ref=e607]
+            - paragraph [ref=e608]: Do you have a home office or study?
+          - generic "Office / study" [ref=e609]:
+            - button "0 Offices" [ref=e610] [cursor=pointer]:
+              - generic [ref=e612]: 0 Offices
+              - generic [ref=e613]: ✓
+            - button "1 Office" [ref=e614] [cursor=pointer]:
+              - generic [ref=e616]: 1 Office
+            - button "2 Offices" [ref=e617] [cursor=pointer]:
+              - generic [ref=e619]: 2 Offices
+        - article [ref=e620]:
+          - generic [ref=e623]:
+            - heading "Garage / outdoor" [level=3] [ref=e624]
+            - paragraph [ref=e625]: Will you be moving items from a garage or outdoors?
+          - generic "Garage / outdoor" [ref=e626]:
+            - button "None" [ref=e627] [cursor=pointer]:
+              - generic [ref=e629]: None
+              - generic [ref=e630]: ✓
+            - button "Yes" [ref=e631] [cursor=pointer]:
+              - generic [ref=e633]: "Yes"
+      - paragraph [ref=e634]: Not sure? You can adjust these details later.
+    - complementary [ref=e635]:
+      - heading "Your home summary" [level=2] [ref=e636]
+      - generic [ref=e637]:
+        - generic [ref=e638]:
+          - generic [ref=e640]: Bedrooms
+          - strong [ref=e641]: "2"
+        - generic [ref=e642]:
+          - generic [ref=e644]: Bathrooms
+          - strong [ref=e645]: "1"
+        - generic [ref=e646]:
+          - generic [ref=e648]: Living rooms
+          - strong [ref=e649]: "1"
+        - generic [ref=e650]:
+          - generic [ref=e652]: Dining rooms
+          - strong [ref=e653]: "1"
+        - generic [ref=e654]:
+          - generic [ref=e656]: Office / study
+          - strong [ref=e657]: "0"
+        - generic [ref=e658]:
+          - generic [ref=e660]: Garage / outdoor
+          - strong [ref=e661]: "No"
+      - generic [ref=e662]:
+        - generic [ref=e663]: Estimated volume
+        - strong [ref=e664]: ~11 m³
+        - emphasis [ref=e665]: Small
+        - paragraph [ref=e666]: This helps us match you with the right truck and team size.
+      - button "Continue to furniture" [active] [ref=e667] [cursor=pointer]:
+        - text: Continue to furniture
+        - generic [ref=e668]: →
+      - button "Reset all" [ref=e669] [cursor=pointer]
+      - paragraph [ref=e670]: Your details are secure and private

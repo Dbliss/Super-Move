@@ -2,185 +2,3967 @@
   "studio": {
     "name": "Studio",
     "pieces": [
-      { "model": "floor", "gx": 0, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 1, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 0, "gy": 0, "gz": 1 },
-      { "model": "floor", "gx": 1, "gy": 0, "gz": 1 },
-
-      { "model": "wall-doorway-square", "gx": 0, "gy": 0, "gz": -1, "ry": 0 },
-      { "model": "wall-window-square",  "gx": 1, "gy": 0, "gz": -1, "ry": 0 },
-
-      { "model": "wall", "gx": 0, "gy": 0, "gz": 2, "ry": 180 },
-      { "model": "wall", "gx": 1, "gy": 0, "gz": 2, "ry": 180 },
-
-      { "model": "wall",               "gx": -1, "gy": 0, "gz": 0, "ry": 90 },
-      { "model": "wall-window-square", "gx": -1, "gy": 0, "gz": 1, "ry": 90 },
-
-      { "model": "wall", "gx": 2, "gy": 0, "gz": 0, "ry": 270 },
-      { "model": "wall", "gx": 2, "gy": 0, "gz": 1, "ry": 270 },
-
-      { "model": "wall-corner", "gx": -1, "gy": 0, "gz": -1, "ry": 0   },
-      { "model": "wall-corner", "gx":  2, "gy": 0, "gz": -1, "ry": 270 },
-      { "model": "wall-corner", "gx":  2, "gy": 0, "gz":  2, "ry": 180 },
-      { "model": "wall-corner", "gx": -1, "gy": 0, "gz":  2, "ry": 90  },
-
-      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 1 },
-      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 1 },
-
-      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  0, "ry": 90  },
-      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  1, "ry": 90  },
-      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz":  0, "ry": 270 },
-      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz":  1, "ry": 270 },
-
-      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-corner", "gx":  2, "gy": 1, "gz": -1, "ry": 270 },
-      { "model": "roof-flat-corner", "gx":  2, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz":  2, "ry": 90  }
+      {
+        "model": "floor",
+        "gx": 2,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": 2,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": 2,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": 1,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": 1,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": 2,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": 2,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": 1,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": 1,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -2,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -4.5,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "wall",
+        "gx": -4.5,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "wall",
+        "gx": -3,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 2,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 2.5,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "wall",
+        "gx": 2.5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "wall-window-square-detailed",
+        "gx": 2,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": 1,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "door-rotate-square-b",
+        "gx": 1,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -0.5,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "wall",
+        "gx": 2,
+        "gy": 0,
+        "gz": -0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 1,
+        "gy": 0,
+        "gz": -0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": -0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -0.5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "source": "furniture",
+        "model": "washerDryerStacked",
+        "gx": -0.2,
+        "gy": 0,
+        "gz": -0.2,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "shower",
+        "gx": 2.1,
+        "gy": 0,
+        "gz": -0.1,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "bathroomCabinet",
+        "gx": 1.2,
+        "gy": 0.52,
+        "gz": -0.4,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "bathroomCabinet",
+        "gx": 1,
+        "gy": 0.52,
+        "gz": -0.4,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "bathroomCabinet",
+        "gx": 0.8,
+        "gy": 0.52,
+        "gz": -0.4,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "bathroomSinkSquare",
+        "gx": 1,
+        "gy": 0,
+        "gz": -0.2,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "toilet",
+        "gx": 2.1,
+        "gy": 0,
+        "gz": 0.6,
+        "ry": 270,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "rugSquare",
+        "gx": 1.1,
+        "gy": 0.04,
+        "gz": 0.4,
+        "ry": 270,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "pottedPlant",
+        "gx": 2.2,
+        "gy": 0.04,
+        "gz": 1,
+        "ry": 270,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "pottedPlant",
+        "gx": 0.5,
+        "gy": 0.04,
+        "gz": -0.3,
+        "ry": 270,
+        "scale": 2.25
+      },
+      {
+        "model": "door-rotate-square-b",
+        "gx": -0.5,
+        "gy": 0.04,
+        "gz": 1
+      },
+      {
+        "source": "furniture",
+        "model": "trashcan",
+        "gx": 2.2,
+        "gy": 0.04,
+        "gz": 1.3,
+        "ry": 270,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "loungeDesignSofaCorner",
+        "gx": -2.1,
+        "gy": 0.04,
+        "gz": -0.1,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "cabinetTelevision",
+        "gx": -2.6,
+        "gy": 0.04,
+        "gz": 1.1,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "loungeDesignSofa",
+        "gx": -3.6,
+        "gy": 0.04,
+        "gz": 0.3,
+        "ry": 90,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "televisionModern",
+        "gx": -2.6,
+        "gy": 0.35,
+        "gz": 1.1,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "rugRectangle",
+        "gx": -2.7,
+        "gy": 0.04,
+        "gz": 0.3,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "speakerSmall",
+        "gx": -1.9,
+        "gy": 0.04,
+        "gz": 1.2,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "speakerSmall",
+        "gx": -3.2,
+        "gy": 0.04,
+        "gz": 1.2,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "tableCoffee",
+        "gx": -2.6,
+        "gy": 0.04,
+        "gz": 0.3,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "laptop",
+        "gx": -2.4,
+        "gy": 0.25,
+        "gz": 0.3,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "plantSmall2",
+        "gx": -2.7,
+        "gy": 0.23,
+        "gz": 0.4,
+        "ry": 180,
+        "scale": 2.25
+      },
+      {
+        "source": "furniture",
+        "model": "radio",
+        "gx": -2.8,
+        "gy": 0.23,
+        "gz": 0.2,
+        "ry": 180,
+        "scale": 1.25
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.5,
+        "gy": 0.24,
+        "gz": 0.4,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.5,
+        "gy": 0.24,
+        "gz": 0.2,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.5,
+        "gy": 0.24,
+        "gz": 0,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.5,
+        "gy": 0.24,
+        "gz": -0.2,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.5,
+        "gy": 0.24,
+        "gz": -0.3,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.5,
+        "gy": 0.24,
+        "gz": -0.5,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.5,
+        "gy": 0.24,
+        "gz": -0.6,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.7,
+        "gy": 0.24,
+        "gz": 0.7,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.7,
+        "gy": 0.24,
+        "gz": 0.5,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.7,
+        "gy": 0.24,
+        "gz": 0.4,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.7,
+        "gy": 0.24,
+        "gz": 0.2,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.7,
+        "gy": 0.24,
+        "gz": 0,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.7,
+        "gy": 0.24,
+        "gz": -0.1,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -2.6,
+        "gy": 0.24,
+        "gz": -0.7,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -2.4,
+        "gy": 0.24,
+        "gz": -0.7,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -2.2,
+        "gy": 0.24,
+        "gz": -0.7,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -2,
+        "gy": 0.24,
+        "gz": -0.7,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.8,
+        "gy": 0.24,
+        "gz": -0.7,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -1.6,
+        "gy": 0.24,
+        "gz": -0.7,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.6,
+        "gy": 0.24,
+        "gz": 0.7,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "pillowBlue",
+        "gx": -3.6,
+        "gy": 0.24,
+        "gz": -0.2,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "rugRectangle",
+        "gx": 1,
+        "gy": 0.04,
+        "gz": -1.6,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 1.7,
+        "gy": 0.15,
+        "gz": -0.9,
+        "ry": 180,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenStoveElectric",
+        "gx": 1.2,
+        "gy": 0.15,
+        "gz": -0.9,
+        "ry": 180,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 0.7,
+        "gy": 0.15,
+        "gz": -0.9,
+        "ry": 180,
+        "scale": 2.15
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCoffeeMachine",
+        "gx": 0.7,
+        "gy": 0.57,
+        "gz": -1,
+        "ry": 180,
+        "scale": 2.65
+      },
+      {
+        "source": "furniture",
+        "model": "bedDouble",
+        "gx": -3.6,
+        "gy": 0.01,
+        "gz": -1.9,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "cabinetBedDrawerTable",
+        "gx": -2.9,
+        "gy": 0.01,
+        "gz": -2.4,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "cabinetBedDrawerTable",
+        "gx": -4.3,
+        "gy": 0.01,
+        "gz": -2.4,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "lampRoundTable",
+        "gx": -2.9,
+        "gy": 0.24,
+        "gz": -2.4,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "pottedPlant",
+        "gx": -4.3,
+        "gy": 0.24,
+        "gz": -2.4,
+        "scale": 1.35
+      },
+      {
+        "source": "furniture",
+        "model": "rugRectangle",
+        "gx": -1.7,
+        "gy": 0.04,
+        "gz": -1.7,
+        "scale": 2.1
+      },
+      {
+        "source": "furniture",
+        "model": "table",
+        "gx": -1.7,
+        "gy": 0.04,
+        "gz": -1.7,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "chairCushion",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": -2.1,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "chairCushion",
+        "gx": -1.6,
+        "gy": 0.04,
+        "gz": -2.1,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "chairCushion",
+        "gx": -1.9,
+        "gy": 0.04,
+        "gz": -1.3,
+        "ry": 180,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "chairCushion",
+        "gx": -1.5,
+        "gy": 0.04,
+        "gz": -1.3,
+        "ry": 180,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -1.7,
+        "gy": 0.4,
+        "gz": -1.7,
+        "ry": 180,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -1.9,
+        "gy": 0.4,
+        "gz": -1.7,
+        "scale": 2.5
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetCornerInner",
+        "gx": 2.2,
+        "gy": 0.17,
+        "gz": -0.9,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenSink",
+        "gx": 2.3,
+        "gy": 0.17,
+        "gz": -1.4,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 2.3,
+        "gy": 0.17,
+        "gz": -1.8,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 2.3,
+        "gy": 0.17,
+        "gz": -2.2,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 2.3,
+        "gy": 0.17,
+        "gz": -1,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 2,
+        "gy": 0.17,
+        "gz": -0.9,
+        "ry": 180,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 1.6,
+        "gy": 0.17,
+        "gz": -0.9,
+        "ry": 180,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetDrawer",
+        "gx": 0.8,
+        "gy": 0.17,
+        "gz": -0.9,
+        "ry": 180,
+        "scale": 2.05
+      },
+      {
+        "model": "wall-window-wide-square-detailed",
+        "gx": 2.5,
+        "gy": 0,
+        "gz": -1.5
+      },
+      {
+        "model": "wall-window-square-detailed",
+        "gx": -1,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-square-detailed",
+        "gx": -4,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -2,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-square-detailed",
+        "gx": 1,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-wide-square-detailed",
+        "gx": -4.5,
+        "gy": 0,
+        "gz": -0.5
+      },
+      {
+        "model": "wall-window-wide-square-detailed",
+        "gx": -3.5,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-square-detailed",
+        "gx": 0,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "source": "furniture",
+        "model": "lampRoundFloor",
+        "gx": -4.3,
+        "gy": 0.05,
+        "gz": 1.3,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "source": "furniture",
+        "model": "hoodModern",
+        "gx": 1.2,
+        "gy": 0.67,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetUpperDouble",
+        "gx": 2.2,
+        "gy": 0.67,
+        "gz": -0.6,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetUpperDouble",
+        "gx": 1.9,
+        "gy": 0.67,
+        "gz": -0.6,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenCabinetUpperDouble",
+        "gx": 1.6,
+        "gy": 0.67,
+        "gz": -0.6,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "toaster",
+        "gx": 2.3,
+        "gy": 0.53,
+        "gz": -0.8,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenBlender",
+        "gx": 2.3,
+        "gy": 0.53,
+        "gz": -1,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "kitchenMicrowave",
+        "gx": 1.6,
+        "gy": 0.53,
+        "gz": -0.8,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "radio",
+        "gx": 2.3,
+        "gy": 0.53,
+        "gz": -2.2,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": 2.3,
+        "gy": 0.53,
+        "gz": -2,
+        "ry": 90,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "plantSmall1",
+        "gx": 2.4,
+        "gy": 0.53,
+        "gz": -1.6,
+        "ry": 90,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "plantSmall2",
+        "gx": 2.4,
+        "gy": 0.53,
+        "gz": -1.2,
+        "ry": 90,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "coatRack",
+        "gx": 0.5,
+        "gy": 0.53,
+        "gz": -2.4,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "coatRackStanding",
+        "gx": -0.4,
+        "gy": 0.04,
+        "gz": -0.7,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "bookcaseClosedWide",
+        "gx": -0.7,
+        "gy": 0.04,
+        "gz": 0.1,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -0.7,
+        "gy": 0.1,
+        "gz": -0.1,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -0.7,
+        "gy": 0.1,
+        "gz": 0,
+        "ry": 90,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -0.7,
+        "gy": 0.1,
+        "gz": 0.1,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -0.8,
+        "gy": 0.3,
+        "gz": 0.3,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -0.8,
+        "gy": 0.3,
+        "gz": 0.2,
+        "ry": 90,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "books",
+        "gx": -0.8,
+        "gy": 0.3,
+        "gz": 0.1,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "cardboardBoxOpen",
+        "gx": -0.7,
+        "gy": 0.56,
+        "gz": -0.1,
+        "ry": 270,
+        "scale": 1.55
+      },
+      {
+        "source": "furniture",
+        "model": "pottedPlant",
+        "gx": -0.7,
+        "gy": 0.56,
+        "gz": 0.3,
+        "ry": 270,
+        "scale": 1.05
+      },
+      {
+        "source": "furniture",
+        "model": "plantSmall2",
+        "gx": -0.7,
+        "gy": 0.56,
+        "gz": 0.2,
+        "ry": 270,
+        "scale": 1.85
+      },
+      {
+        "source": "furniture",
+        "model": "plantSmall2",
+        "gx": -0.7,
+        "gy": 0.4,
+        "gz": -0.1,
+        "ry": 270,
+        "scale": 1.3
+      },
+      {
+        "source": "furniture",
+        "model": "plantSmall3",
+        "gx": -0.7,
+        "gy": 0.08,
+        "gz": 0.3,
+        "ry": 270,
+        "scale": 1.3
+      },
+      {
+        "source": "furniture",
+        "model": "plantSmall3",
+        "gx": -1.7,
+        "gy": 0.08,
+        "gz": 0.7,
+        "ry": 270,
+        "scale": 1.3
+      },
+      {
+        "model": "kitchenFridgeLarge",
+        "source": "furniture",
+        "gx": 0.1,
+        "gy": 0,
+        "gz": -0.8,
+        "ry": 180,
+        "scale": 2.45
+      }
     ]
   },
 
   "apartment": {
-    "name": "Apartment",
+    "name": "apartment",
     "pieces": [
-      { "model": "floor", "gx": 0, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 1, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 2, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 0, "gy": 0, "gz": 1 },
-      { "model": "floor", "gx": 1, "gy": 0, "gz": 1 },
-      { "model": "floor", "gx": 2, "gy": 0, "gz": 1 },
-
-      { "model": "wall-doorway-square", "gx": 0, "gy": 0, "gz": -1, "ry": 0 },
-      { "model": "wall",               "gx": 1, "gy": 0, "gz": -1, "ry": 0 },
-      { "model": "wall-window-square", "gx": 2, "gy": 0, "gz": -1, "ry": 0 },
-
-      { "model": "wall", "gx": 0, "gy": 0, "gz": 2, "ry": 180 },
-      { "model": "wall", "gx": 1, "gy": 0, "gz": 2, "ry": 180 },
-      { "model": "wall", "gx": 2, "gy": 0, "gz": 2, "ry": 180 },
-
-      { "model": "wall",               "gx": -1, "gy": 0, "gz": 0, "ry": 90 },
-      { "model": "wall-window-square", "gx": -1, "gy": 0, "gz": 1, "ry": 90 },
-
-      { "model": "wall", "gx": 3, "gy": 0, "gz": 0, "ry": 270 },
-      { "model": "wall", "gx": 3, "gy": 0, "gz": 1, "ry": 270 },
-
-      { "model": "wall-corner", "gx": -1, "gy": 0, "gz": -1, "ry": 0   },
-      { "model": "wall-corner", "gx":  3, "gy": 0, "gz": -1, "ry": 270 },
-      { "model": "wall-corner", "gx":  3, "gy": 0, "gz":  2, "ry": 180 },
-      { "model": "wall-corner", "gx": -1, "gy": 0, "gz":  2, "ry": 90  },
-
-      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 0, "gy": 1, "gz": 1 },
-      { "model": "roof-flat-center", "gx": 1, "gy": 1, "gz": 1 },
-      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 1 },
-
-      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx":  0, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx":  1, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx":  2, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  0, "ry": 90  },
-      { "model": "roof-flat-side", "gx": -1, "gy": 1, "gz":  1, "ry": 90  },
-      { "model": "roof-flat-side", "gx":  3, "gy": 1, "gz":  0, "ry": 270 },
-      { "model": "roof-flat-side", "gx":  3, "gy": 1, "gz":  1, "ry": 270 },
-
-      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-corner", "gx":  3, "gy": 1, "gz": -1, "ry": 270 },
-      { "model": "roof-flat-corner", "gx":  3, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-corner", "gx": -1, "gy": 1, "gz":  2, "ry": 90  }
+      {
+        "model": "floor",
+        "gx": -5,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": -5,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "floor",
+        "gx": -5,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -5,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -5,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "floor",
+        "gx": -4,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -3,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "wall",
+        "gx": -5.5,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "wall",
+        "gx": -5.5,
+        "gy": 0,
+        "gz": 2
+      },
+      {
+        "model": "wall",
+        "gx": -5.5,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "wall",
+        "gx": -5.5,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "wall",
+        "gx": -4,
+        "gy": 0,
+        "gz": 3.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -3,
+        "gy": 0,
+        "gz": 3.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -2,
+        "gy": 0,
+        "gz": 3.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": 3.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 3.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0.5,
+        "gy": 0,
+        "gz": 1
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -5,
+        "gy": 0,
+        "gz": 3.5,
+        "ry": 270
+      },
+      {
+        "model": "door-rotate-square-b",
+        "gx": -5,
+        "gy": 0,
+        "gz": 3.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -5,
+        "gy": 0,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -4,
+        "gy": 0,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -3,
+        "gy": 0,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": -2
+      },
+      {
+        "model": "wall",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": -1
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": -0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": -0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 1.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -1.5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -2,
+        "gy": 0,
+        "gz": -0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "wall",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "wall-window-wide-round-detailed",
+        "gx": 0.5,
+        "gy": 0,
+        "gz": -1.5
+      },
+      {
+        "model": "wall",
+        "gx": -4,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": 0.5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": -5,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": -3,
+        "gy": 0,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "door-rotate-square-b",
+        "gx": -1.5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "door-rotate-square-b",
+        "gx": -2,
+        "gy": 0,
+        "gz": -0.5,
+        "ry": 270
+      },
+      {
+        "model": "door-rotate-square-b",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": 0
+      },
+      {
+        "model": "wall-window-wide-round-detailed",
+        "gx": -5.5,
+        "gy": 0,
+        "gz": -0.5
+      },
+      {
+        "model": "wall-window-wide-round-detailed",
+        "gx": 0.5,
+        "gy": 0,
+        "gz": 2.5
+      },
+      {
+        "model": "bedDouble",
+        "source": "furniture",
+        "gx": -4,
+        "gy": 0.02,
+        "gz": -1.8,
+        "scale": 2.2
+      },
+      {
+        "model": "sideTable",
+        "source": "furniture",
+        "gx": -3,
+        "gy": 0.02,
+        "gz": -2.3,
+        "scale": 2.2
+      },
+      {
+        "model": "sideTable",
+        "source": "furniture",
+        "gx": -5,
+        "gy": 0.02,
+        "gz": -2.3,
+        "scale": 2.2
+      },
+      {
+        "model": "pottedPlant",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.37,
+        "gz": -2.3,
+        "scale": 1.5
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -3,
+        "gy": 0.37,
+        "gz": -2.3,
+        "scale": 2.1
+      },
+      {
+        "model": "radio",
+        "source": "furniture",
+        "gx": -5.1,
+        "gy": 0.37,
+        "gz": -2.3,
+        "scale": 1.55
+      },
+      {
+        "model": "lampSquareTable",
+        "source": "furniture",
+        "gx": -4.8,
+        "gy": 0.37,
+        "gz": -2.3,
+        "scale": 1.55
+      },
+      {
+        "model": "desk",
+        "source": "furniture",
+        "gx": -4.8,
+        "gy": 0.02,
+        "gz": 0.2,
+        "ry": 180,
+        "scale": 2.4
+      },
+      {
+        "model": "computerScreen",
+        "source": "furniture",
+        "gx": -4.7,
+        "gy": 0.41,
+        "gz": 0.3,
+        "ry": 180,
+        "scale": 2.4
+      },
+      {
+        "model": "computerKeyboard",
+        "source": "furniture",
+        "gx": -4.7,
+        "gy": 0.41,
+        "gz": 0.1,
+        "ry": 180,
+        "scale": 2.4
+      },
+      {
+        "model": "computerMouse",
+        "source": "furniture",
+        "gx": -5,
+        "gy": 0.41,
+        "gz": 0.1,
+        "ry": 180,
+        "scale": 2.4
+      },
+      {
+        "model": "chairDesk",
+        "source": "furniture",
+        "gx": -4.8,
+        "gy": 0.04,
+        "gz": -0.2,
+        "scale": 2.4
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -4,
+        "gy": 0.03,
+        "gz": -1.1,
+        "scale": 3.2
+      },
+      {
+        "model": "rugRound",
+        "source": "furniture",
+        "gx": -1.5,
+        "gy": 0.04,
+        "gz": -1.6,
+        "scale": 2.45
+      },
+      {
+        "model": "pottedPlant",
+        "source": "furniture",
+        "gx": -3.9,
+        "gy": 0.04,
+        "gz": 0.3,
+        "scale": 3.35
+      },
+      {
+        "model": "bookcaseClosedWide",
+        "source": "furniture",
+        "gx": -2.7,
+        "gy": 0.02,
+        "gz": -1.3,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "coatRackStanding",
+        "source": "furniture",
+        "gx": -2.7,
+        "gy": 0.02,
+        "gz": -0.6,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.13,
+        "gz": -1.6,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.13,
+        "gz": -1,
+        "ry": 90,
+        "scale": 2.3
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.13,
+        "gz": -1.2,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.36,
+        "gz": -1.2,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.36,
+        "gz": -1.6,
+        "ry": 90,
+        "scale": 2.3
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.36,
+        "gz": -1.5,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "radio",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.58,
+        "gz": -1.6,
+        "ry": 270,
+        "scale": 1.1
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": -2.7,
+        "gy": 0.58,
+        "gz": -1,
+        "ry": 270,
+        "scale": 1.6
+      },
+      {
+        "model": "plantSmall2",
+        "source": "furniture",
+        "gx": -2.8,
+        "gy": 0.58,
+        "gz": -1.1,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "lampSquareFloor",
+        "source": "furniture",
+        "gx": -2.3,
+        "gy": 0.04,
+        "gz": -2.3,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0.04,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0.04,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": -2.5,
+        "ry": 270
+      },
+      {
+        "model": "bedBunk",
+        "source": "furniture",
+        "gx": -0.3,
+        "gy": 0.04,
+        "gz": -2.1,
+        "ry": 270,
+        "scale": 2.3
+      },
+      {
+        "model": "desk",
+        "source": "furniture",
+        "gx": -0.1,
+        "gy": 0.04,
+        "gz": -0.8,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "desk",
+        "source": "furniture",
+        "gx": -1.6,
+        "gy": 0.04,
+        "gz": -2.2,
+        "scale": 2
+      },
+      {
+        "model": "laptop",
+        "source": "furniture",
+        "gx": 0.1,
+        "gy": 0.36,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "chairDesk",
+        "source": "furniture",
+        "gx": -0.1,
+        "gy": 0.04,
+        "gz": -1.1,
+        "scale": 2
+      },
+      {
+        "model": "chairDesk",
+        "source": "furniture",
+        "gx": -1.5,
+        "gy": 0.04,
+        "gz": -1.9,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "laptop",
+        "source": "furniture",
+        "gx": -1.4,
+        "gy": 0.37,
+        "gz": -2.2,
+        "scale": 2
+      },
+      {
+        "model": "bookcaseClosed",
+        "source": "furniture",
+        "gx": -1.4,
+        "gy": 0.04,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "bookcaseClosed",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.04,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "radio",
+        "source": "furniture",
+        "gx": -0.3,
+        "gy": 0.36,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -0.9,
+        "gy": 0.36,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.36,
+        "gz": -0.7,
+        "scale": 2
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -1.5,
+        "gy": 0.36,
+        "gz": -0.7,
+        "scale": 2
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -1.4,
+        "gy": 0.36,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 2
+      },
+      {
+        "model": "pottedPlant",
+        "source": "furniture",
+        "gx": -1.8,
+        "gy": 0.36,
+        "gz": -2.2,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": -1.7,
+        "gy": 0.36,
+        "gz": -2.2,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": -1.8,
+        "gy": 0.36,
+        "gz": -2.1,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "model": "plantSmall3",
+        "source": "furniture",
+        "gx": -0.9,
+        "gy": 0.7,
+        "gz": -0.7,
+        "ry": 180,
+        "scale": 2.95
+      },
+      {
+        "model": "bathroomSinkSquare",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.24,
+        "gz": 0.3,
+        "ry": 180,
+        "scale": 1.7
+      },
+      {
+        "model": "shower",
+        "source": "furniture",
+        "gx": -0.4,
+        "gy": 0.24,
+        "gz": 0.2,
+        "ry": 180,
+        "scale": 1.7
+      },
+      {
+        "model": "toilet",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.16,
+        "gz": 0.3,
+        "ry": 180,
+        "scale": 1.7
+      },
+      {
+        "model": "trashcan",
+        "source": "furniture",
+        "gx": 0,
+        "gy": 0.16,
+        "gz": 0.3,
+        "ry": 180,
+        "scale": 1.7
+      },
+      {
+        "model": "rugSquare",
+        "source": "furniture",
+        "gx": -1.1,
+        "gy": 0.16,
+        "gz": 0,
+        "ry": 180,
+        "scale": 0.95
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -0.4,
+        "gy": 0.16,
+        "gz": -0.2,
+        "ry": 180,
+        "scale": 0.7
+      },
+      {
+        "model": "bathroomSinkSquare",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.16,
+        "gz": 1.2,
+        "ry": 270,
+        "scale": 1.45
+      },
+      {
+        "model": "bathroomMirror",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.67,
+        "gz": 0.4,
+        "ry": 180,
+        "scale": 1.5
+      },
+      {
+        "model": "bathroomMirror",
+        "source": "furniture",
+        "gx": 0.4,
+        "gy": 0.67,
+        "gz": 1.2,
+        "ry": 270,
+        "scale": 1.5
+      },
+      {
+        "model": "washerDryerStacked",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.09,
+        "gz": 0.8,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "model": "washerDryerStacked",
+        "source": "furniture",
+        "gx": -3.7,
+        "gy": 0.09,
+        "gz": -0.1,
+        "ry": 270,
+        "scale": 2.05
+      },
+      {
+        "model": "loungeSofaLong",
+        "source": "furniture",
+        "gx": -3.7,
+        "gy": 0.09,
+        "gz": 1.3,
+        "scale": 2.3
+      },
+      {
+        "model": "loungeSofa",
+        "source": "furniture",
+        "gx": -5,
+        "gy": 0.09,
+        "gz": 2,
+        "ry": 90,
+        "scale": 2.3
+      },
+      {
+        "model": "tableCoffeeSquare",
+        "source": "furniture",
+        "gx": -4.9,
+        "gy": 0.09,
+        "gz": 1.1,
+        "ry": 90,
+        "scale": 2.3
+      },
+      {
+        "model": "cabinetTelevision",
+        "source": "furniture",
+        "gx": -3.9,
+        "gy": 0.09,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 2.3
+      },
+      {
+        "model": "televisionModern",
+        "source": "furniture",
+        "gx": -3.9,
+        "gy": 0.39,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 2.3
+      },
+      {
+        "model": "speaker",
+        "source": "furniture",
+        "gx": -3.3,
+        "gy": 0.05,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 2.3
+      },
+      {
+        "model": "speaker",
+        "source": "furniture",
+        "gx": -4.5,
+        "gy": 0.05,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 2.3
+      },
+      {
+        "model": "rugSquare",
+        "source": "furniture",
+        "gx": -3.9,
+        "gy": 0.04,
+        "gz": 2.2,
+        "ry": 180,
+        "scale": 3
+      },
+      {
+        "model": "lampRoundFloor",
+        "source": "furniture",
+        "gx": -2.7,
+        "gy": 0.04,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 2.2
+      },
+      {
+        "model": "lampRoundTable",
+        "source": "furniture",
+        "gx": -5,
+        "gy": 0.32,
+        "gz": 1,
+        "ry": 180,
+        "scale": 2.2
+      },
+      {
+        "model": "radio",
+        "source": "furniture",
+        "gx": -5,
+        "gy": 0.32,
+        "gz": 1.2,
+        "ry": 90,
+        "scale": 1.25
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -5.1,
+        "gy": 0.32,
+        "gz": 2.3,
+        "ry": 90,
+        "scale": 1.25
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -5.1,
+        "gy": 0.32,
+        "gz": 2.2,
+        "ry": 90,
+        "scale": 1.25
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -5.1,
+        "gy": 0.32,
+        "gz": 1.8,
+        "ry": 90,
+        "scale": 1.25
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -5.1,
+        "gy": 0.32,
+        "gz": 1.7,
+        "ry": 90,
+        "scale": 1.25
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -4,
+        "gy": 0.32,
+        "gz": 1,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -3.8,
+        "gy": 0.32,
+        "gz": 1,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -3.4,
+        "gy": 0.32,
+        "gz": 1,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "pillow",
+        "source": "furniture",
+        "gx": -3.6,
+        "gy": 0.32,
+        "gz": 1,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "pottedPlant",
+        "source": "furniture",
+        "gx": -2.9,
+        "gy": 0.05,
+        "gz": 0.8,
+        "ry": 180,
+        "scale": 2.85
+      },
+      {
+        "model": "kitchenCabinetCornerInner",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.05,
+        "gz": 3.2,
+        "ry": 270,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenSink",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.05,
+        "gz": 2.8,
+        "ry": 270,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinet",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.05,
+        "gz": 2.4,
+        "ry": 270,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinet",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.05,
+        "gz": 2,
+        "ry": 270,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenStoveElectric",
+        "source": "furniture",
+        "gx": -0.6,
+        "gy": 0.05,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinet",
+        "source": "furniture",
+        "gx": -0.2,
+        "gy": 0.05,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinetDrawer",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.05,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenFridgeBuiltIn",
+        "source": "furniture",
+        "gx": -1.4,
+        "gy": 0.05,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenFridgeLarge",
+        "source": "furniture",
+        "gx": -1.9,
+        "gy": 0.03,
+        "gz": 3.2,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "trashcan",
+        "source": "furniture",
+        "gx": -2.3,
+        "gy": 0.03,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenMicrowave",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.37,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenBlender",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.37,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "toaster",
+        "source": "furniture",
+        "gx": 0.1,
+        "gy": 0.37,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCoffeeMachine",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.37,
+        "gz": 3.1,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinetUpperDouble",
+        "source": "furniture",
+        "gx": -0.2,
+        "gy": 0.61,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinetUpperDouble",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.61,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinetUpperDouble",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.61,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "kitchenCabinetUpperDouble",
+        "source": "furniture",
+        "gx": -1.4,
+        "gy": 0.61,
+        "gz": 3.3,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.39,
+        "gz": 1.9,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "plantSmall2",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.39,
+        "gz": 2,
+        "ry": 180,
+        "scale": 2.35
+      },
+      {
+        "model": "pottedPlant",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.39,
+        "gz": 2.5,
+        "ry": 180,
+        "scale": 0.8
+      },
+      {
+        "model": "rugSquare",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": 0.1,
+        "scale": 1.6
+      },
+      {
+        "model": "rugRounded",
+        "source": "furniture",
+        "gx": -1.5,
+        "gy": 0.04,
+        "gz": 1.6,
+        "scale": 2.2
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.7,
+        "gy": 0.04,
+        "gz": 1.3,
+        "scale": 2.2
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.3,
+        "gy": 0.04,
+        "gz": 1.3,
+        "scale": 2.2
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.3,
+        "gy": 0.04,
+        "gz": 1.9,
+        "ry": 180,
+        "scale": 2.2
+      },
+      {
+        "model": "tableCloth",
+        "source": "furniture",
+        "gx": -1.5,
+        "gy": 0.04,
+        "gz": 1.6,
+        "scale": 2.2
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.7,
+        "gy": 0.04,
+        "gz": 1.9,
+        "ry": 180,
+        "scale": 2.2
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -1.6,
+        "gy": 0.36,
+        "gz": 1.7,
+        "ry": 180,
+        "scale": 2.2
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": -1.4,
+        "gy": 0.36,
+        "gz": 1.7,
+        "scale": 2.2
+      },
+      {
+        "model": "hoodModern",
+        "source": "furniture",
+        "gx": -0.6,
+        "gy": 0.65,
+        "gz": 3.4,
+        "ry": 180,
+        "scale": 1.7
+      }
     ]
   },
 
   "townhouse": {
-    "name": "Townhouse",
+    "name": "Town House",
     "pieces": [
-      { "model": "floor", "gx": 0, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 1, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 2, "gy": 0, "gz": 0 },
-      { "model": "floor", "gx": 0, "gy": 0, "gz": 1 },
-      { "model": "floor", "gx": 1, "gy": 0, "gz": 1 },
-      { "model": "floor", "gx": 2, "gy": 0, "gz": 1 },
-
-      { "model": "wall-doorway-square", "gx": 0, "gy": 0, "gz": -1, "ry": 0 },
-      { "model": "wall",               "gx": 1, "gy": 0, "gz": -1, "ry": 0 },
-      { "model": "wall-window-square", "gx": 2, "gy": 0, "gz": -1, "ry": 0 },
-
-      { "model": "wall", "gx": 0, "gy": 0, "gz": 2, "ry": 180 },
-      { "model": "wall", "gx": 1, "gy": 0, "gz": 2, "ry": 180 },
-      { "model": "wall", "gx": 2, "gy": 0, "gz": 2, "ry": 180 },
-
-      { "model": "wall",               "gx": -1, "gy": 0, "gz": 0, "ry": 90 },
-      { "model": "wall-window-square", "gx": -1, "gy": 0, "gz": 1, "ry": 90 },
-
-      { "model": "wall", "gx": 3, "gy": 0, "gz": 0, "ry": 270 },
-      { "model": "wall", "gx": 3, "gy": 0, "gz": 1, "ry": 270 },
-
-      { "model": "wall-corner", "gx": -1, "gy": 0, "gz": -1, "ry": 0   },
-      { "model": "wall-corner", "gx":  3, "gy": 0, "gz": -1, "ry": 270 },
-      { "model": "wall-corner", "gx":  3, "gy": 0, "gz":  2, "ry": 180 },
-      { "model": "wall-corner", "gx": -1, "gy": 0, "gz":  2, "ry": 90  },
-
-      { "model": "stairs-open", "gx": 2, "gy": 0, "gz": 0, "ry": 90 },
-
-      { "model": "floor", "gx": 0, "gy": 1, "gz": 0 },
-      { "model": "floor", "gx": 1, "gy": 1, "gz": 0 },
-      { "model": "floor", "gx": 0, "gy": 1, "gz": 1 },
-      { "model": "floor", "gx": 1, "gy": 1, "gz": 1 },
-
-      { "model": "wall-window-square", "gx": 0, "gy": 1, "gz": -1, "ry": 0 },
-      { "model": "wall-window-square", "gx": 1, "gy": 1, "gz": -1, "ry": 0 },
-
-      { "model": "wall", "gx": 0, "gy": 1, "gz": 2, "ry": 180 },
-      { "model": "wall", "gx": 1, "gy": 1, "gz": 2, "ry": 180 },
-
-      { "model": "wall", "gx": -1, "gy": 1, "gz": 0, "ry": 90 },
-      { "model": "wall", "gx": -1, "gy": 1, "gz": 1, "ry": 90 },
-
-      { "model": "wall", "gx": 2, "gy": 1, "gz": 0, "ry": 270 },
-      { "model": "wall", "gx": 2, "gy": 1, "gz": 1, "ry": 270 },
-
-      { "model": "wall-corner", "gx": -1, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "wall-corner", "gx":  2, "gy": 1, "gz": -1, "ry": 270 },
-      { "model": "wall-corner", "gx":  2, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "wall-corner", "gx": -1, "gy": 1, "gz":  2, "ry": 90  },
-
-      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 2, "gy": 1, "gz": 1 },
-
-      { "model": "roof-flat-side", "gx": 2, "gy": 1, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx": 2, "gy": 1, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx": 3, "gy": 1, "gz":  0, "ry": 270 },
-      { "model": "roof-flat-side", "gx": 3, "gy": 1, "gz":  1, "ry": 270 },
-
-      { "model": "roof-flat-corner", "gx": 3, "gy": 1, "gz": -1, "ry": 270 },
-      { "model": "roof-flat-corner", "gx": 3, "gy": 1, "gz":  2, "ry": 180 },
-
-      { "model": "roof-flat-center", "gx": 0, "gy": 2, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 1, "gy": 2, "gz": 0 },
-      { "model": "roof-flat-center", "gx": 0, "gy": 2, "gz": 1 },
-      { "model": "roof-flat-center", "gx": 1, "gy": 2, "gz": 1 },
-
-      { "model": "roof-flat-side", "gx":  0, "gy": 2, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx":  1, "gy": 2, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-side", "gx":  0, "gy": 2, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx":  1, "gy": 2, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-side", "gx": -1, "gy": 2, "gz":  0, "ry": 90  },
-      { "model": "roof-flat-side", "gx": -1, "gy": 2, "gz":  1, "ry": 90  },
-      { "model": "roof-flat-side", "gx":  2, "gy": 2, "gz":  0, "ry": 270 },
-      { "model": "roof-flat-side", "gx":  2, "gy": 2, "gz":  1, "ry": 270 },
-
-      { "model": "roof-flat-corner", "gx": -1, "gy": 2, "gz": -1, "ry": 0   },
-      { "model": "roof-flat-corner", "gx":  2, "gy": 2, "gz": -1, "ry": 270 },
-      { "model": "roof-flat-corner", "gx":  2, "gy": 2, "gz":  2, "ry": 180 },
-      { "model": "roof-flat-corner", "gx": -1, "gy": 2, "gz":  2, "ry": 90  }
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 1,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 1,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 1,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 2,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 2,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 2,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 4,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 3,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 3,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 4,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 4,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 3,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 4,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 5,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 5,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 5,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 6,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 6,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 6,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 6,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 0,
+        "gz": 7,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 7,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 0,
+        "gz": 7,
+        "ry": 180
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 0,
+        "gz": 7,
+        "ry": 180
+      },
+      {
+        "model": "wall",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": 7
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": 7.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 7.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0.5,
+        "gy": 0,
+        "gz": 7
+      },
+      {
+        "model": "wall",
+        "gx": -2,
+        "gy": 0,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -2,
+        "gy": 0,
+        "gz": 7.5,
+        "ry": 270
+      },
+      {
+        "model": "door-rotate-square-b",
+        "gx": -2,
+        "gy": 0,
+        "gz": 7.5,
+        "ry": 270
+      },
+      {
+        "model": "stairs-open",
+        "gx": -0.5,
+        "gy": 0,
+        "gz": 7.1,
+        "ry": 90
+      },
+      {
+        "model": "wall",
+        "gx": 0.5,
+        "gy": 1,
+        "gz": 7
+      },
+      {
+        "model": "wall",
+        "gx": 0.5,
+        "gy": 1,
+        "gz": 6
+      },
+      {
+        "model": "wall",
+        "gx": 0.5,
+        "gy": 1,
+        "gz": 5
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 1,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -2.5,
+        "gy": 1,
+        "gz": 3
+      },
+      {
+        "model": "wall",
+        "gx": -2.5,
+        "gy": 1,
+        "gz": 4
+      },
+      {
+        "model": "wall",
+        "gx": -2.5,
+        "gy": 1,
+        "gz": 5
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": -2,
+        "gy": 1,
+        "gz": 7.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": 6.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 6.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -1.5,
+        "gy": 0,
+        "gz": 6
+      },
+      {
+        "model": "wall",
+        "gx": -1.5,
+        "gy": 0,
+        "gz": 5
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": 4.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 4.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": -1.5,
+        "gy": 0,
+        "gz": 3
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 0,
+        "gz": 2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 0,
+        "gz": 2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -1.5,
+        "gy": 0,
+        "gz": 4
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -2,
+        "gy": 0,
+        "gz": 2.5,
+        "ry": 270
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": 3.2,
+        "ry": 270,
+        "scale": 1.35
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": 4.2,
+        "ry": 270,
+        "scale": 1.35
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": 5.2,
+        "ry": 270,
+        "scale": 1.35
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": 6.2,
+        "ry": 270,
+        "scale": 1.35
+      },
+      {
+        "model": "rugSquare",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.04,
+        "gz": 7,
+        "ry": 270,
+        "scale": 1.35
+      },
+      {
+        "model": "rugRound",
+        "source": "furniture",
+        "gx": -0.5,
+        "gy": 0.04,
+        "gz": 5.5,
+        "ry": 90,
+        "scale": 3.2
+      },
+      {
+        "model": "bedDouble",
+        "source": "furniture",
+        "gx": -0.2,
+        "gy": 0.04,
+        "gz": 1.5,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "model": "cabinetBedDrawerTable",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.04,
+        "gz": 0.8,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "model": "cabinetBedDrawerTable",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.04,
+        "gz": 2.2,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "model": "desk",
+        "source": "furniture",
+        "gx": -1.9,
+        "gy": 0.04,
+        "gz": 0.7,
+        "scale": 2.15
+      },
+      {
+        "model": "computerScreen",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.38,
+        "gz": 0.7,
+        "scale": 2.15
+      },
+      {
+        "model": "computerKeyboard",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 0.38,
+        "gz": 0.8,
+        "scale": 2.15
+      },
+      {
+        "model": "computerMouse",
+        "source": "furniture",
+        "gx": -1.7,
+        "gy": 0.38,
+        "gz": 0.8,
+        "scale": 2.15
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": -1.6,
+        "gy": 0.38,
+        "gz": 0.6,
+        "scale": 2.15
+      },
+      {
+        "model": "pottedPlant",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.25,
+        "gz": 2.2,
+        "scale": 1.3
+      },
+      {
+        "model": "lampSquareTable",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.28,
+        "gz": 0.8,
+        "scale": 1.3
+      },
+      {
+        "model": "rugRound",
+        "source": "furniture",
+        "gx": -1.6,
+        "gy": 0.04,
+        "gz": 1.6,
+        "scale": 2.7
+      },
+      {
+        "model": "chairDesk",
+        "source": "furniture",
+        "gx": -1.9,
+        "gy": 0.04,
+        "gz": 1,
+        "ry": 180,
+        "scale": 2.7
+      },
+      {
+        "model": "trashcan",
+        "source": "furniture",
+        "gx": -1.3,
+        "gy": 0.04,
+        "gz": 0.7,
+        "scale": 1.6
+      },
+      {
+        "model": "bedBunk",
+        "source": "furniture",
+        "gx": 0,
+        "gy": 0.04,
+        "gz": 4.8,
+        "ry": 270,
+        "scale": 1.6
+      },
+      {
+        "model": "desk",
+        "source": "furniture",
+        "gx": -1.1,
+        "gy": 0.04,
+        "gz": 4.7,
+        "scale": 1.6
+      },
+      {
+        "model": "desk",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.04,
+        "gz": 6,
+        "ry": 270,
+        "scale": 1.6
+      },
+      {
+        "model": "chairDesk",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 0.04,
+        "gz": 4.9,
+        "ry": 180,
+        "scale": 1.6
+      },
+      {
+        "model": "chairDesk",
+        "source": "furniture",
+        "gx": 0.1,
+        "gy": 0.04,
+        "gz": 6.1,
+        "ry": 90,
+        "scale": 1.6
+      },
+      {
+        "model": "lampSquareFloor",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.04,
+        "gz": 5.2,
+        "ry": 90,
+        "scale": 1.6
+      },
+      {
+        "model": "lampSquareFloor",
+        "source": "furniture",
+        "gx": -1.4,
+        "gy": 0.04,
+        "gz": 6.4,
+        "ry": 90,
+        "scale": 1.6
+      },
+      {
+        "model": "shower",
+        "source": "furniture",
+        "gx": -1.2,
+        "gy": 0.04,
+        "gz": 2.8,
+        "ry": 90,
+        "scale": 1.9
+      },
+      {
+        "model": "bathtub",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 0.04,
+        "gz": 3.2,
+        "ry": 90,
+        "scale": 1.9
+      },
+      {
+        "model": "toilet",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.04,
+        "gz": 4,
+        "ry": 270,
+        "scale": 1.9
+      },
+      {
+        "model": "bathroomSinkSquare",
+        "source": "furniture",
+        "gx": -0.5,
+        "gy": 0.04,
+        "gz": 2.7,
+        "scale": 1.9
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -0.5,
+        "gy": 0.04,
+        "gz": 3.3,
+        "ry": 90,
+        "scale": 1.35
+      },
+      {
+        "model": "bathroomMirror",
+        "source": "furniture",
+        "gx": -0.5,
+        "gy": 0.58,
+        "gz": 2.6,
+        "scale": 2.1
+      },
+      {
+        "model": "trashcan",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 0.04,
+        "gz": 4.3,
+        "ry": 270,
+        "scale": 1.4
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": 0.5,
+        "gy": 0.04,
+        "gz": 4
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": 0.5,
+        "gy": 0.04,
+        "gz": 3
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 1,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 1.04,
+        "gz": 1,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 1.04,
+        "gz": 1,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 1.04,
+        "gz": 2,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 1.04,
+        "gz": 2,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 2,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 3,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 1.04,
+        "gz": 3,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 1.04,
+        "gz": 3,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 1.04,
+        "gz": 4,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 1.04,
+        "gz": 4,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 4,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 5,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 1.04,
+        "gz": 5,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 1.04,
+        "gz": 5,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": 0,
+        "gy": 1.04,
+        "gz": 6,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -1,
+        "gy": 1.04,
+        "gz": 6,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 6,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 7,
+        "ry": 270
+      },
+      {
+        "model": "floor",
+        "gx": -2,
+        "gy": 1.04,
+        "gz": 6,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": 0.5,
+        "gy": 0,
+        "gz": 5.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": 0.5,
+        "gy": 0,
+        "gz": 1.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": 1.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": 3.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -2.5,
+        "gy": 0,
+        "gz": 5.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -0.5,
+        "gy": 1,
+        "gz": 7.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-low",
+        "gx": -1,
+        "gy": 1,
+        "gz": 6.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-low",
+        "gx": -1.5,
+        "gy": 1,
+        "gz": 7
+      },
+      {
+        "model": "wall",
+        "gx": -1,
+        "gy": 1,
+        "gz": 2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 1,
+        "gz": 2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-square",
+        "gx": -2,
+        "gy": 1,
+        "gz": 2.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-doorway-wide-square",
+        "gx": -0.5,
+        "gy": 1,
+        "gz": 1.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -1.5,
+        "gy": 1,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -2.5,
+        "gy": 1,
+        "gz": 1.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -0.5,
+        "gy": 0,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall-window-round-detailed",
+        "gx": 0.5,
+        "gy": 1,
+        "gz": 2
+      },
+      {
+        "model": "wall",
+        "gx": 0,
+        "gy": 1,
+        "gz": 0.5,
+        "ry": 270
+      },
+      {
+        "model": "wall",
+        "gx": 0.5,
+        "gy": 1,
+        "gz": 1
+      },
+      {
+        "model": "shower",
+        "source": "furniture",
+        "gx": 0.1,
+        "gy": 1,
+        "gz": 0.8,
+        "ry": 270,
+        "scale": 2.15
+      },
+      {
+        "model": "toilet",
+        "source": "furniture",
+        "gx": -0.2,
+        "gy": 1.1,
+        "gz": 2.2,
+        "ry": 180,
+        "scale": 1.85
+      },
+      {
+        "model": "bathroomSink",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 1.1,
+        "gz": 1.4,
+        "ry": 270,
+        "scale": 1.85
+      },
+      {
+        "model": "bathroomCabinet",
+        "source": "furniture",
+        "gx": 0.4,
+        "gy": 1.57,
+        "gz": 1.3,
+        "ry": 270,
+        "scale": 1.85
+      },
+      {
+        "model": "bathroomCabinet",
+        "source": "furniture",
+        "gx": 0.4,
+        "gy": 1.57,
+        "gz": 1.5,
+        "ry": 270,
+        "scale": 1.85
+      },
+      {
+        "model": "pottedPlant",
+        "source": "furniture",
+        "gx": 0.3,
+        "gy": 1.12,
+        "gz": 2.3,
+        "ry": 270,
+        "scale": 2.4
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": 0,
+        "gy": 1.08,
+        "gz": 1.5,
+        "ry": 270,
+        "scale": 0.95
+      },
+      {
+        "model": "bedDouble",
+        "source": "furniture",
+        "gx": -1.5,
+        "gy": 1.08,
+        "gz": 1,
+        "scale": 1.75
+      },
+      {
+        "model": "sideTableDrawers",
+        "source": "furniture",
+        "gx": -2.2,
+        "gy": 1.08,
+        "gz": 0.7,
+        "scale": 1.75
+      },
+      {
+        "model": "sideTableDrawers",
+        "source": "furniture",
+        "gx": -0.8,
+        "gy": 1.08,
+        "gz": 0.7,
+        "scale": 1.75
+      },
+      {
+        "model": "desk",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 1.08,
+        "gz": 2.3,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "chairDesk",
+        "source": "furniture",
+        "gx": -1.1,
+        "gy": 1.08,
+        "gz": 2.1,
+        "scale": 1.75
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -0.7,
+        "gy": 1.37,
+        "gz": 0.7,
+        "scale": 1.75
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.3,
+        "gy": 1.37,
+        "gz": 0.7,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "lampSquareTable",
+        "source": "furniture",
+        "gx": -2.1,
+        "gy": 1.37,
+        "gz": 0.7,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "lampSquareTable",
+        "source": "furniture",
+        "gx": -0.9,
+        "gy": 1.37,
+        "gz": 0.7,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "laptop",
+        "source": "furniture",
+        "gx": -1.1,
+        "gy": 1.37,
+        "gz": 2.3,
+        "ry": 180,
+        "scale": 1.75
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": -0.8,
+        "gy": 1.37,
+        "gz": 2.3,
+        "ry": 180,
+        "scale": 2.6
+      },
+      {
+        "model": "rugRectangle",
+        "source": "furniture",
+        "gx": -1.5,
+        "gy": 1.08,
+        "gz": 1.4,
+        "ry": 180,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenCabinetCornerInner",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 1.08,
+        "gz": 2.8,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenStoveElectric",
+        "source": "furniture",
+        "gx": -0.2,
+        "gy": 1.08,
+        "gz": 2.8,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenStoveElectric",
+        "source": "furniture",
+        "gx": -0.6,
+        "gy": 1.08,
+        "gz": 2.8,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenFridgeLarge",
+        "source": "furniture",
+        "gx": -1.1,
+        "gy": 1.08,
+        "gz": 2.9,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenCabinetDrawer",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 1.08,
+        "gz": 3.2,
+        "ry": 270,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenSink",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 1.08,
+        "gz": 3.6,
+        "ry": 270,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenCabinet",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 1.08,
+        "gz": 4,
+        "ry": 270,
+        "scale": 1.95
+      },
+      {
+        "model": "kitchenCabinet",
+        "source": "furniture",
+        "gx": 0.2,
+        "gy": 1.08,
+        "gz": 4.4,
+        "ry": 270,
+        "scale": 1.95
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": 0.5,
+        "gy": 0.98,
+        "gz": 3.5
+      },
+      {
+        "model": "wall-window-wide-round",
+        "gx": -2.5,
+        "gy": 0.98,
+        "gz": 6.5
+      },
+      {
+        "model": "loungeSofa",
+        "source": "furniture",
+        "gx": 0.1,
+        "gy": 1.08,
+        "gz": 5.3,
+        "ry": 270,
+        "scale": 2.55
+      },
+      {
+        "model": "loungeSofaCorner",
+        "source": "furniture",
+        "gx": -1.6,
+        "gy": 1.08,
+        "gz": 5.3,
+        "ry": 90,
+        "scale": 2.55
+      },
+      {
+        "model": "tableCoffee",
+        "source": "furniture",
+        "gx": -1.2,
+        "gy": 1.08,
+        "gz": 5.7,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "cabinetTelevision",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 1.08,
+        "gz": 6.4,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "televisionModern",
+        "source": "furniture",
+        "gx": -1,
+        "gy": 1.33,
+        "gz": 6.4,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "tableCross",
+        "source": "furniture",
+        "gx": -2,
+        "gy": 1.08,
+        "gz": 7.1,
+        "ry": 180,
+        "scale": 1.9
+      },
+      {
+        "model": "chair",
+        "source": "furniture",
+        "gx": -1.8,
+        "gy": 1.08,
+        "gz": 6.8,
+        "scale": 1.9
+      },
+      {
+        "model": "chair",
+        "source": "furniture",
+        "gx": -2.2,
+        "gy": 1.08,
+        "gz": 6.8,
+        "scale": 1.9
+      },
+      {
+        "model": "radio",
+        "source": "furniture",
+        "gx": -1.8,
+        "gy": 1.35,
+        "gz": 7.1,
+        "ry": 180,
+        "scale": 1.55
+      },
+      {
+        "model": "books",
+        "source": "furniture",
+        "gx": -2.1,
+        "gy": 1.35,
+        "gz": 7.2,
+        "ry": 180,
+        "scale": 2.05
+      },
+      {
+        "model": "plantSmall1",
+        "source": "furniture",
+        "gx": -2.3,
+        "gy": 1.35,
+        "gz": 7.1,
+        "ry": 180,
+        "scale": 2.65
+      },
+      {
+        "model": "tableCloth",
+        "source": "furniture",
+        "gx": -1.7,
+        "gy": 1.08,
+        "gz": 3.9,
+        "ry": 180,
+        "scale": 2.15
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.6,
+        "gy": 1.08,
+        "gz": 3.6,
+        "scale": 2.15
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.9,
+        "gy": 1.08,
+        "gz": 3.6,
+        "scale": 2.15
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.6,
+        "gy": 1.08,
+        "gz": 4.2,
+        "ry": 180,
+        "scale": 2.15
+      },
+      {
+        "model": "chairCushion",
+        "source": "furniture",
+        "gx": -1.9,
+        "gy": 1.08,
+        "gz": 4.2,
+        "ry": 180,
+        "scale": 2.15
+      }
     ]
   },
 

@@ -1,0 +1,104 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - button "REMOVALIST ESTIMATE" [ref=e5] [cursor=pointer]:
+      - img [ref=e7]
+      - generic [ref=e11]:
+        - strong [ref=e12]: REMOVALIST
+        - generic [ref=e13]: ESTIMATE
+    - navigation "Quote steps" [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: ✓
+        - generic [ref=e17]: Home details
+      - generic [ref=e18]:
+        - generic [ref=e19]: ✓
+        - generic [ref=e20]: Furniture
+      - generic [ref=e21]:
+        - generic [ref=e22]: "3"
+        - generic [ref=e23]: Review
+      - generic [ref=e24]:
+        - generic [ref=e25]: "4"
+        - generic [ref=e26]: Quote
+    - generic [ref=e27]:
+      - button "? Need help?" [ref=e28] [cursor=pointer]:
+        - text: "?"
+        - generic [ref=e29]: Need help?
+      - button "Reset all" [ref=e30] [cursor=pointer]
+  - generic [ref=e391]:
+    - generic [ref=e392]:
+      - generic [ref=e393]:
+        - heading "Review your truck fit" [level=1] [ref=e394]
+        - paragraph [ref=e395]: Here's how your items fit in the recommended truck.
+      - button "Edit selections" [ref=e396] [cursor=pointer]
+    - generic [ref=e397]:
+      - generic [ref=e398]:
+        - generic [ref=e399]:
+          - generic "View mode" [ref=e400]:
+            - button "3D view" [ref=e401] [cursor=pointer]
+            - button "Top view" [ref=e402] [cursor=pointer]
+          - generic "3D packed truck visualization" [ref=e404]
+          - generic [ref=e406]: Click and drag to rotate
+          - generic [ref=e407]:
+            - button "−" [ref=e408] [cursor=pointer]
+            - generic [ref=e409]: 100%
+            - button "+" [ref=e410] [cursor=pointer]
+        - generic [ref=e411]:
+          - generic [ref=e412]:
+            - strong [ref=e414]: Apartment
+            - generic [ref=e415]: 2 Bedroom home, 1 Bathroom, 1 Living room, 1 Dining room
+          - generic [ref=e416]:
+            - strong [ref=e418]: 36 items
+            - generic [ref=e419]: View item list
+          - generic [ref=e420]:
+            - strong [ref=e422]: ~11 m³
+            - generic [ref=e423]: Estimated volume
+          - generic [ref=e424]:
+            - strong [ref=e426]: 2 movers
+            - generic [ref=e427]: Recommended crew
+          - generic [ref=e428]:
+            - strong [ref=e430]: 1 - 1.5 hrs
+            - generic [ref=e431]: Estimated time
+      - complementary "Truck recommendation" [ref=e432]:
+        - generic [ref=e433]:
+          - heading "Recommended truck" [level=2] [ref=e434]
+          - button "Edit" [ref=e435] [cursor=pointer]
+        - generic [ref=e436]:
+          - generic [ref=e439]:
+            - strong [ref=e440]: Medium Truck
+            - generic [ref=e441]: 32 m³ capacity · 6.2m (L) x 2.35m (W) x 2.25m (H)
+          - generic [ref=e442]:
+            - generic [ref=e443]:
+              - strong [ref=e444]: ~11 m³
+              - generic [ref=e445]: Estimated volume
+            - generic [ref=e446]:
+              - strong [ref=e447]: 35%
+              - generic [ref=e448]: Space used
+          - generic [ref=e451]:
+            - generic [ref=e452]:
+              - text: 36 items
+              - text: 1 truck load
+            - generic [ref=e453]:
+              - text: 2 movers
+              - text: Recommended
+        - button "Get quote" [ref=e454] [cursor=pointer]:
+          - text: Get quote
+          - generic [ref=e455]: →
+        - button "Adjust items" [ref=e456] [cursor=pointer]
+        - generic [ref=e457]:
+          - heading "Other truck options" [level=3] [ref=e458]
+          - button "Small Truck 18 m³ capacity ~11 m³ · 63% full From $420" [ref=e459] [cursor=pointer]:
+            - generic [ref=e461]:
+              - strong [ref=e462]: Small Truck
+              - text: 18 m³ capacity
+              - text: ~11 m³ · 63% full
+            - generic [ref=e463]:
+              - text: From
+              - text: $420
+          - button "Large Truck 50 m³ capacity ~11 m³ · 23% full From $680" [ref=e464] [cursor=pointer]:
+            - generic [ref=e466]:
+              - strong [ref=e467]: Large Truck
+              - text: 50 m³ capacity
+              - text: ~11 m³ · 23% full
+            - generic [ref=e468]:
+              - text: From
+              - text: $680
+        - paragraph [ref=e469]: Your details are secure and private
