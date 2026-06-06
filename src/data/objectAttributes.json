@@ -1,0 +1,182 @@
+{
+  "bathroomCabinet": {
+    "stackLevel": 2,
+    "openTop": false
+  },
+  "bathroomCabinetDrawer": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "bathroomMirror": {
+    "stackLevel": 9,
+    "openTop": false
+  },
+  "bedBunk": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "bedDouble": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "bedSingle": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "bench": {
+    "stackLevel": 5,
+    "openTop": true
+  },
+  "bookcaseClosedGarage": {
+    "stackLevel": 3,
+    "openTop": true
+  },
+  "bookcaseClosedWideDining": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "bookcaseOpen": {
+    "stackLevel": 8,
+    "openTop": true
+  },
+  "bookcaseOpenOffice": {
+    "stackLevel": 4,
+    "openTop": false
+  },
+  "cabinetBedDrawer": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "cabinetTelevision": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "cardboardBoxClosedBathroom": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "cardboardBoxClosedBedroom": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "cardboardBoxClosedGarage": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "cardboardBoxClosedKitchen": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "cardboardBoxClosedOffice": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "cardboardBoxOpenGarage": {
+    "stackLevel": 10,
+    "openTop": false
+  },
+  "chair": {
+    "stackLevel": 8,
+    "openTop": true
+  },
+  "chairDesk": {
+    "stackLevel": 7,
+    "openTop": false
+  },
+  "coatRackStanding": {
+    "stackLevel": 8,
+    "openTop": false
+  },
+  "computerScreen": {
+    "stackLevel": 9,
+    "openTop": false
+  },
+  "desk": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "deskCorner": {
+    "stackLevel": 3,
+    "openTop": true
+  },
+  "dryer": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "kitchenCoffeeMachine": {
+    "stackLevel": 9,
+    "openTop": false
+  },
+  "kitchenFridge": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "kitchenFridgeLarge": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "kitchenMicrowave": {
+    "stackLevel": 8,
+    "openTop": true
+  },
+  "kitchenStove": {
+    "stackLevel": 0,
+    "openTop": false
+  },
+  "loungeChair": {
+    "stackLevel": 5,
+    "openTop": true
+  },
+  "loungeSofaCorner": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "loungeSofaLong": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "pottedPlantLiving": {
+    "stackLevel": 0,
+    "openTop": false
+  },
+  "sideTableDrawers": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "speaker": {
+    "stackLevel": 0,
+    "openTop": false
+  },
+  "stoolBar": {
+    "stackLevel": 8,
+    "openTop": false
+  },
+  "table": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "tableCoffee": {
+    "stackLevel": 7,
+    "openTop": true
+  },
+  "tableRound": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "televisionModern": {
+    "stackLevel": 10,
+    "openTop": false
+  },
+  "trashcanLaundry": {
+    "stackLevel": 9,
+    "openTop": false
+  },
+  "washer": {
+    "stackLevel": 0,
+    "openTop": true
+  },
+  "washerDryerStacked": {
+    "stackLevel": 0,
+    "openTop": true
+  }
+}
