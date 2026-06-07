@@ -142,6 +142,26 @@
     "depthCm": 43,
     "heightCm": 68
   },
+  "boxLarge": {
+    "widthCm": 60,
+    "depthCm": 45,
+    "heightCm": 60
+  },
+  "boxMedium": {
+    "widthCm": 45,
+    "depthCm": 45,
+    "heightCm": 40
+  },
+  "boxSmall": {
+    "widthCm": 40,
+    "depthCm": 30,
+    "heightCm": 30
+  },
+  "boxWardrobe": {
+    "widthCm": 50,
+    "depthCm": 60,
+    "heightCm": 120
+  },
   "cabinetBedDrawer": {
     "widthCm": 46,
     "depthCm": 37,

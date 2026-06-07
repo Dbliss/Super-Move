@@ -1,12 +1,13 @@
 <script setup>
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import TruckFitScene from './components/TruckFitScene.vue';
-import HouseScene from './components/HouseScene.vue';
+import AppIcon from './components/AppIcon.vue';
+import HomeIllustration from './components/HomeIllustration.vue';
 import objectShapes from './data/objectShapes.json';
 import savedDimensions from './data/objectDimensions.json';
 import savedAttributes from './data/objectAttributes.json';
-import { rooms } from './data/rooms.js';
-import { resolveAttributes } from './data/attributes.js';
+import { rooms, modelAssetFor } from './data/rooms.js';
+import { resolveAttributes, allowedFlips } from './data/attributes.js';
 import { buildShape, buildComposite } from './utils/shapes.js';
 import { planAndPack, estimateFleet } from './utils/packing.js';
 import { measureAsset } from './utils/assetDimensions.js';
@@ -17,7 +18,7 @@ const sideImages = import.meta.glob('../Kenny/Side/*.png', {
   import: 'default',
 });
 
-const imageFor = (asset) => sideImages[`../Kenny/Side/${asset}.png`];
+const imageFor = (asset) => sideImages[`../Kenny/Side/${modelAssetFor(asset)}.png`];
 
 const houseTypes = [
   {
@@ -31,16 +32,19 @@ const houseTypes = [
       bedDouble: 1,
       cabinetBedDrawer: 1,
       sideTableDrawers: 1,
-      cardboardBoxClosedBedroom: 4,
+      boxSmallBedroom: 2,
+      boxMediumBedroom: 2,
+      boxWardrobeBedroom: 1,
       loungeSofaLong: 1,
       televisionModern: 1,
       cabinetTelevision: 1,
       tableCoffee: 1,
       kitchenFridge: 1,
       kitchenMicrowave: 1,
-      cardboardBoxClosedKitchen: 3,
+      boxSmallKitchen: 1,
+      boxMediumKitchen: 2,
       bathroomCabinet: 1,
-      cardboardBoxClosedBathroom: 1,
+      boxMediumBathroom: 1,
     },
   },
   {
@@ -53,7 +57,9 @@ const houseTypes = [
       bedSingle: 1,
       cabinetBedDrawer: 1,
       sideTableDrawers: 2,
-      cardboardBoxClosedBedroom: 6,
+      boxSmallBedroom: 3,
+      boxMediumBedroom: 3,
+      boxWardrobeBedroom: 2,
       loungeSofaLong: 1,
       loungeChair: 1,
       televisionModern: 1,
@@ -65,12 +71,14 @@ const houseTypes = [
       kitchenFridgeLarge: 1,
       kitchenMicrowave: 1,
       kitchenStove: 1,
-      cardboardBoxClosedKitchen: 5,
+      boxSmallKitchen: 2,
+      boxMediumKitchen: 3,
       washer: 1,
       dryer: 1,
       bathroomCabinet: 1,
       bathroomMirror: 1,
-      cardboardBoxClosedBathroom: 2,
+      boxSmallBathroom: 1,
+      boxMediumBathroom: 1,
     },
   },
   {
@@ -83,7 +91,9 @@ const houseTypes = [
       bedSingle: 2,
       cabinetBedDrawer: 2,
       sideTableDrawers: 3,
-      cardboardBoxClosedBedroom: 10,
+      boxSmallBedroom: 5,
+      boxMediumBedroom: 5,
+      boxWardrobeBedroom: 2,
       loungeSofaLong: 1,
       loungeChair: 2,
       televisionModern: 1,
@@ -95,19 +105,23 @@ const houseTypes = [
       kitchenFridgeLarge: 1,
       kitchenMicrowave: 1,
       kitchenStove: 1,
-      cardboardBoxClosedKitchen: 8,
+      boxSmallKitchen: 4,
+      boxMediumKitchen: 4,
       desk: 1,
       chairDesk: 1,
       computerScreen: 1,
-      cardboardBoxClosedOffice: 4,
+      boxSmallOffice: 2,
+      boxMediumOffice: 2,
       washer: 1,
       dryer: 1,
       bathroomCabinet: 1,
       bathroomMirror: 1,
-      cardboardBoxClosedBathroom: 2,
+      boxSmallBathroom: 1,
+      boxMediumBathroom: 1,
       bench: 1,
       bookcaseClosedGarage: 1,
-      cardboardBoxClosedGarage: 6,
+      boxSmallGarage: 3,
+      boxMediumGarage: 3,
     },
   },
   {
@@ -120,7 +134,9 @@ const houseTypes = [
       bedSingle: 2,
       cabinetBedDrawer: 3,
       sideTableDrawers: 4,
-      cardboardBoxClosedBedroom: 14,
+      boxSmallBedroom: 7,
+      boxMediumBedroom: 7,
+      boxWardrobeBedroom: 3,
       loungeSofaLong: 1,
       loungeSofaCorner: 1,
       loungeChair: 2,
@@ -134,23 +150,127 @@ const houseTypes = [
       kitchenFridgeLarge: 1,
       kitchenMicrowave: 1,
       kitchenStove: 1,
-      cardboardBoxClosedKitchen: 12,
+      boxSmallKitchen: 6,
+      boxMediumKitchen: 6,
       desk: 1,
       deskCorner: 1,
       chairDesk: 2,
       computerScreen: 2,
       bookcaseOpenOffice: 1,
-      cardboardBoxClosedOffice: 6,
+      boxSmallOffice: 3,
+      boxMediumOffice: 3,
       washerDryerStacked: 1,
       bathroomCabinet: 2,
       bathroomMirror: 2,
-      cardboardBoxClosedBathroom: 3,
+      boxSmallBathroom: 1,
+      boxMediumBathroom: 2,
       bench: 1,
       bookcaseClosedGarage: 2,
-      cardboardBoxClosedGarage: 10,
+      boxSmallGarage: 5,
+      boxMediumGarage: 5,
+    },
+  },
+  {
+    id: 'villa',
+    name: 'Villa / Large home',
+    detail: 'Larger or luxury homes with more space and rooms.',
+    rooms: ['bedroom', 'living', 'dining', 'kitchen', 'office', 'laundry', 'bathroom', 'garage'],
+    defaults: {
+      bedDouble: 2,
+      bedSingle: 3,
+      cabinetBedDrawer: 4,
+      sideTableDrawers: 5,
+      boxSmallBedroom: 9,
+      boxMediumBedroom: 9,
+      boxWardrobeBedroom: 4,
+      loungeSofaLong: 2,
+      loungeSofaCorner: 1,
+      loungeChair: 3,
+      televisionModern: 2,
+      cabinetTelevision: 2,
+      tableCoffee: 2,
+      bookcaseOpen: 2,
+      table: 1,
+      tableRound: 1,
+      chair: 10,
+      bookcaseClosedWideDining: 1,
+      kitchenFridgeLarge: 1,
+      kitchenMicrowave: 1,
+      kitchenStove: 1,
+      kitchenCoffeeMachine: 1,
+      boxSmallKitchen: 7,
+      boxMediumKitchen: 7,
+      desk: 1,
+      deskCorner: 1,
+      chairDesk: 2,
+      computerScreen: 2,
+      bookcaseOpenOffice: 1,
+      boxSmallOffice: 4,
+      boxMediumOffice: 4,
+      washerDryerStacked: 1,
+      bathroomCabinet: 3,
+      bathroomMirror: 3,
+      boxSmallBathroom: 2,
+      boxMediumBathroom: 2,
+      bench: 1,
+      bookcaseClosedGarage: 2,
+      boxSmallGarage: 6,
+      boxMediumGarage: 6,
+    },
+  },
+  {
+    id: 'duplex',
+    name: 'Duplex',
+    detail: 'Two self-contained homes on one property.',
+    rooms: ['bedroom', 'living', 'dining', 'kitchen', 'office', 'laundry', 'bathroom', 'garage'],
+    defaults: {
+      bedDouble: 2,
+      bedSingle: 2,
+      cabinetBedDrawer: 2,
+      sideTableDrawers: 4,
+      boxSmallBedroom: 6,
+      boxMediumBedroom: 6,
+      boxWardrobeBedroom: 2,
+      loungeSofaLong: 2,
+      loungeChair: 2,
+      televisionModern: 2,
+      cabinetTelevision: 2,
+      tableCoffee: 2,
+      bookcaseOpen: 1,
+      table: 1,
+      chair: 6,
+      kitchenFridgeLarge: 1,
+      kitchenMicrowave: 1,
+      kitchenStove: 1,
+      boxSmallKitchen: 5,
+      boxMediumKitchen: 5,
+      desk: 1,
+      chairDesk: 1,
+      computerScreen: 1,
+      boxSmallOffice: 2,
+      boxMediumOffice: 2,
+      washer: 1,
+      dryer: 1,
+      bathroomCabinet: 2,
+      bathroomMirror: 2,
+      boxSmallBathroom: 1,
+      boxMediumBathroom: 2,
+      bench: 1,
+      boxSmallGarage: 3,
+      boxMediumGarage: 3,
     },
   },
 ];
+
+// Card copy + Move-summary facts for each home type, keyed by id.
+const houseTypeMeta = {
+  studio: { icon: 'studio', tagline: 'Single open-plan area', blurb: 'Best for compact single-level homes with one open area.', sizeRange: '10 – 20 m³', crew: '2 movers', time: '1.5 – 3 hrs' },
+  apartment: { icon: 'building', tagline: 'Multi-storey building', blurb: 'Best for apartments and units in multi-storey buildings.', sizeRange: '20 – 35 m³', crew: '2 movers', time: '2.5 – 4 hrs' },
+  townhouse: { icon: 'townhouse', tagline: 'Shares a wall', blurb: 'Best for multi-level homes that share a wall.', sizeRange: '30 – 45 m³', crew: '2 movers', time: '3 – 5 hrs' },
+  house: { icon: 'house', tagline: 'Detached home', blurb: 'Best for detached houses with separate outdoor access.', sizeRange: '40 – 60 m³', crew: '3 movers', time: '4 – 6 hrs' },
+  villa: { icon: 'villa', tagline: 'Larger / luxury home', blurb: 'Best for larger or luxury homes with more space and rooms.', sizeRange: '55 – 80 m³', crew: '3 movers', time: '5 – 7 hrs' },
+  duplex: { icon: 'duplex', tagline: 'Two self-contained homes', blurb: 'Best for two self-contained homes on one property.', sizeRange: '45 – 65 m³', crew: '3 movers', time: '4 – 6 hrs' },
+};
 
 const truckSizes = [
   {
@@ -251,6 +371,7 @@ const profileForItem = (item) => {
       modelScale: 1,
       stackLevel: 0,
       openTop: false,
+      orientationFlips: ['flat'],
       shape,
       volume: (dimensions.widthCm * dimensions.depthCm * dimensions.heightCm) / 1_000_000,
     };
@@ -258,7 +379,7 @@ const profileForItem = (item) => {
 
   const saved = savedDimensions[item.asset];
   const dimensions = dimsForAsset(item.asset);
-  const attributes = resolveAttributes(item.id, savedAttributes);
+  const attributes = resolveAttributes(item.asset, savedAttributes);
 
   let templateName;
   let shape;
@@ -288,6 +409,7 @@ const profileForItem = (item) => {
     modelScale: 1,
     stackLevel: attributes.stackLevel,
     openTop: attributes.openTop,
+    orientationFlips: allowedFlips(attributes.orientations),
     shape,
     volume: realVolume,
   };
@@ -305,8 +427,57 @@ const step = ref(0);
 const selectedHouseType = ref('apartment');
 const previewedHouseType = ref(null);
 const activeRoomId = ref('bedroom');
+const roomTabsEl = ref(null);
+const canScrollRoomTabsLeft = ref(false);
+const canScrollRoomTabsRight = ref(false);
+
+const updateRoomTabsScroll = () => {
+  const el = roomTabsEl.value;
+  if (!el) {
+    canScrollRoomTabsLeft.value = false;
+    canScrollRoomTabsRight.value = false;
+    return;
+  }
+  const maxScroll = el.scrollWidth - el.clientWidth;
+  // Arrows reflect whether there is an adjacent room to move to in each direction.
+  const index = includedRooms.value.findIndex((room) => room.id === activeRoomId.value);
+  canScrollRoomTabsLeft.value = maxScroll > 1 && index > 0;
+  canScrollRoomTabsRight.value = maxScroll > 1 && index < includedRooms.value.length - 1;
+};
+
+// Smoothly bring the active room tab to the centre of the strip.
+const centerActiveRoomTab = () => {
+  const el = roomTabsEl.value;
+  if (!el) return;
+  const active = el.querySelector('button.active') || el.querySelector('button');
+  if (!active) return;
+  const target = active.offsetLeft - el.clientWidth / 2 + active.offsetWidth / 2;
+  const maxScroll = el.scrollWidth - el.clientWidth;
+  el.scrollTo({ left: Math.max(0, Math.min(target, maxScroll)), behavior: 'smooth' });
+  updateRoomTabsScroll();
+};
+
+// Move the selection to the previous/next room; centring follows via the watcher.
+const stepRoom = (direction) => {
+  const list = includedRooms.value;
+  const index = list.findIndex((room) => room.id === activeRoomId.value);
+  const next = index + direction;
+  if (next < 0 || next >= list.length) return;
+  activeRoomId.value = list[next].id;
+};
+
+onMounted(() => {
+  updateRoomTabsScroll();
+  window.addEventListener('resize', updateRoomTabsScroll);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateRoomTabsScroll);
+});
 const quantities = reactive({});
 const customItems = ref([]);
+const itemSearch = ref('');
+const customNameInput = ref(null);
 const customDraft = reactive({
   name: '',
   widthCm: '',
@@ -319,17 +490,19 @@ const householdDefaultsByHouse = {
   apartment: { bedrooms: 2, bathrooms: 1, living: 1, dining: 1, office: 0, garage: 0 },
   townhouse: { bedrooms: 3, bathrooms: 2, living: 1, dining: 1, office: 1, garage: 1 },
   house: { bedrooms: 4, bathrooms: 2, living: 2, dining: 1, office: 1, garage: 1 },
+  villa: { bedrooms: 5, bathrooms: 3, living: 2, dining: 1, office: 1, garage: 1 },
+  duplex: { bedrooms: 4, bathrooms: 2, living: 2, dining: 1, office: 1, garage: 1 },
 };
 
 const householdDetails = reactive({ ...householdDefaultsByHouse.apartment });
 
 const householdSelectors = [
-  { key: 'bedrooms', title: 'Number of bedrooms', options: [1, 2, 3, 4, 5], suffix: 'Bedroom' },
-  { key: 'bathrooms', title: 'Number of bathrooms', options: [1, 2, 3, 4], suffix: 'Bathroom' },
-  { key: 'living', title: 'Living rooms', options: [1, 2, 3], suffix: 'Living room' },
-  { key: 'dining', title: 'Dining rooms', options: [0, 1, 2], suffix: 'Dining room' },
-  { key: 'office', title: 'Office / study', options: [0, 1, 2], suffix: 'Office' },
-  { key: 'garage', title: 'Garage / outdoor', options: [0, 1], labels: { 0: 'None', 1: 'Yes' } },
+  { key: 'bedrooms', icon: 'bed', title: 'Number of bedrooms', options: [1, 2, 3, 4, 5], suffix: 'Bedroom' },
+  { key: 'bathrooms', icon: 'bath', title: 'Number of bathrooms', options: [1, 2, 3, 4], suffix: 'Bathroom' },
+  { key: 'living', icon: 'sofa', title: 'Living rooms', options: [1, 2, 3], suffix: 'Living room' },
+  { key: 'dining', icon: 'dining', title: 'Dining rooms', options: [0, 1, 2], suffix: 'Dining room' },
+  { key: 'office', icon: 'desk', title: 'Office / study', options: [0, 1, 2], suffix: 'Office' },
+  { key: 'garage', icon: 'garage', title: 'Garage / outdoor', options: [0, 1], labels: { 0: 'None', 1: 'Yes' } },
 ];
 
 const suggestedFallbackDefaults = houseTypes.reduce((acc, house) => {
@@ -341,9 +514,32 @@ const suggestedFallbackDefaults = houseTypes.reduce((acc, house) => {
 
 const selectedHouse = computed(() => houseTypes.find((house) => house.id === selectedHouseType.value));
 
+const selectedHouseMeta = computed(() => houseTypeMeta[selectedHouseType.value] || null);
+
+const previewedHouseMeta = computed(() => houseTypeMeta[previewedHouseType.value] || null);
+
+const moveSummaryMeta = computed(() => previewedHouseMeta.value || selectedHouseMeta.value);
+
+const moveSummaryHouse = computed(
+  () => houseTypes.find((house) => house.id === (previewedHouseType.value || selectedHouseType.value)) || null,
+);
+
+
 const isStudioSelected = computed(() => selectedHouseType.value === 'studio');
 
 const selectedHouseRoomIds = computed(() => new Set(selectedHouse.value?.rooms || []));
+
+const roomIcons = {
+  bedroom: 'bed',
+  living: 'sofa',
+  dining: 'dining',
+  kitchen: 'kitchen',
+  office: 'desk',
+  laundry: 'laundry',
+  bathroom: 'bath',
+  garage: 'garage',
+  studio: 'house',
+};
 
 const includedRooms = computed(() =>
   isStudioSelected.value
@@ -412,6 +608,21 @@ const totalVolume = computed(() =>
   inventory.value.reduce((sum, item) => sum + item.volume * item.quantity, 0),
 );
 
+// Inventory grouped by room type for the review breakdown, preserving the
+// catalog room order from includedRooms.
+const roomBreakdown = computed(() => {
+  const groups = new Map();
+  for (const item of inventory.value) {
+    const roomName = item.room || 'Other';
+    if (!groups.has(roomName)) groups.set(roomName, []);
+    groups.get(roomName).push({ name: item.name, quantity: item.quantity });
+  }
+  const order = includedRooms.value.map((room) => room.name);
+  return Array.from(groups, ([room, items]) => ({ room, items })).sort(
+    (a, b) => order.indexOf(a.room) - order.indexOf(b.room),
+  );
+});
+
 const roomProgressLabel = computed(() => {
   if (!includedRooms.value.length) return 'No rooms selected yet';
   const currentIndex = includedRooms.value.findIndex((room) => room.id === activeRoom.value?.id);
@@ -437,9 +648,15 @@ const totalTruckCapacity = computed(() =>
   recommendedPlan.value.reduce((sum, truck) => sum + truck.capacity * truck.count, 0),
 );
 
+// Real-world packing is never perfect, so every object is budgeted 5% more than its raw volume
+// when reporting how full the truck is.
+const PACKING_SLACK = 1.05;
+
 const fillPercent = computed(() => {
-  if (!totalTruckCapacity.value) return 0;
-  return Math.min(100, Math.round((totalVolume.value / totalTruckCapacity.value) * 100));
+  // Measure against the capacity of the trucks actually packed (authoritative), not the live
+  // lower-bound estimate — otherwise the % is wrong whenever the packed fleet differs from it.
+  if (!packedTruckCapacity.value) return 0;
+  return Math.min(100, Math.round(((totalVolume.value * PACKING_SLACK) / packedTruckCapacity.value) * 100));
 });
 
 const packedUnits = computed(() =>
@@ -507,10 +724,16 @@ const recommendationCardText = computed(() => {
     .join(' + ');
 });
 
-const formatSelectorOption = (selector, value) => {
+const formatSelectorOptionNumber = (selector, value) => {
   if (selector.labels?.[value]) return selector.labels[value];
-  if (!selector.suffix) return String(value);
-  return `${value} ${selector.suffix}${value === 1 ? '' : 's'}`;
+  // The largest option of each selector reads as an open-ended "N+".
+  const isMax = value === selector.options[selector.options.length - 1];
+  return `${value}${isMax ? '+' : ''}`;
+};
+
+const formatSelectorOptionLabel = (selector, value) => {
+  if (selector.labels?.[value] || !selector.suffix) return '';
+  return `${selector.suffix}${value === 1 ? '' : 's'}`;
 };
 
 const selectorTitle = (selector) => {
@@ -601,10 +824,23 @@ const continueFromHouse = () => {
   }
 };
 
-const continueToFurniture = () => {
+const continueToInventoryChoice = () => {
   seedFurnitureDefaults();
   activeRoomId.value = includedRooms.value[0]?.id || 'bedroom';
   step.value = 2;
+};
+
+// Quick path: keep the seeded average inventory and skip straight to the truck review.
+const useQuickEstimate = () => {
+  seedFurnitureDefaults();
+  step.value = 4;
+};
+
+// Detailed path: go room by room and adjust each item.
+const customiseInventory = () => {
+  seedFurnitureDefaults();
+  activeRoomId.value = includedRooms.value[0]?.id || 'bedroom';
+  step.value = 3;
 };
 
 const changeQuantity = (itemId, amount) => {
@@ -612,6 +848,35 @@ const changeQuantity = (itemId, amount) => {
 };
 
 const customItemsForRoom = (roomId) => customItems.value.filter((item) => item.roomId === roomId);
+
+const searchQuery = computed(() => itemSearch.value.trim());
+
+// Full catalog search across every room, so customers aren't limited to the active
+// room's suggested list. De-duplicated by item id.
+const searchResults = computed(() => {
+  const query = searchQuery.value.toLowerCase();
+  if (!query) return [];
+  const seen = new Set();
+  const results = [];
+  for (const room of rooms) {
+    for (const item of room.items) {
+      if (seen.has(item.id)) continue;
+      if (item.name.toLowerCase().includes(query) || room.name.toLowerCase().includes(query)) {
+        seen.add(item.id);
+        results.push({ ...item, room: room.name });
+      }
+    }
+  }
+  return results;
+});
+
+// Jump to the custom-item form from the "Can't find an item?" prompt.
+const goToCustomItem = async () => {
+  if (customDraft.name === '' && searchQuery.value) customDraft.name = searchQuery.value;
+  await nextTick();
+  customNameInput.value?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  customNameInput.value?.focus({ preventScroll: true });
+};
 
 const customPreviewStyle = (item) => ({
   aspectRatio: `${Math.max(item.widthCm, 1)} / ${Math.max(item.depthCm, 1)}`,
@@ -624,22 +889,16 @@ const resetCustomDraft = () => {
   customDraft.heightCm = '';
 };
 
-const visibleStep = computed(() => {
-  if (step.value <= 1) return 1;
-  if (step.value === 2) return 2;
-  return 3;
-});
-
-const steps = computed(() => [
-  { number: 1, label: 'Home details', state: visibleStep.value > 1 ? 'complete' : visibleStep.value === 1 ? 'active' : '' },
-  { number: 2, label: 'Furniture', state: visibleStep.value > 2 ? 'complete' : visibleStep.value === 2 ? 'active' : '' },
-  { number: 3, label: 'Review', state: visibleStep.value === 3 ? 'active' : '' },
-  { number: 4, label: 'Quote', state: '' },
-]);
-
+// Step values: 0 Home type · 1 Home details · 2 Inventory choice · 3 Furniture · 4 Review · 5 Quote.
 watch(step, async () => {
   await nextTick();
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  centerActiveRoomTab();
+});
+
+watch([includedRooms, activeRoomId], async () => {
+  await nextTick();
+  centerActiveRoomTab();
 });
 
 const homeSummaryRows = computed(() => [
@@ -674,15 +933,17 @@ const estimatedMoveTime = computed(() => {
 
 const recommendedMoverCount = computed(() => (totalVolume.value >= 45 ? 3 : 2));
 
-const truckOptionCards = computed(() =>
-  truckSizesWithCells.value
-    .filter((truck) => truck.id !== primaryTruck.value?.id)
-    .map((truck) => ({
-      ...truck,
-      used: truck.capacity ? Math.min(100, Math.round((totalVolume.value / truck.capacity) * 100)) : 0,
-      price: truck.id === 'small' ? 420 : truck.id === 'medium' ? 540 : 680,
-    })),
+const primaryTruckPrice = computed(() =>
+  primaryTruck.value?.id === 'small' ? 420 : primaryTruck.value?.id === 'large' ? 680 : 540,
 );
+
+// Indicative price range shown on the Quote step: truck base + volume + extra crew.
+const quoteEstimate = computed(() => {
+  const volumeCost = Math.round(totalVolume.value * 14);
+  const crewCost = Math.max(0, recommendedMoverCount.value - 2) * 140;
+  const low = primaryTruckPrice.value + volumeCost + crewCost;
+  return { low, high: Math.round((low * 1.22) / 10) * 10 };
+});
 
 const addCustomItem = () => {
   const name = customDraft.name.trim();
@@ -712,7 +973,7 @@ const nextRoom = () => {
   if (index >= 0 && index < includedRooms.value.length - 1) {
     activeRoomId.value = includedRooms.value[index + 1].id;
   } else {
-    step.value = 3;
+    step.value = 4;
   }
 };
 
@@ -729,72 +990,90 @@ const resetQuote = () => {
 
 <template>
   <main class="app-shell">
-    <header class="top-bar">
-      <button class="brand-lockup" type="button" @click="step = selectedHouseType ? 1 : 0">
-        <span class="brand-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 40" role="img">
-            <path d="M3 18 17 5l14 13v16H7V18" />
-            <path d="M31 17h8l6 7v10h-7" />
-            <path d="M13 34a4 4 0 1 0 8 0 4 4 0 0 0-8 0Zm21 0a4 4 0 1 0 8 0 4 4 0 0 0-8 0Z" />
-          </svg>
-        </span>
-        <span>
-          <strong>REMOVALIST</strong>
-          <b>ESTIMATE</b>
-        </span>
-      </button>
-
-      <nav class="progress-nav" aria-label="Quote steps">
-        <div v-for="item in steps" :key="item.number" class="progress-step" :class="item.state">
-          <span class="progress-index">{{ item.state === 'complete' ? '✓' : item.number }}</span>
-          <span>{{ item.label }}</span>
+    <section v-if="step === 0" class="page-grid home-type-page">
+      <div class="page-main">
+        <div class="page-title">
+          <h1>What type of home are you moving from?</h1>
+          <p>Select the option that best matches your current property. You can refine the details in the next step.</p>
         </div>
-      </nav>
 
-      <div class="top-actions">
-        <button class="help-button" type="button">? <span>Need help?</span></button>
-        <button class="ghost-button reset-top" type="button" @click="resetQuote">Reset all</button>
+        <div class="home-type-grid">
+          <button
+            v-for="house in houseTypes"
+            :key="house.id"
+            class="home-type-card-btn"
+            :class="{ selected: selectedHouseType === house.id }"
+            type="button"
+            @mouseenter="previewedHouseType = house.id"
+            @mouseleave="previewedHouseType = null"
+            @click="chooseHouse(house.id)"
+          >
+            <span class="home-type-badge"><AppIcon :name="houseTypeMeta[house.id].icon" :size="24" /></span>
+            <span v-if="selectedHouseType === house.id" class="home-type-check"><AppIcon name="check" :size="14" /></span>
+            <span class="home-type-art"></span>
+            <HomeIllustration :id="house.id" :hovered="previewedHouseType === house.id" />
+            <span class="home-type-name">{{ house.name }}</span>
+            <small class="home-type-blurb">{{ houseTypeMeta[house.id].blurb }}</small>
+          </button>
+        </div>
+
       </div>
-    </header>
 
-    <section v-if="step <= 1" class="page-grid home-page">
+      <aside class="summary-card move-summary">
+        <h2>Move summary</h2>
+
+        <div v-if="moveSummaryMeta" class="selected-type">
+          <span class="selected-type-label">Selected home type</span>
+          <div class="selected-type-body">
+            <span class="home-type-badge solid"><AppIcon :name="moveSummaryMeta.icon" :size="24" /></span>
+            <div class="selected-type-text">
+              <strong>{{ moveSummaryHouse?.name }}</strong>
+              <span>{{ moveSummaryMeta.tagline }}</span>
+            </div>
+            <button v-if="selectedHouseType" class="link-button" type="button" @click="previewedHouseType = null">Change</button>
+          </div>
+        </div>
+        <p v-else class="empty-state">Pick a home type to see typical move details.</p>
+
+        <template v-if="moveSummaryMeta">
+          <div class="summary-divider"></div>
+
+          <div class="fact-list">
+            <div class="fact-row"><AppIcon name="cube" :size="20" /><span>Typical size range</span><strong>{{ moveSummaryMeta.sizeRange }}</strong></div>
+            <div class="fact-row"><AppIcon name="people" :size="20" /><span>Typical crew</span><strong>{{ moveSummaryMeta.crew }}</strong></div>
+            <div class="fact-row"><AppIcon name="clock" :size="20" /><span>Typical time</span><strong>{{ moveSummaryMeta.time }}</strong></div>
+          </div>
+
+          <div class="profile-callout">
+            <span class="profile-label">Estimated move profile <AppIcon name="info" :size="14" /></span>
+            <div class="profile-value">
+              <strong>~{{ moveSummaryMeta.sizeRange }}</strong>
+              <em>Typical</em>
+            </div>
+            <p>This helps us suggest the right truck size and crew for your move.</p>
+          </div>
+        </template>
+
+        <button class="primary-button full-width" type="button" :disabled="!selectedHouseType" @click="continueFromHouse">
+          Continue to home details
+          <AppIcon name="arrowRight" :size="18" />
+        </button>
+        <button class="ghost-button full-width accent-ghost" type="button" @click="resetQuote"><AppIcon name="refresh" :size="16" /> Reset all</button>
+        <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
+      </aside>
+    </section>
+
+    <section v-else-if="step === 1" class="page-grid home-details-page">
       <div class="page-main">
         <div class="page-title">
           <h1>Tell us about your home</h1>
           <p>Add a few details about your space so we can give you the most accurate quote.</p>
         </div>
 
-        <section v-if="step === 0" class="home-type-card">
-          <div class="section-heading">
-            <div>
-              <h2>Choose your home type</h2>
-              <p>This sets a sensible starting inventory.</p>
-            </div>
-          </div>
-          <div class="house-preview-wrap">
-            <HouseScene :layout-id="previewedHouseType || selectedHouseType || 'studio'" />
-          </div>
-          <div class="house-type-row">
-            <button
-              v-for="house in houseTypes"
-              :key="house.id"
-              class="house-type-pill"
-              :class="{ selected: selectedHouseType === house.id, previewed: previewedHouseType === house.id && selectedHouseType !== house.id }"
-              type="button"
-              @mouseenter="previewedHouseType = house.id"
-              @mouseleave="previewedHouseType = null"
-              @click="chooseHouse(house.id)"
-            >
-              <span class="pill-name">{{ house.name }}</span>
-              <small class="pill-detail">{{ house.detail }}</small>
-            </button>
-          </div>
-        </section>
-
         <div class="property-selector-list">
           <article v-for="selector in householdSelectors" :key="selector.key" class="property-selector-card">
             <div class="selector-copy">
-              <span class="soft-icon" :class="`icon-${selector.key}`" aria-hidden="true"></span>
+              <span class="soft-icon"><AppIcon :name="selector.icon" :size="26" /></span>
               <div>
                 <h3>{{ selectorTitle(selector) }}</h3>
                 <p>
@@ -807,7 +1086,7 @@ const resetQuote = () => {
                 </p>
               </div>
             </div>
-            <div class="radio-option-row" :aria-label="selector.title">
+            <div class="radio-option-row" :aria-label="selector.title" :style="{ '--cols': selector.options.length }">
               <button
                 v-for="option in selector.options"
                 :key="option"
@@ -816,22 +1095,22 @@ const resetQuote = () => {
                 :class="{ selected: householdDetails[selector.key] === option }"
                 @click="householdDetails[selector.key] = option"
               >
-                <span class="option-icon" aria-hidden="true"></span>
-                <span class="option-text">{{ formatSelectorOption(selector, option) }}</span>
-                <span class="option-check" aria-hidden="true">✓</span>
+                <span class="option-text">
+                  <span class="option-number">{{ formatSelectorOptionNumber(selector, option) }}</span>
+                  <span v-if="formatSelectorOptionLabel(selector, option)" class="option-label">{{ formatSelectorOptionLabel(selector, option) }}</span>
+                </span>
+                <span class="option-check"><AppIcon name="check" :size="13" /></span>
               </button>
             </div>
           </article>
         </div>
-
-        <p class="inline-note">Not sure? You can adjust these details later.</p>
       </div>
 
       <aside class="summary-card home-summary">
         <h2>Your home summary</h2>
         <div class="summary-list">
           <div v-for="row in homeSummaryRows" :key="row.key" class="summary-row">
-            <span class="soft-icon small" :class="`icon-${row.icon}`" aria-hidden="true"></span>
+            <span class="soft-icon small"><AppIcon :name="row.icon" :size="18" /></span>
             <span>{{ row.label }}</span>
             <strong>{{ row.value }}</strong>
           </div>
@@ -840,42 +1119,117 @@ const resetQuote = () => {
         <div class="volume-callout">
           <span>Estimated volume</span>
           <strong>~{{ totalVolume.toFixed(0) || 0 }} m³</strong>
-          <em>{{ totalVolume >= 40 ? 'Large' : totalVolume >= 20 ? 'Medium' : 'Small' }}</em>
           <p>This helps us match you with the right truck and team size.</p>
         </div>
 
-        <button
-          class="primary-button full-width"
-          type="button"
-          :disabled="!selectedHouseType"
-          @click="step === 0 ? continueFromHouse() : continueToFurniture()"
-        >
-          Continue to furniture
-          <span aria-hidden="true">→</span>
+        <button class="primary-button full-width" type="button" @click="continueToInventoryChoice">
+          Continue
+          <AppIcon name="arrowRight" :size="18" />
         </button>
-        <button class="ghost-button full-width accent-ghost" type="button" @click="resetQuote">Reset all</button>
-        <p class="privacy-note">Your details are secure and private</p>
+        <button class="ghost-button full-width accent-ghost" type="button" @click="resetQuote"><AppIcon name="refresh" :size="16" /> Reset all</button>
+        <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
       </aside>
     </section>
 
-    <section v-else-if="step === 2" class="page-grid furniture-page">
+    <section v-else-if="step === 2" class="page-grid inventory-choice-page">
+      <div class="page-main">
+        <div class="page-title">
+          <h1>How would you like to build your inventory?</h1>
+          <p>Pick a quick estimate using the typical items for your home, or customise the furniture in every room.</p>
+        </div>
+
+        <div class="inventory-choice-grid">
+          <button class="inventory-choice-card recommended" type="button" @click="useQuickEstimate">
+            <span class="choice-flag">Fastest</span>
+            <span class="home-type-badge"><AppIcon name="bolt" :size="26" /></span>
+            <span class="choice-name">Quick estimate</span>
+            <p class="choice-blurb">We'll use the average inventory for a {{ selectedHouse?.name || 'home' }} this size. Best if selecting every item feels like too much.</p>
+            <ul class="choice-points">
+              <li><AppIcon name="check" :size="15" /> Pre-filled with typical furniture</li>
+              <li><AppIcon name="check" :size="15" /> Skip straight to your truck &amp; quote</li>
+              <li><AppIcon name="check" :size="15" /> ~{{ totalVolume.toFixed(0) }} m³ estimated to start</li>
+            </ul>
+            <span class="choice-cta">Use quick estimate <AppIcon name="arrowRight" :size="18" /></span>
+          </button>
+
+          <button class="inventory-choice-card" type="button" @click="customiseInventory">
+            <span class="home-type-badge"><AppIcon name="sliders" :size="26" /></span>
+            <span class="choice-name">Customise furniture</span>
+            <p class="choice-blurb">Go room by room and adjust every item for the most accurate quote.</p>
+            <ul class="choice-points">
+              <li><AppIcon name="check" :size="15" /> Add or remove items per room</li>
+              <li><AppIcon name="check" :size="15" /> Add your own custom items</li>
+              <li><AppIcon name="check" :size="15" /> Most accurate estimate</li>
+            </ul>
+            <span class="choice-cta">Customise my inventory <AppIcon name="arrowRight" :size="18" /></span>
+          </button>
+        </div>
+      </div>
+
+      <aside class="summary-card home-summary">
+        <h2>Your home summary</h2>
+        <div class="summary-list">
+          <div v-for="row in homeSummaryRows" :key="row.key" class="summary-row">
+            <span class="soft-icon small"><AppIcon :name="row.icon" :size="18" /></span>
+            <span>{{ row.label }}</span>
+            <strong>{{ row.value }}</strong>
+          </div>
+        </div>
+
+        <div class="volume-callout">
+          <span>Estimated volume</span>
+          <strong>~{{ totalVolume.toFixed(0) || 0 }} m³</strong>
+          <p>Typical for a {{ selectedHouse?.name || 'home' }} of this size — you can still adjust it.</p>
+        </div>
+
+        <button class="ghost-button full-width accent-ghost" type="button" @click="step = isStudioSelected ? 0 : 1"><AppIcon name="swap" :size="16" /> Back</button>
+        <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
+      </aside>
+    </section>
+
+    <section v-else-if="step === 3" class="page-grid furniture-page">
       <div class="page-main">
         <div class="page-title compact-title">
           <h1>Add furniture by room</h1>
           <p>Adjust the suggested inventory before reviewing the truck fit.</p>
         </div>
 
-        <nav class="room-tabs" aria-label="Included rooms">
+        <div class="room-tabs-wrap">
           <button
-            v-for="room in includedRooms"
-            :key="room.id"
+            v-show="canScrollRoomTabsLeft"
             type="button"
-            :class="{ active: activeRoom?.id === room.id }"
-            @click="activeRoomId = room.id"
+            class="room-tabs-arrow room-tabs-arrow--left"
+            aria-label="Previous room"
+            @click="stepRoom(-1)"
           >
-            {{ room.name }}
+            <AppIcon name="chevronLeft" :size="18" />
           </button>
-        </nav>
+          <nav
+            ref="roomTabsEl"
+            class="room-tabs"
+            aria-label="Included rooms"
+          >
+            <button
+              v-for="room in includedRooms"
+              :key="room.id"
+              type="button"
+              :class="{ active: activeRoom?.id === room.id }"
+              @click="activeRoomId = room.id"
+            >
+              <AppIcon :name="roomIcons[room.id] || 'box'" :size="18" />
+              <span>{{ room.name }}</span>
+            </button>
+          </nav>
+          <button
+            v-show="canScrollRoomTabsRight"
+            type="button"
+            class="room-tabs-arrow room-tabs-arrow--right"
+            aria-label="Next room"
+            @click="stepRoom(1)"
+          >
+            <AppIcon name="chevronRight" :size="18" />
+          </button>
+        </div>
 
         <div v-if="activeRoom" class="room-workspace">
           <div class="room-title-row">
@@ -883,13 +1237,40 @@ const resetQuote = () => {
               <span>{{ roomProgressLabel }}</span>
               <h2>{{ activeRoom.name }}</h2>
             </div>
-            <div class="room-action-row">
-              <button class="ghost-button" type="button" @click="clearAllQuantities">Reset furniture</button>
-              <button class="ghost-button" type="button" @click="nextRoom">Next room</button>
+          </div>
+
+          <div class="item-search">
+            <AppIcon name="search" :size="18" />
+            <input v-model="itemSearch" type="search" placeholder="Search for any item across all rooms…" aria-label="Search items" />
+            <button v-if="itemSearch" type="button" class="item-search-clear" aria-label="Clear search" @click="itemSearch = ''">×</button>
+          </div>
+
+          <div v-if="searchQuery" class="search-results">
+            <div v-if="searchResults.length" class="furniture-grid">
+              <article v-for="item in searchResults" :key="item.id" class="furniture-picker">
+                <img :src="imageFor(item.asset)" :alt="item.name" />
+                <div>
+                  <h3>{{ item.name }}</h3>
+                  <p>{{ item.volume.toFixed(2) }} m³ · {{ item.room }}</p>
+                </div>
+                <div class="quantity-controls">
+                  <button type="button" aria-label="Decrease quantity" @click="changeQuantity(item.id, -1)">−</button>
+                  <strong>{{ quantities[item.id] || 0 }}</strong>
+                  <button type="button" aria-label="Increase quantity" @click="changeQuantity(item.id, 1)">+</button>
+                </div>
+              </article>
+            </div>
+            <p v-else class="search-empty">No items match “{{ searchQuery }}”.</p>
+
+            <div class="cant-find">
+              <span>Can't find an item?</span>
+              <button type="button" class="ghost-button" @click="goToCustomItem">
+                <AppIcon name="boxPlus" :size="16" /> Add a custom item
+              </button>
             </div>
           </div>
 
-          <div class="furniture-grid">
+          <div v-else class="furniture-grid">
             <article v-for="item in activeRoom.items" :key="item.id" class="furniture-picker">
               <img :src="imageFor(item.asset)" :alt="item.name" />
               <div>
@@ -920,27 +1301,30 @@ const resetQuote = () => {
           </div>
 
           <form class="custom-item-form" @submit.prevent="addCustomItem">
-            <div>
-              <h3>Custom item</h3>
-              <p>Name it and add its outside dimensions.</p>
+            <div class="custom-item-intro">
+              <span class="soft-icon custom-item-icon"><AppIcon name="boxPlus" :size="26" /></span>
+              <div>
+                <h3>Add a custom item</h3>
+                <p>Can't find it in the list? Add its dimensions and we'll include it in your estimate.</p>
+              </div>
             </div>
             <label>
               Name
-              <input v-model="customDraft.name" type="text" placeholder="e.g. Aquarium" required />
+              <input ref="customNameInput" v-model="customDraft.name" type="text" placeholder="e.g. Aquarium" required />
             </label>
             <label>
-              Width cm
-              <input v-model.number="customDraft.widthCm" type="number" min="1" step="1" required />
+              Width (cm)
+              <input v-model.number="customDraft.widthCm" type="number" min="1" step="1" placeholder="e.g. 80" required />
             </label>
             <label>
-              Depth cm
-              <input v-model.number="customDraft.depthCm" type="number" min="1" step="1" required />
+              Depth (cm)
+              <input v-model.number="customDraft.depthCm" type="number" min="1" step="1" placeholder="e.g. 40" required />
             </label>
             <label>
-              Height cm
-              <input v-model.number="customDraft.heightCm" type="number" min="1" step="1" required />
+              Height (cm)
+              <input v-model.number="customDraft.heightCm" type="number" min="1" step="1" placeholder="e.g. 60" required />
             </label>
-            <button class="primary-button" type="submit">Add object</button>
+            <button class="primary-button" type="submit">Add custom item</button>
           </form>
         </div>
       </div>
@@ -968,77 +1352,61 @@ const resetQuote = () => {
           </div>
         </div>
         <p v-else class="empty-state">Add items with the plus buttons.</p>
-        <button class="primary-button full-width" type="button" :disabled="!inventory.length" @click="step = 3">
+        <button class="primary-button full-width" type="button" :disabled="!inventory.length" @click="step = 4">
           Review truck fit
           <span aria-hidden="true">→</span>
         </button>
       </aside>
     </section>
 
-    <section v-else class="review-page">
+    <section v-else-if="step === 4" class="review-page">
       <div class="review-heading">
         <div>
           <h1>Review your truck fit</h1>
           <p>Here's how your items fit in the recommended truck.</p>
         </div>
-        <button class="ghost-button" type="button" @click="step = 2">Edit selections</button>
+        <button class="ghost-button" type="button" @click="step = 3"><AppIcon name="edit" :size="16" /> Edit selections</button>
       </div>
 
       <div class="review-grid">
         <div class="review-main">
           <div class="truck-fit-stage" :class="{ empty: !inventory.length }">
-            <div class="view-toggle" aria-label="View mode">
-              <button class="selected" type="button">3D view</button>
-              <button type="button">Top view</button>
-            </div>
             <TruckFitScene v-if="packedTrucks.length" class="truck-fit-canvas" :trucks="packedTrucks" />
             <p v-else class="empty-state">Add items with the plus buttons.</p>
             <div class="scene-help">Click and drag to rotate</div>
-            <div class="zoom-controls">
-              <button type="button">−</button>
-              <span>100%</span>
-              <button type="button">+</button>
-            </div>
           </div>
 
-          <div class="review-stat-bar">
-            <div>
-              <span class="soft-icon small icon-home" aria-hidden="true"></span>
-              <strong>{{ selectedHouse?.name || 'Home' }}</strong>
-              <span>{{ homeDetailLine || 'Home details selected' }}</span>
+          <div class="review-breakdown">
+            <div class="review-breakdown-head">
+              <span class="soft-icon small"><AppIcon name="house" :size="18" /></span>
+              <div>
+                <strong>{{ selectedHouse?.name || 'Home' }}</strong>
+                <span>{{ homeDetailLine || 'Home details selected' }}</span>
+              </div>
             </div>
-            <div>
-              <span class="soft-icon small icon-box" aria-hidden="true"></span>
-              <strong>{{ totalItems }} items</strong>
-              <span>View item list</span>
+            <div v-if="roomBreakdown.length" class="room-breakdown">
+              <div v-for="group in roomBreakdown" :key="group.room" class="room-breakdown-group">
+                <h3>{{ group.room }}</h3>
+                <ul>
+                  <li v-for="item in group.items" :key="item.name">
+                    <span>{{ item.name }}</span>
+                    <span class="qty">×{{ item.quantity }}</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div>
-              <span class="soft-icon small icon-cube" aria-hidden="true"></span>
-              <strong>~{{ totalVolume.toFixed(0) }} m³</strong>
-              <span>Estimated volume</span>
-            </div>
-            <div>
-              <span class="soft-icon small icon-people" aria-hidden="true"></span>
-              <strong>{{ recommendedMoverCount }} movers</strong>
-              <span>Recommended crew</span>
-            </div>
-            <div>
-              <span class="soft-icon small icon-clock" aria-hidden="true"></span>
-              <strong>{{ estimatedMoveTime }}</strong>
-              <span>Estimated time</span>
-            </div>
+            <p v-else class="review-breakdown-empty">No items added yet.</p>
           </div>
         </div>
 
         <aside class="summary-card recommendation-panel" aria-label="Truck recommendation">
           <div class="recommendation-header">
             <h2>Recommended truck</h2>
-            <button class="ghost-button compact" type="button" @click="step = 2">Edit</button>
           </div>
 
           <div class="recommended-truck-card">
             <div class="truck-card-title">
-              <span class="soft-icon truck-icon" aria-hidden="true"></span>
+              <span class="soft-icon truck-icon"><AppIcon name="truck" :size="28" /></span>
               <div>
                 <strong>{{ recommendationCardText }}</strong>
                 <span>{{ primaryTruck.capacity }} m³ capacity · {{ primaryTruck.cargoLength }}m (L) x {{ primaryTruck.cargoWidth }}m (W) x {{ primaryTruck.cargoHeight }}m (H)</span>
@@ -1063,27 +1431,73 @@ const resetQuote = () => {
             </div>
           </div>
 
-          <button class="primary-button full-width quote-button" type="button" :disabled="!inventory.length">
+          <button class="primary-button full-width quote-button" type="button" :disabled="!inventory.length" @click="step = 5">
             Get quote
-            <span aria-hidden="true">→</span>
+            <AppIcon name="arrowRight" :size="18" />
           </button>
-          <button class="ghost-button full-width accent-ghost" type="button" @click="step = 2">Adjust items</button>
+          <button class="ghost-button full-width accent-ghost" type="button" @click="step = 3"><AppIcon name="swap" :size="16" /> Adjust items</button>
 
-          <div class="other-options">
-            <h3>Other truck options</h3>
-            <button v-for="truck in truckOptionCards" :key="truck.id" class="truck-option" type="button">
-              <span class="soft-icon small truck-icon" aria-hidden="true"></span>
-              <span>
-                <strong>{{ truck.name }} Truck</strong>
-                {{ truck.capacity }} m³ capacity<br />
-                ~{{ totalVolume.toFixed(0) }} m³ · {{ truck.used }}% full
-              </span>
-              <b>From<br />${{ truck.price }}</b>
-            </button>
-          </div>
-          <p class="privacy-note">Your details are secure and private</p>
+          <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
         </aside>
       </div>
+    </section>
+
+    <section v-else class="page-grid quote-page">
+      <div class="page-main">
+        <div class="page-title">
+          <h1>Your moving estimate</h1>
+          <p>Based on your inventory and the recommended truck. Final pricing is confirmed after a quick review.</p>
+        </div>
+
+        <div class="quote-hero">
+          <div class="quote-hero-head">
+            <span class="quote-badge"><AppIcon name="shield" :size="22" /></span>
+            <div>
+              <strong>Estimated total</strong>
+              <span>{{ recommendationCardText }} · {{ recommendedMoverCount }} movers</span>
+            </div>
+          </div>
+          <div class="quote-price">
+            <strong>${{ quoteEstimate.low }} – ${{ quoteEstimate.high }}</strong>
+            <em>incl. truck, crew &amp; basic insurance</em>
+          </div>
+          <div class="quote-fact-grid">
+            <div><AppIcon name="cube" :size="20" /><strong>~{{ totalVolume.toFixed(0) }} m³</strong><span>Estimated volume</span></div>
+            <div><AppIcon name="box" :size="20" /><strong>{{ totalItems }} items</strong><span>To be moved</span></div>
+            <div><AppIcon name="people" :size="20" /><strong>{{ recommendedMoverCount }} movers</strong><span>Recommended crew</span></div>
+            <div><AppIcon name="clock" :size="20" /><strong>{{ estimatedMoveTime }}</strong><span>Estimated time</span></div>
+          </div>
+        </div>
+
+        <div class="quote-includes">
+          <h3>What's included</h3>
+          <ul>
+            <li><AppIcon name="check" :size="16" /> {{ recommendationCardText }} with driver</li>
+            <li><AppIcon name="check" :size="16" /> {{ recommendedMoverCount }} professional movers</li>
+            <li><AppIcon name="check" :size="16" /> Loading, transport and unloading</li>
+            <li><AppIcon name="check" :size="16" /> Basic transit insurance cover</li>
+          </ul>
+        </div>
+      </div>
+
+      <aside class="summary-card quote-summary">
+        <h2>Request your quote</h2>
+        <p class="quote-summary-sub">Send your details and a move specialist will confirm your final price.</p>
+
+        <form class="quote-form" @submit.prevent>
+          <label>Full name<input type="text" placeholder="Jordan Smith" /></label>
+          <label>Email<input type="email" placeholder="you@email.com" /></label>
+          <label>Phone<input type="tel" placeholder="0400 000 000" /></label>
+          <label>Preferred move date<input type="date" /></label>
+          <button class="primary-button full-width" type="submit">
+            Request final quote
+            <AppIcon name="arrowRight" :size="18" />
+          </button>
+        </form>
+
+        <button class="ghost-button full-width accent-ghost" type="button" @click="step = 4"><AppIcon name="edit" :size="16" /> Back to review</button>
+        <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
+      </aside>
     </section>
   </main>
 </template>

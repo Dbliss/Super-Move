@@ -31,14 +31,17 @@ const fromVoxels = (rawVoxels) => {
     const current = lowestPerColumn.get(key);
     if (current === undefined || dz < current) lowestPerColumn.set(key, dz);
   }
+  // bottomFootprint: columns that actually touch the base (lowest voxel at dz=0) — the contact feet.
+  // footprint: every column the shape occupies (its full vertical shadow) — used to forbid stacking
+  // an item where any part of its body would hang off the edge of whatever is underneath.
   const bottomFootprint = [];
+  const footprint = [];
   for (const [key, minDz] of lowestPerColumn) {
-    if (minDz === 0) {
-      const [dx, dy] = key.split(',').map(Number);
-      bottomFootprint.push([dx, dy]);
-    }
+    const [dx, dy] = key.split(',').map(Number);
+    footprint.push([dx, dy]);
+    if (minDz === 0) bottomFootprint.push([dx, dy]);
   }
-  return { voxels, width, depth, height, bottomFootprint };
+  return { voxels, width, depth, height, bottomFootprint, footprint };
 };
 
 const fillBox = (voxels, x0, x1, y0, y1, z0, z1) => {
@@ -154,27 +157,63 @@ export const buildComposite = (boxes) => {
   return fromVoxels(voxels);
 };
 
-// Rotate 90° clockwise around the vertical Z axis.
+// Rotate 90° clockwise around the vertical Z axis (yaw — height stays vertical).
 // Old footprint W×D becomes D×W; cell (x, y) maps to (D - 1 - y, x).
 const rotateShape90CW = (shape) => {
   const newVoxels = shape.voxels.map(([dx, dy, dz]) => [shape.depth - 1 - dy, dx, dz]);
   return fromVoxels(newVoxels);
 };
 
+// Tip the object onto its front/back face: the DEPTH axis becomes vertical.
+// (dx, dy, dz) → (dx, dz, depth - 1 - dy). New footprint is width × oldHeight.
+const tipOntoDepth = (shape) => {
+  const newVoxels = shape.voxels.map(([dx, dy, dz]) => [dx, dz, shape.depth - 1 - dy]);
+  return fromVoxels(newVoxels);
+};
+
+// Tip the object onto its left/right face: the WIDTH axis becomes vertical.
+// (dx, dy, dz) → (dz, dy, width - 1 - dx). New footprint is oldHeight × depth.
+const tipOntoWidth = (shape) => {
+  const newVoxels = shape.voxels.map(([dx, dy, dz]) => [dz, dy, shape.width - 1 - dx]);
+  return fromVoxels(newVoxels);
+};
+
 const orientationSignature = (shape) =>
   shape.voxels.map(voxelKey).sort().join('|');
 
-export const uniqueOrientations = (shape) => {
-  const orientations = [];
-  const seen = new Set();
-  let current = shape;
-  for (let i = 0; i < 4; i += 1) {
-    const sig = orientationSignature(current);
-    if (!seen.has(sig)) {
-      seen.add(sig);
-      orientations.push({ ...current, rotation: i });
-    }
-    current = rotateShape90CW(current);
-  }
-  return orientations;
+// The three packing-distinct "rest poses" — which original axis points up. The /dimensions
+// editor exposes six face ticks, but opposite faces share a pose (same footprint), so they
+// collapse onto these three. 'flat' is always available.
+const FLIP_TIP = {
+  flat: (shape) => shape,    // base/top down → height vertical
+  end: tipOntoDepth,         // front/back down → depth vertical
+  side: tipOntoWidth,        // left/right down → width vertical
 };
+const FLIP_ORDER = ['flat', 'end', 'side'];
+
+// Every legal orientation of a shape, given the set of allowed flips (rest poses). Each flip is
+// crossed with the four yaw rotations; identical voxel masks are de-duplicated so a symmetric
+// item (e.g. a cube, or opposite faces of a box) never wastes placement attempts. Each entry
+// carries `flip` ('flat'|'end'|'side') and `yaw` (0–3) so the 3D scene can reproduce the pose.
+export const orientedShapes = (shape, flips = ['flat']) => {
+  const allowed = new Set(flips);
+  allowed.add('flat'); // an item must always be placeable on its base
+  const out = [];
+  const seen = new Set();
+  for (const flip of FLIP_ORDER) {
+    if (!allowed.has(flip)) continue;
+    let current = FLIP_TIP[flip](shape);
+    for (let yaw = 0; yaw < 4; yaw += 1) {
+      const sig = orientationSignature(current);
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        out.push({ ...current, flip, yaw, rotation: yaw, rotated: yaw % 2 === 1 });
+      }
+      current = rotateShape90CW(current);
+    }
+  }
+  return out;
+};
+
+// Back-compat: yaw-only orientations (height always vertical).
+export const uniqueOrientations = (shape) => orientedShapes(shape, ['flat']);

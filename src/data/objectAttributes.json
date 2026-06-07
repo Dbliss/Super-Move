@@ -17,63 +17,79 @@
   },
   "bedDouble": {
     "stackLevel": 0,
-    "openTop": true
+    "openTop": true,
+    "orientations": {
+      "bottom": true,
+      "top": false,
+      "front": false,
+      "back": true,
+      "left": false,
+      "right": false
+    }
   },
   "bedSingle": {
     "stackLevel": 0,
-    "openTop": true
+    "openTop": true,
+    "orientations": {
+      "bottom": true,
+      "top": false,
+      "front": false,
+      "back": true,
+      "left": false,
+      "right": false
+    }
   },
   "bench": {
     "stackLevel": 5,
     "openTop": true
   },
-  "bookcaseClosedGarage": {
+  "bookcaseClosed": {
     "stackLevel": 3,
     "openTop": true
   },
-  "bookcaseClosedWideDining": {
-    "stackLevel": 0,
+  "bookcaseClosedWide": {
+    "stackLevel": 2,
     "openTop": true
   },
   "bookcaseOpen": {
     "stackLevel": 8,
     "openTop": true
   },
-  "bookcaseOpenOffice": {
+  "bookcaseOpenLow": {
     "stackLevel": 4,
     "openTop": false
   },
+  "boxLarge": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "boxMedium": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "boxSmall": {
+    "stackLevel": 10,
+    "openTop": true
+  },
+  "boxWardrobe": {
+    "stackLevel": 10,
+    "openTop": true
+  },
   "cabinetBedDrawer": {
-    "stackLevel": 0,
+    "stackLevel": 2,
     "openTop": true
   },
   "cabinetTelevision": {
-    "stackLevel": 0,
-    "openTop": true
-  },
-  "cardboardBoxClosedBathroom": {
-    "stackLevel": 10,
-    "openTop": true
-  },
-  "cardboardBoxClosedBedroom": {
-    "stackLevel": 10,
-    "openTop": true
-  },
-  "cardboardBoxClosedGarage": {
-    "stackLevel": 10,
-    "openTop": true
-  },
-  "cardboardBoxClosedKitchen": {
-    "stackLevel": 10,
-    "openTop": true
-  },
-  "cardboardBoxClosedOffice": {
-    "stackLevel": 10,
-    "openTop": true
-  },
-  "cardboardBoxOpenGarage": {
-    "stackLevel": 10,
-    "openTop": false
+    "stackLevel": 3,
+    "openTop": true,
+    "orientations": {
+      "bottom": true,
+      "top": false,
+      "front": false,
+      "back": false,
+      "left": true,
+      "right": false
+    }
   },
   "chair": {
     "stackLevel": 8,
@@ -92,7 +108,7 @@
     "openTop": false
   },
   "desk": {
-    "stackLevel": 0,
+    "stackLevel": 3,
     "openTop": true
   },
   "deskCorner": {
@@ -135,12 +151,12 @@
     "stackLevel": 0,
     "openTop": true
   },
-  "pottedPlantLiving": {
+  "pottedPlant": {
     "stackLevel": 0,
     "openTop": false
   },
   "sideTableDrawers": {
-    "stackLevel": 0,
+    "stackLevel": 3,
     "openTop": true
   },
   "speaker": {
@@ -167,7 +183,7 @@
     "stackLevel": 10,
     "openTop": false
   },
-  "trashcanLaundry": {
+  "trashcan": {
     "stackLevel": 9,
     "openTop": false
   },

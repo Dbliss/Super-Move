@@ -6,6 +6,31 @@
 // Note that several items intentionally share an `asset` (e.g. packed boxes), and dimensions
 // are keyed by `asset`, so editing one box size updates every item that reuses that model.
 
+// Packing boxes are offered in every room as a fixed set of sizes. Each size has its own
+// `asset` so it carries its own (unique) dimensions in objectDimensions.json, while all of
+// them render with the shared cardboard-box model via modelAssetFor() below. The Wardrobe
+// box is bedroom-only. Per-room item ids keep each room's box counts independent.
+const boxSizes = [
+  { suffix: 'Small', name: 'Small box', asset: 'boxSmall', volume: 0.036 },
+  { suffix: 'Medium', name: 'Medium box', asset: 'boxMedium', volume: 0.081 },
+  { suffix: 'Large', name: 'Large box', asset: 'boxLarge', volume: 0.162 },
+];
+const wardrobeBox = { suffix: 'Wardrobe', name: 'Wardrobe box', asset: 'boxWardrobe', volume: 0.36 };
+
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const boxesForRoom = (roomId, { wardrobe = false } = {}) =>
+  (wardrobe ? [...boxSizes, wardrobeBox] : boxSizes).map((b) => ({
+    id: `box${b.suffix}${cap(roomId)}`,
+    name: b.name,
+    asset: b.asset,
+    volume: b.volume,
+  }));
+
+// Box sizes all reuse a single physical model; map their asset to the real GLTF/side-image file.
+const boxModelAssets = new Set([wardrobeBox, ...boxSizes].map((b) => b.asset));
+export const modelAssetFor = (asset) => (boxModelAssets.has(asset) ? 'cardboardBoxClosed' : asset);
+
 export const rooms = [
   {
     id: 'bedroom',
@@ -17,7 +42,7 @@ export const rooms = [
       { id: 'bedBunk', name: 'Bunk bed', asset: 'bedBunk', volume: 3.8 },
       { id: 'cabinetBedDrawer', name: 'Tall drawers', asset: 'cabinetBedDrawer', volume: 1.7 },
       { id: 'sideTableDrawers', name: 'Bedside drawers', asset: 'sideTableDrawers', volume: 0.5 },
-      { id: 'cardboardBoxClosedBedroom', name: 'Packed box', asset: 'cardboardBoxClosed', volume: 0.35 },
+      ...boxesForRoom('bedroom', { wardrobe: true }),
     ],
   },
   {
@@ -33,6 +58,7 @@ export const rooms = [
       { id: 'tableCoffee', name: 'Coffee table', asset: 'tableCoffee', volume: 0.7 },
       { id: 'bookcaseOpen', name: 'Bookcase', asset: 'bookcaseOpen', volume: 1.6 },
       { id: 'pottedPlantLiving', name: 'Large plant', asset: 'pottedPlant', volume: 0.45 },
+      ...boxesForRoom('living'),
     ],
   },
   {
@@ -45,6 +71,7 @@ export const rooms = [
       { id: 'chair', name: 'Dining chair', asset: 'chair', volume: 0.35 },
       { id: 'stoolBar', name: 'Bar stool', asset: 'stoolBar', volume: 0.3 },
       { id: 'bookcaseClosedWideDining', name: 'Display cabinet', asset: 'bookcaseClosedWide', volume: 2.1 },
+      ...boxesForRoom('dining'),
     ],
   },
   {
@@ -57,7 +84,7 @@ export const rooms = [
       { id: 'kitchenMicrowave', name: 'Microwave', asset: 'kitchenMicrowave', volume: 0.25 },
       { id: 'kitchenStove', name: 'Stove', asset: 'kitchenStove', volume: 1.0 },
       { id: 'kitchenCoffeeMachine', name: 'Coffee machine', asset: 'kitchenCoffeeMachine', volume: 0.18 },
-      { id: 'cardboardBoxClosedKitchen', name: 'Kitchen box', asset: 'cardboardBoxClosed', volume: 0.35 },
+      ...boxesForRoom('kitchen'),
     ],
   },
   {
@@ -70,7 +97,7 @@ export const rooms = [
       { id: 'chairDesk', name: 'Desk chair', asset: 'chairDesk', volume: 0.65 },
       { id: 'computerScreen', name: 'Monitor', asset: 'computerScreen', volume: 0.16 },
       { id: 'bookcaseOpenOffice', name: 'Office bookcase', asset: 'bookcaseOpenLow', volume: 1.1 },
-      { id: 'cardboardBoxClosedOffice', name: 'Office box', asset: 'cardboardBoxClosed', volume: 0.35 },
+      ...boxesForRoom('office'),
     ],
   },
   {
@@ -82,6 +109,7 @@ export const rooms = [
       { id: 'dryer', name: 'Dryer', asset: 'dryer', volume: 0.85 },
       { id: 'washerDryerStacked', name: 'Washer dryer stack', asset: 'washerDryerStacked', volume: 1.5 },
       { id: 'trashcanLaundry', name: 'Utility bin', asset: 'trashcan', volume: 0.25 },
+      ...boxesForRoom('laundry'),
     ],
   },
   {
@@ -92,7 +120,7 @@ export const rooms = [
       { id: 'bathroomCabinet', name: 'Bathroom cabinet', asset: 'bathroomCabinet', volume: 0.85 },
       { id: 'bathroomCabinetDrawer', name: 'Drawer cabinet', asset: 'bathroomCabinetDrawer', volume: 0.7 },
       { id: 'bathroomMirror', name: 'Mirror', asset: 'bathroomMirror', volume: 0.18 },
-      { id: 'cardboardBoxClosedBathroom', name: 'Bathroom box', asset: 'cardboardBoxClosed', volume: 0.35 },
+      ...boxesForRoom('bathroom'),
     ],
   },
   {
@@ -104,8 +132,7 @@ export const rooms = [
       { id: 'coatRackStanding', name: 'Standing rack', asset: 'coatRackStanding', volume: 0.5 },
       { id: 'bookcaseClosedGarage', name: 'Storage cabinet', asset: 'bookcaseClosed', volume: 1.7 },
       { id: 'speaker', name: 'Large speaker', asset: 'speaker', volume: 0.6 },
-      { id: 'cardboardBoxOpenGarage', name: 'Open box', asset: 'cardboardBoxOpen', volume: 0.35 },
-      { id: 'cardboardBoxClosedGarage', name: 'Packed box', asset: 'cardboardBoxClosed', volume: 0.35 },
+      ...boxesForRoom('garage'),
     ],
   },
 ];

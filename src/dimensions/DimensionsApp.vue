@@ -6,7 +6,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { uniqueAssets } from '../data/rooms.js';
 import savedDimensionsSeed from '../data/objectDimensions.json';
 import savedAttributesSeed from '../data/objectAttributes.json';
-import { resolveAttributes, clampLevel, MAX_STACK_LEVEL } from '../data/attributes.js';
+import {
+  resolveAttributes,
+  clampLevel,
+  MAX_STACK_LEVEL,
+  FACES,
+  defaultOrientations,
+  normalizeOrientations,
+} from '../data/attributes.js';
 import { measureAsset } from '../utils/assetDimensions.js';
 
 // ── Catalog ────────────────────────────────────────────────────────────────────
@@ -34,9 +41,15 @@ const mode = ref('regular'); // 'regular' | 'composite'
 const dims = reactive({ widthCm: 60, depthCm: 60, heightCm: 60 }); // regular mode
 const boxes = reactive([]); // composite mode: array of {x,y,z,w,d,h} in cm
 const selectedBoxIndex = ref(0);
-const attrs = reactive({}); // itemId -> { stackLevel, openTop } for the items using the current asset
+// Stacking attributes for the current asset (room-agnostic — every item that reuses the model
+// shares one rating). { stackLevel, openTop, orientations: { bottom, top, front, back, left, right } }.
+const attrRow = reactive({ stackLevel: 5, openTop: true, orientations: defaultOrientations() });
+const FACE_OPTIONS = FACES;
 const status = ref('');
 const saving = ref(false);
+// Which face the 3D viewport is currently previewing as "down" (hover a tick to tip the model).
+const previewFace = ref('bottom');
+const previewLabel = computed(() => FACES.find((f) => f.key === previewFace.value)?.label || 'Base (flat)');
 
 const selectedAsset = computed(() => assets[selectedIndex.value]);
 const definedCount = computed(() => assets.filter((a) => savedDims[a.asset]).length);
@@ -57,15 +70,15 @@ const dimsPayload = () => {
   return { widthCm: round(dims.widthCm), depthCm: round(dims.depthCm), heightCm: round(dims.heightCm) };
 };
 
-const attrsDirty = computed(() =>
-  (selectedAsset.value?.usedBy || []).some((u) => {
-    const cur = attrs[u.id];
-    const saved = savedAttrs[u.id];
-    if (!cur) return false;
-    if (!saved) return true;
-    return saved.stackLevel !== clampLevel(cur.stackLevel) || saved.openTop !== cur.openTop;
-  }),
-);
+const attrsDirty = computed(() => {
+  const asset = selectedAsset.value?.asset;
+  if (!asset) return false;
+  const saved = resolveAttributes(asset, savedAttrs);
+  if (saved.stackLevel !== clampLevel(attrRow.stackLevel)) return true;
+  if (saved.openTop !== !!attrRow.openTop) return true;
+  const cur = normalizeOrientations(attrRow.orientations);
+  return FACE_OPTIONS.some(({ key }) => saved.orientations[key] !== cur[key]);
+});
 
 const isDirty = computed(() => {
   const saved = savedDims[selectedAsset.value?.asset];
@@ -183,6 +196,53 @@ const recentreContent = (measured) => {
   contentGroup.position.set(-m(measured.widthCm) / 2, 0, -m(measured.depthCm) / 2);
 };
 
+// The rotation that tips the object so the given face rests on the grid. Matches the packer's
+// rest poses: top = upside down, front/back tip about the width axis, left/right about the depth.
+const faceQuaternion = (face) => {
+  const q = new THREE.Quaternion();
+  switch (face) {
+    case 'top': return q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI);
+    case 'front': return q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    case 'back': return q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+    case 'left': return q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+    case 'right': return q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI / 2);
+    default: return q; // bottom → flat (identity)
+  }
+};
+
+// Tip the model + its bounding boxes onto the previewed face, then re-seat them so they stay
+// centred over the grid and rest on the floor (min Y = 0).
+const applyOrientationPreview = () => {
+  if (!scene) return;
+  // Measure the content in its natural (un-rotated) pose.
+  contentGroup.quaternion.identity();
+  contentGroup.position.set(0, 0, 0);
+  contentGroup.updateMatrixWorld(true);
+  const local = new THREE.Box3().setFromObject(contentGroup);
+  if (!Number.isFinite(local.min.x)) return;
+
+  const q = faceQuaternion(previewFace.value);
+  const rotated = new THREE.Box3();
+  for (let xi = 0; xi < 2; xi += 1) {
+    for (let yi = 0; yi < 2; yi += 1) {
+      for (let zi = 0; zi < 2; zi += 1) {
+        const corner = new THREE.Vector3(
+          xi ? local.max.x : local.min.x,
+          yi ? local.max.y : local.min.y,
+          zi ? local.max.z : local.min.z,
+        ).applyQuaternion(q);
+        rotated.expandByPoint(corner);
+      }
+    }
+  }
+  contentGroup.quaternion.copy(q);
+  contentGroup.position.set(
+    -(rotated.min.x + rotated.max.x) / 2,
+    -rotated.min.y,
+    -(rotated.min.z + rotated.max.z) / 2,
+  );
+};
+
 const frameCamera = (measured) => {
   const reach = Math.max(m(measured.widthCm), m(measured.depthCm), m(measured.heightCm)) * 1.9 + 0.6;
   camera.position.set(reach, reach * 0.85, reach);
@@ -205,6 +265,7 @@ const showAsset = async (asset, measured) => {
     status.value = `No GLTF found for ${asset}`;
     drawBoxes();
     frameCamera(measured);
+    applyOrientationPreview();
     return;
   }
   const model = raw.clone(true);
@@ -231,6 +292,7 @@ const showAsset = async (asset, measured) => {
   status.value = '';
   drawBoxes();
   frameCamera(measured);
+  applyOrientationPreview();
 };
 
 const animate = () => {
@@ -305,11 +367,10 @@ const ensureMeasured = async (asset) => {
 };
 
 const loadAttrsFor = (asset) => {
-  for (const key of Object.keys(attrs)) delete attrs[key];
-  for (const u of assets[selectedIndex.value].usedBy) {
-    const a = resolveAttributes(u.id, savedAttrs);
-    attrs[u.id] = { stackLevel: a.stackLevel, openTop: a.openTop };
-  }
+  const a = resolveAttributes(asset, savedAttrs);
+  attrRow.stackLevel = a.stackLevel;
+  attrRow.openTop = a.openTop;
+  attrRow.orientations = a.orientations;
 };
 
 const loadDimsFor = (asset, measured) => {
@@ -399,10 +460,13 @@ const postJson = async (route, payload) => {
 const save = async () => {
   const asset = selectedAsset.value.asset;
   const dPayload = dimsPayload();
-  const aPayload = {};
-  for (const u of selectedAsset.value.usedBy) {
-    aPayload[u.id] = { stackLevel: clampLevel(attrs[u.id].stackLevel), openTop: !!attrs[u.id].openTop };
-  }
+  const aPayload = {
+    [asset]: {
+      stackLevel: clampLevel(attrRow.stackLevel),
+      openTop: !!attrRow.openTop,
+      orientations: normalizeOrientations(attrRow.orientations),
+    },
+  };
   saving.value = true;
   status.value = 'Saving…';
   try {
@@ -432,8 +496,11 @@ const goNext = () => { if (selectedIndex.value < assets.length - 1) selectAsset(
 // Re-draw only the boxes when dims/boxes/mode/selection change — the model never moves.
 watch(
   () => JSON.stringify({ mode: mode.value, dims, boxes, sel: selectedBoxIndex.value }),
-  () => drawBoxes(),
+  () => { drawBoxes(); applyOrientationPreview(); },
 );
+
+// Tip the model in the viewport whenever the previewed face changes (e.g. hovering a tick).
+watch(previewFace, () => applyOrientationPreview());
 
 onMounted(async () => {
   await nextTick();
@@ -484,6 +551,7 @@ onBeforeUnmount(teardown);
     <main class="viewport">
       <div ref="container" class="canvas-host"></div>
       <div v-if="status" class="overlay-status">{{ status }}</div>
+      <div v-if="previewFace !== 'bottom'" class="preview-badge">Resting on: {{ previewLabel }}</div>
       <div class="hud">Each grid square = 10 cm · the model stays put — draw boxes around it</div>
     </main>
 
@@ -550,7 +618,7 @@ onBeforeUnmount(teardown);
         <p class="overall">Overall: {{ overallLabel }} cm</p>
       </div>
 
-      <!-- Stack level & stacking, per item that uses this model -->
+      <!-- Stack level & stacking — one rating per model, shared by every item that reuses it. -->
       <div class="attributes">
         <h3>Stack level &amp; stacking</h3>
         <p class="attr-help">
@@ -558,19 +626,45 @@ onBeforeUnmount(teardown);
           lets the item also sit on top of any item with a <em>lower</em> level (e.g. level 2 can
           go on the floor, a level-0, or a level-1 item).
         </p>
-        <div v-for="u in selectedAsset?.usedBy || []" :key="u.id" class="attr-row">
-          <div class="attr-name" v-if="(selectedAsset?.usedBy.length || 0) > 1">{{ u.name }} <em>({{ u.room }})</em></div>
-          <div class="attr-controls" v-if="attrs[u.id]">
-            <label class="attr-level">
-              Stack level
-              <input type="number" min="0" :max="MAX_STACK_LEVEL" step="1" v-model.number="attrs[u.id].stackLevel" />
-              <span class="unit">/ {{ MAX_STACK_LEVEL }}</span>
-            </label>
-            <label class="attr-stack">
-              <input type="checkbox" v-model="attrs[u.id].openTop" />
-              Can stack items on top
+        <p v-if="(selectedAsset?.usedBy.length || 0) > 1" class="attr-usedby">
+          Shared by: {{ (selectedAsset?.usedBy || []).map((u) => `${u.name} (${u.room})`).join(', ') }}
+        </p>
+        <div class="attr-controls">
+          <label class="attr-level">
+            Stack level
+            <input type="number" min="0" :max="MAX_STACK_LEVEL" step="1" v-model.number="attrRow.stackLevel" />
+            <span class="unit">/ {{ MAX_STACK_LEVEL }}</span>
+          </label>
+          <label class="attr-stack">
+            <input type="checkbox" v-model="attrRow.openTop" />
+            Can stack items on top
+          </label>
+        </div>
+
+        <div class="orientations">
+          <h4>Allowed stacking orientations</h4>
+          <p class="attr-help">
+            Which faces this object may be laid on when packing. Base is always allowed; tick extra
+            faces (e.g. a bed's side or end) to let the packer stand it up and save floor space.
+            Opposite faces pack the same way.
+          </p>
+          <div class="orient-grid" @mouseleave="previewFace = 'bottom'">
+            <label
+              v-for="face in FACE_OPTIONS"
+              :key="face.key"
+              class="orient-tick"
+              :class="{ locked: face.key === 'bottom', previewing: previewFace === face.key }"
+              @mouseenter="previewFace = face.key"
+            >
+              <input
+                type="checkbox"
+                v-model="attrRow.orientations[face.key]"
+                :disabled="face.key === 'bottom'"
+              />
+              {{ face.label }}
             </label>
           </div>
+          <p class="orient-hint">Hover a face to preview how the object would rest in the truck.</p>
         </div>
       </div>
 
@@ -621,6 +715,7 @@ onBeforeUnmount(teardown);
 .viewport { position: relative; overflow: hidden; }
 .canvas-host { position: absolute; inset: 0; }
 .overlay-status { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.55); padding: 6px 14px; border-radius: 8px; font-size: 13px; }
+.preview-badge { position: absolute; top: 14px; right: 16px; background: rgba(255,207,74,0.16); border: 1px solid #ffcf4a; color: #ffcf4a; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .hud { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #9aa6a2; background: rgba(0,0,0,0.4); padding: 5px 12px; border-radius: 999px; }
 
 /* Panel */
@@ -668,6 +763,15 @@ onBeforeUnmount(teardown);
 .attr-level { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #aab4b1; }
 .attr-level input { width: 56px; padding: 6px 8px; font-size: 14px; text-align: center; background: #0f1213; border: 1px solid #313a3c; border-radius: 6px; color: #fff; }
 .attr-stack { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #aab4b1; cursor: pointer; }
+.attr-usedby { font-size: 11px; color: #79847f; line-height: 1.4; }
+.orientations { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.orientations h4 { font-size: 12px; color: #cfd6d4; }
+.orient-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; }
+.orient-tick { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #aab4b1; cursor: pointer; padding: 3px 5px; border-radius: 5px; border: 1px solid transparent; }
+.orient-tick:hover { background: #1c2123; }
+.orient-tick.previewing { border-color: #ffcf4a; color: #ffcf4a; }
+.orient-tick.locked { color: #79847f; }
+.orient-hint { font-size: 11px; color: #79847f; font-style: italic; }
 
 .measured { font-size: 12px; color: #8b9794; }
 

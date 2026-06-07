@@ -3,6 +3,8 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { modelAssetFor } from '../data/rooms.js';
+import logoUrl from '../../images/logo.png';
 
 const props = defineProps({
   trucks: {
@@ -17,7 +19,7 @@ const modelModules = import.meta.glob('../../Kenny/Models/GLTF format/*.glb', {
 });
 
 const modelUrlFor = async (asset) => {
-  const moduleLoader = modelModules[`../../Kenny/Models/GLTF format/${asset}.glb`];
+  const moduleLoader = modelModules[`../../Kenny/Models/GLTF format/${modelAssetFor(asset)}.glb`];
   return moduleLoader ? moduleLoader() : null;
 };
 
@@ -156,7 +158,7 @@ const buildCustomBox = (item) => {
   wrapper.add(mesh);
   wrapper.rotation.y = item.rotated ? Math.PI / 2 : 0;
   wrapper.userData.targetY = 0.08;
-  wrapper.userData.delay = item.batch * 0.48 + (item.sequence % 4) * 0.08;
+  wrapper.userData.delay = item.batch * 0.16 + (item.sequence % 4) * 0.04;
   wrapper.userData.settled = false;
   return wrapper;
 };
@@ -172,8 +174,44 @@ const buildTruck = (truck, index) => {
   group.add(makeBox(cargoLength, 0.08, cargoDepth, truckPalette.floor, { x: 0, y: 0, z: 0 }));
   group.add(makeBox(cargoLength, cargoHeight, 0.08, truckPalette.wall, { x: 0, y: cargoHeight / 2, z: -cargoDepth / 2 - 0.04 }, { transparent: true, opacity: 0.72 }));
   group.add(makeBox(0.08, cargoHeight, cargoDepth, truckPalette.wall, { x: -cargoLength / 2 - 0.04, y: cargoHeight / 2, z: 0 }, { transparent: true, opacity: 0.72 }));
-  group.add(makeBox(cargoLength, 0.1, 0.08, truckPalette.rail, { x: 0, y: cargoHeight + 0.04, z: cargoDepth / 2 + 0.04 }));
-  group.add(makeBox(0.08, 0.1, cargoDepth, truckPalette.rail, { x: cargoLength / 2 + 0.04, y: cargoHeight + 0.04, z: 0 }));
+  // Clean rail frame around the whole top perimeter of the truck.
+  const railThickness = 0.08;
+  const railY = cargoHeight + railThickness / 2;
+  const railSpanX = cargoLength + railThickness;
+  const railSpanZ = cargoDepth + railThickness;
+  group.add(makeBox(railSpanX, railThickness, railThickness, truckPalette.rail, { x: 0, y: railY, z: cargoDepth / 2 + railThickness / 2 }));
+  group.add(makeBox(railSpanX, railThickness, railThickness, truckPalette.rail, { x: 0, y: railY, z: -cargoDepth / 2 - railThickness / 2 }));
+  group.add(makeBox(railThickness, railThickness, railSpanZ, truckPalette.rail, { x: cargoLength / 2 + railThickness / 2, y: railY, z: 0 }));
+  group.add(makeBox(railThickness, railThickness, railSpanZ, truckPalette.rail, { x: -cargoLength / 2 - railThickness / 2, y: railY, z: 0 }));
+
+  // Brand logo on the outside of the long side wall, facing outward like real truck livery.
+  const logoMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false });
+  const logoMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), logoMaterial);
+  logoMesh.visible = false;
+  logoMesh.position.set(0, cargoHeight * 0.55, -cargoDepth / 2 - 0.05);
+  logoMesh.rotation.y = Math.PI; // turn the plane to face away from the cargo
+  group.add(logoMesh);
+  new THREE.TextureLoader().load(logoUrl, (texture) => {
+    if (disposed) return;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 1;
+    texture.center.set(0.5, 0.5);
+    texture.repeat.x = -1; // mirror to cancel the 180° turn so the text stays readable
+    logoMaterial.map = texture;
+    logoMaterial.needsUpdate = true;
+    const imageAspect = texture.image.width / texture.image.height;
+    const maxWidth = cargoLength * 0.5;
+    const maxHeight = cargoHeight * 0.62;
+    let logoWidth = maxWidth;
+    let logoHeight = logoWidth / imageAspect;
+    if (logoHeight > maxHeight) {
+      logoHeight = maxHeight;
+      logoWidth = logoHeight * imageAspect;
+    }
+    logoMesh.geometry.dispose();
+    logoMesh.geometry = new THREE.PlaneGeometry(logoWidth, logoHeight);
+    logoMesh.visible = true;
+  });
 
   const gridColumns = truck.packingGrid?.columns || truck.gridColumns;
   const gridRows = truck.packingGrid?.rows || truck.gridRows;
@@ -194,6 +232,25 @@ const buildTruck = (truck, index) => {
   };
 };
 
+// The world-space rotation that reproduces a packed orientation: first tip the item onto the
+// chosen face (so a different axis points up), then apply the yaw spin about vertical. Mirrors
+// the voxel rotations in shapes.js — 'end' tips depth up, 'side' tips width up.
+const orientationQuaternion = (item) => {
+  const tip = new THREE.Quaternion();
+  if (item.flip === 'end') {
+    tip.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2); // depth (Z) → up (Y)
+  } else if (item.flip === 'side') {
+    tip.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2); // width (X) → up (Y)
+  }
+  const yaw = new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 1, 0),
+    -((item.yaw || 0) * Math.PI) / 2,
+  );
+  return yaw.multiply(tip); // yaw applied in the world frame, after the tip
+};
+
+const WORLD_AXES = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+
 const normalizeModel = (source, item) => {
   if (!source) return null;
 
@@ -209,36 +266,44 @@ const normalizeModel = (source, item) => {
     }
   });
 
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  // Cell dims are derived from this same mesh (measured + rounded up to the cell grid),
-  // so we can scale each axis independently to fill the cell exactly. The stretch is
-  // never more than 10 cm per axis and the model lands flush with its packed neighbours.
-  //
-  // item.widthMeters / depthMeters describe the footprint AFTER the packer's rotation
-  // (world X × Z). The wrapper re-applies that 90° spin below, so scale the mesh in its
-  // OWN un-rotated frame — swapping width/depth when rotated — otherwise the rendered box
-  // comes out transposed and pokes into its neighbours / past the truck wall.
-  const rotated = item.rotated;
-  const targetX = Math.max(rotated ? item.depthMeters : item.widthMeters, 0.05);
-  const targetZ = Math.max(rotated ? item.widthMeters : item.depthMeters, 0.05);
-  const targetHeight = Math.max(item.heightMeters, 0.05);
-  model.scale.set(
-    targetX / Math.max(size.x, 0.01),
-    targetHeight / Math.max(size.y, 0.01),
-    targetZ / Math.max(size.z, 0.01),
-  );
+  // item.width/depth/heightMeters are the cell extents the packer assigned along the truck's
+  // world axes (X = length, Y = up, Z = depth) — already post-rotation. We rotate the model into
+  // the packed pose, then stretch it in its OWN (un-rotated) frame so that, once rotated, each
+  // natural axis fills the world extent it lands on. The stretch is never more than ~10 cm.
+  // Boxes are drawn a touch smaller than their cell so a ~2% gap shows between neighbours —
+  // otherwise a stack of identical cartons reads as one solid block.
+  const isBox = modelAssetFor(item.asset) === 'cardboardBoxClosed';
+  const fill = isBox ? 0.98 : 1;
+  const quaternion = orientationQuaternion(item);
+  const target = [
+    Math.max(item.widthMeters * fill, 0.05),
+    Math.max(item.heightMeters * fill, 0.05),
+    Math.max(item.depthMeters * fill, 0.05),
+  ];
 
-  const scaledBox = new THREE.Box3().setFromObject(model);
-  const center = scaledBox.getCenter(new THREE.Vector3());
-  const minY = scaledBox.min.y;
-  model.position.set(-center.x, -minY, -center.z);
+  const naturalSize = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()).toArray();
+  // For each natural model axis, find which world axis it points along after rotation, then scale
+  // that axis to the matching world target. Generalises the old width/depth swap to any tip.
+  const scale = [0, 1, 2].map((i) => {
+    const rotated = WORLD_AXES[i].clone().applyQuaternion(quaternion);
+    const comps = [Math.abs(rotated.x), Math.abs(rotated.y), Math.abs(rotated.z)];
+    const worldAxis = comps.indexOf(Math.max(...comps));
+    return target[worldAxis] / Math.max(naturalSize[i], 0.01);
+  });
+  model.scale.set(scale[0], scale[1], scale[2]);
+
+  // Apply the pose on a pivot, then re-seat it: centred in X/Z, resting on the floor (min Y = 0).
+  const pivot = new THREE.Group();
+  pivot.quaternion.copy(quaternion);
+  pivot.add(model);
+  const posedBox = new THREE.Box3().setFromObject(pivot);
+  const center = posedBox.getCenter(new THREE.Vector3());
+  pivot.position.set(-center.x, -posedBox.min.y, -center.z);
 
   const wrapper = new THREE.Group();
-  wrapper.add(model);
-  wrapper.rotation.y = rotated ? Math.PI / 2 : 0;
+  wrapper.add(pivot);
   wrapper.userData.targetY = 0.08;
-  wrapper.userData.delay = item.batch * 0.48 + (item.sequence % 4) * 0.08;
+  wrapper.userData.delay = item.batch * 0.16 + (item.sequence % 4) * 0.04;
   wrapper.userData.settled = false;
   return wrapper;
 };
@@ -260,11 +325,11 @@ const addPackedItems = async (truckData, truckMesh) => {
     const x = -truckMesh.cargoLength / 2 + (item.x + item.width / 2) * truckMesh.cellLength;
     const z = -truckMesh.cargoDepth / 2 + (item.y + item.depth / 2) * truckMesh.cellDepth;
     const targetY = 0.08 + item.z * truckMesh.cellHeight;
-    object.position.set(x, truckMesh.cargoHeight + 2.6 + item.batch * 0.52, z);
+    object.position.set(x, truckMesh.cargoHeight + 1.5 + item.batch * 0.52, z);
     object.userData.targetX = x;
     object.userData.targetY = targetY;
     object.userData.targetZ = z;
-    object.userData.startY = truckMesh.cargoHeight + 2.6 + targetY;
+    object.userData.startY = truckMesh.cargoHeight + 1.5 + targetY;
     truckMesh.group.add(object);
   });
 };

@@ -2,8 +2,8 @@
 //
 // Each truck has a flat Uint16Array `voxels` indexed by (z * D * W + y * W + x) holding either
 // 0 (empty) or 1 + index into the per-truck items array. Items expose a precomputed voxel mask
-// (list of [dx, dy, dz]) plus a bottomFootprint (columns whose lowest voxel is at dz=0 — these
-// are the contact points that need a supporting surface below).
+// (list of [dx, dy, dz]) plus a `footprint` (every column the item occupies — its full vertical
+// shadow) and a `bottomFootprint` (the subset whose lowest voxel touches dz=0 — the contact feet).
 //
 // Packing rules:
 //   - Each item has a `stackLevel` 0–10. An item may rest on the truck floor (base), or on top
@@ -12,8 +12,11 @@
 //     beds, fridges) that ride the floor and never stack on their own kind.
 //   - Lowest stackLevel goes first, so floor-bound items claim the base before anything stacks.
 //   - An item can only rest on items whose `openTop` is true.
-//   - Placement minimises (top-Z, then deep-Y, then far-X) so things settle low and to the
-//     back-left corner.
+//   - 100% contact: when stacked (not on the floor), an item's ENTIRE footprint must be supported
+//     by item(s) directly below — never partly over empty space — so nothing hangs off an edge.
+//   - Placement builds walls from the back forward: it scores by (x, then y, then z), so the load
+//     fills each back cross-section — column by column across the width, stacking up — before
+//     advancing toward the doors, the way a removalist loads a truck.
 //
 // Fleet selection (the part that used to live half in App.vue, half in a retry loop here):
 //   1. Derive lower bounds on the truck count from the load's real minimum requirements —
@@ -24,7 +27,7 @@
 //        (a) fewest trucks, (b) smallest total truck size, (c) lowest wasted space / height.
 //      The first fleet that fully packs wins.
 
-import { uniqueOrientations } from './shapes.js';
+import { orientedShapes } from './shapes.js';
 
 const idx = (W, D, x, y, z) => z * D * W + y * W + x;
 
@@ -59,7 +62,7 @@ const orientationCache = new WeakMap();
 const orientationsFor = (item) => {
   let cached = orientationCache.get(item.shape);
   if (!cached) {
-    cached = uniqueOrientations(item.shape);
+    cached = orientedShapes(item.shape, item.orientationFlips || ['flat']);
     orientationCache.set(item.shape, cached);
   }
   return cached;
@@ -92,9 +95,11 @@ const placementOK = (grid, shape, x, y, z, item) => {
   }
   // 2. Support contract. The truck floor supports any item.
   if (z === 0) return true;
-  for (const [dx, dy] of shape.bottomFootprint) {
+  // 100% contact: every column the item occupies (its full footprint, not just the contact feet)
+  // must sit on a supporting item directly below — so nothing is stacked hanging off an edge.
+  for (const [dx, dy] of shape.footprint) {
     const supporter = itemAt(grid, x + dx, y + dy, z - 1);
-    if (!supporter) return false;                          // floating in the air → reject
+    if (!supporter) return false;                          // empty below → would overhang/float → reject
     if (!supporter.openTop) return false;                  // can't put anything on top of this item
     // May rest on an item of equal-or-lower level — so identical stackables (boxes on boxes)
     // pile up. The one exception is level 0: those are heavy "base" items (sofas, beds, fridges)
@@ -105,16 +110,18 @@ const placementOK = (grid, shape, x, y, z, item) => {
   return true;
 };
 
-// Deepest-bottom-left scoring. Lowest top wins (so loads settle low and stacks stay short), then
-// an orientation bias lets a seed pack depth- or width-aligned (so uniform loads tile a truck
-// fully rather than stranding a strip), then back-left tucking. This is cheap — no per-candidate
-// voxel scan — which keeps placement interactive even for thousand-voxel items.
+// Wall-building scoring (how a removalist actually loads a truck): start at the back wall and
+// build it as full as possible — column by column across the width, stacking each column up —
+// before advancing forward toward the doors. So the dominant key is the back position (x), then
+// the across-width position (y), then height (z): an item prefers to climb the current back
+// column over starting fresh floor further forward, which forms solid, stable walls of cargo.
+// This is cheap — no per-candidate voxel scan — keeping placement interactive on big loads.
 const scorePlacement = (grid, shape, x, y, z, orientBias) => [
-  z + shape.height,                   // 1. minimise top height
-  orientBias === 'deep' ? -shape.depth : orientBias === 'wide' ? -shape.width : 0, // 2. orientation bias
-  z,                                  // 3. rest as low as possible
-  y + shape.depth,                    // 4. prefer back of truck
-  x + shape.width,                    // 5. prefer left of truck
+  x,                                  // 1. hug the back wall — only move forward once it's full
+  y,                                  // 2. fill across the width, one column at a time
+  z,                                  // 3. stack the current back column up before starting a new one
+  orientBias === 'deep' ? -shape.depth : orientBias === 'wide' ? -shape.width : 0, // 4. orientation bias
+  x + shape.width,                    // 5. keep the wall thin (don't poke forward needlessly)
 ];
 
 const compareScores = (a, b) => {
@@ -356,6 +363,8 @@ const packOnce = (sortedItems, trucks, bias) => {
       height: bestPlacement.oriented.height,
       rotation: bestPlacement.oriented.rotation,
       rotated: bestPlacement.oriented.rotation % 2 === 1,
+      flip: bestPlacement.oriented.flip,
+      yaw: bestPlacement.oriented.yaw,
       sequence: bestTruck.items.length,
     });
   }
