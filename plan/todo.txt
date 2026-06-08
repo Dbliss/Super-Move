@@ -1,15 +1,7 @@
-
-    Update colour palette to match wix (circle back to this last)
-
-    search item from list
-
-Fix studio
+search item from list
 
 Make custom item look a bit nicer.
 
-Update final truck with logo
-
-Make truck aim to fill up 80%
--option for beds to go upright, along with other select items
+IMprove the "space used" to better dictate actual usable space
 
 Fix "Get Quote Button"

@@ -71,18 +71,55 @@ const orientationsFor = (item) => {
 // Returns the lowest z_rest at which the given oriented shape can be placed at (x, y),
 // or null if it cannot fit anywhere in the column. Verifies bounds, voxel collisions, and
 // the support contract (open_top + stack level) for every bottom-footprint cell.
+//
+// Fast rest height: rather than scan every z from the floor up, compute the lowest z at which no
+// footprint column's bottom collides with the cargo already there — `zRest = max(columnTop[col] -
+// bottomOffset[col])` over the footprint, an O(footprint) read of the truck's skyline. `placementOK`
+// then validates that exact resting spot (collision + 100% support + open-top + stack level), bumping
+// up only in the rare overhang case. This drops the old ~H× z-scan, which is the dominant pack cost.
+//
+// Trade-off vs the old floor-up scan: an item no longer settles into a CAVE *below* a column's top
+// (e.g. the floor space under a table slab). That is a minor fill source and tuck-in anchors still
+// target floor pockets; we accept it for the large speedup that funds a much wider search.
 const findLowestZ = (grid, shape, x, y, item) => {
   if (x < 0 || y < 0) return null;
   if (x + shape.width > grid.W) return null;
   if (y + shape.depth > grid.D) return null;
 
-  // Scan from the floor up and take the lowest z that fits and is supported. We deliberately do
-  // NOT skip ahead to columnTop here: an item may settle into a CAVE below an overhang (under a
-  // table slab, between chair legs, inside an L-sofa's notch) where the column's top surface is
-  // high but the space underneath is empty. Low-z checks fast-fail on the first collided voxel,
-  // so the extra iterations are cheap.
   const maxZ = grid.H - shape.height;
-  for (let z = 0; z <= maxZ; z += 1) {
+  if (maxZ < 0) return null;
+
+  const { W, columnTop } = grid;
+  const fp = shape.footprint;
+  const off = shape.bottomOffsets;
+  let zRest = 0;
+  for (let i = 0; i < fp.length; i += 1) {
+    const need = columnTop[(y + fp[i][1]) * W + (x + fp[i][0])] - off[i];
+    if (need > zRest) zRest = need;
+  }
+  if (zRest > maxZ) return null;
+
+  // Fast path for solid blocks (the common case): at zRest a solid box is collision-free by
+  // construction (every footprint column is clear from zRest up), so we skip the O(voxels) scan and
+  // only verify the 100%-support contract in O(footprint) straight off the skyline. This is the hot
+  // path that lets the GA run thousands of packs in the budget.
+  if (shape.solid) {
+    if (zRest === 0) return 0; // on the floor — always supported
+    const lvl = item.stackLevel;
+    for (let i = 0; i < fp.length; i += 1) {
+      const dx = fp[i][0];
+      const dy = fp[i][1];
+      if (columnTop[(y + dy) * W + (x + dx)] !== zRest) return null; // uneven surface → not fully supported
+      const sup = itemAt(grid, x + dx, y + dy, zRest - 1);
+      if (!sup || !sup.openTop) return null;
+      if (sup.stackLevel > lvl) return null;
+      if (sup.stackLevel === lvl && lvl === 0) return null;
+    }
+    return zRest;
+  }
+
+  // General (composite) shapes: validate the resting spot with the full voxel/support check.
+  for (let z = zRest; z <= maxZ; z += 1) {
     if (placementOK(grid, shape, x, y, z, item)) return z;
   }
   return null;
@@ -116,11 +153,20 @@ const placementOK = (grid, shape, x, y, z, item) => {
 // the across-width position (y), then height (z): an item prefers to climb the current back
 // column over starting fresh floor further forward, which forms solid, stable walls of cargo.
 // This is cheap — no per-candidate voxel scan — keeping placement interactive on big loads.
+// orientBias: 'deep' favours a deep (along-length) footprint, 'wide' a wide (across-width) one,
+// 'tall' favours the orientation that stands the item UP (maximising height) — this is what makes a
+// bed/mirror/table tip onto its end or side and ride against the wall, when its attributes allow it.
+const biasKey = (shape, orientBias) =>
+  orientBias === 'deep' ? -shape.depth
+    : orientBias === 'wide' ? -shape.width
+      : orientBias === 'tall' ? -shape.height
+        : 0;
+
 const scorePlacement = (grid, shape, x, y, z, orientBias) => [
   x,                                  // 1. hug the back wall — only move forward once it's full
   y,                                  // 2. fill across the width, one column at a time
   z,                                  // 3. stack the current back column up before starting a new one
-  orientBias === 'deep' ? -shape.depth : orientBias === 'wide' ? -shape.width : 0, // 4. orientation bias
+  biasKey(shape, orientBias),         // 4. orientation bias (deep / wide / tall)
   x + shape.width,                    // 5. keep the wall thin (don't poke forward needlessly)
 ];
 
@@ -300,11 +346,58 @@ const candidateFleets = (N, sizes, bounds) => {
 // stackLevel) items always go first so they claim base space; varying the tiebreak and bias gives
 // a tight fleet several chances to pack fully before we escalate to a bigger one.
 const byLevel = (cmp) => (items) => [...items].sort((a, b) => a.stackLevel - b.stackLevel || cmp(a, b));
-const seeds = [
-  { order: byLevel((a, b) => volumeCells(b) - volumeCells(a)), bias: null },
-  { order: byLevel((a, b) => footprintCells(b) - footprintCells(a) || b.shape.height - a.shape.height), bias: 'deep' },
-  { order: byLevel((a, b) => footprintCells(b) - footprintCells(a)), bias: 'wide' },
+
+// "Effective wall height" of a floor-bound item — how tall a column it ultimately contributes to
+// the back wall. An open-top base gets boxes piled on it up to the roof, so it effectively reaches
+// full height (ranked above every closed item); a closed-top base only ever stands its own height,
+// since nothing can rest above it. Ordering floor items by this descending — and placing them with
+// the greedy back-hugging score — makes the load DESCEND back→front (open-top stacks deepest, then
+// the tallest closed bases, down to the shortest at the doors), i.e. a clean wedge with no
+// short-item-in-the-middle gaps and no tall-item stranded up front.
+const EFFECTIVE_ROOF = 1e6;
+const effectiveHeight = (item) => (item.openTop ? EFFECTIVE_ROOF : 0) + item.shape.height;
+
+const longestDim = (item) => Math.max(item.shape.width, item.shape.depth, item.shape.height);
+
+// Candidate orderings, all preserving heavy-first (lowest stackLevel placed first, so bases claim
+// the floor before anything stacks). The exhaustive search crosses these with the orientation
+// biases below, then with seeded-random restarts, and keeps whichever full pack scores best on
+// layoutScore. Each is a deterministic comparator so the first (and usually best) candidates are
+// fully reproducible run-to-run.
+const COMPARATORS = [
+  (a, b) => volumeCells(b) - volumeCells(a),
+  (a, b) => footprintCells(b) - footprintCells(a) || b.shape.height - a.shape.height,
+  (a, b) => b.shape.height - a.shape.height,
+  (a, b) => longestDim(b) - longestDim(a),
+  (a, b) => effectiveHeight(b) - effectiveHeight(a) || volumeCells(b) - volumeCells(a),
 ];
+const BIASES = [null, 'wide', 'deep', 'tall'];
+
+// Deterministic, ordered list of the "structured" seeds (comparator × bias) tried before any random
+// restart, so a given load packs the same way every time it is small enough to exhaust them.
+const STRUCTURED_SEEDS = [];
+for (const cmp of COMPARATORS) {
+  for (const bias of BIASES) STRUCTURED_SEEDS.push({ order: byLevel(cmp), bias });
+}
+
+// A small, diverse subset used only to decide feasibility (does the load fit a fleet?). Spans the
+// comparators and biases so it rarely under-counts, but is ~5× cheaper than the full set — feasibility
+// is run across several candidate fleets, so it must stay fast or it dominates the time budget.
+const FEASIBILITY_SEEDS = [
+  { order: byLevel(COMPARATORS[0]), bias: null },   // volume, neutral
+  { order: byLevel(COMPARATORS[1]), bias: 'wide' }, // footprint, wide
+  { order: byLevel(COMPARATORS[2]), bias: 'tall' }, // height, stand up
+  { order: byLevel(COMPARATORS[4]), bias: 'deep' }, // effective-height, deep
+];
+
+// Tiny, fast, seedable PRNG (mulberry32) so random restarts are reproducible across runs/machines.
+const mulberry32 = (seed) => () => {
+  seed |= 0;
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
 
 const makeFleetTrucks = (fleetSizes) =>
   fleetSizes.map((size, index) => ({
@@ -371,16 +464,220 @@ const packOnce = (sortedItems, trucks, bias) => {
   return { trucks, unplaced, placed: sortedItems.length - unplaced.length };
 };
 
-// Try to pack everything into the given fleet sizes, attempting each seed ordering until one
-// fully succeeds. Returns the first full success, else the best partial.
-const packFleet = (items, fleetSizes) => {
-  let best = null;
-  for (const seed of seeds) {
+// ---------------------------------------------------------------------------------------------
+// Layout quality — how to choose between layouts that ALL pack everything into the same fleet.
+// ---------------------------------------------------------------------------------------------
+//
+// This encodes how a removalist actually wants the truck to look. It NEVER changes truck count or
+// fleet size (decided first, deterministically) — it only ranks equally-feasible full packs. Lower
+// is better. The drivers, in plain terms:
+//   - trapped air: empty cells trapped under cargo → hollow, unstable. Penalize hard.
+//   - roughness: how jagged the skyline is — the sum of height steps between neighbouring columns.
+//     Minimizing it bans the "tall, short, tall, short" sawtooth and yields a smooth 10-9-6-2 ramp.
+//   - back-load: mass hugging the back wall (the wedge: full at the back, tapering to the doors).
+//   - stack height: reward piling occupied columns high (dense, few half-empty columns).
+//   - wall contact: reward heavy floor items (low stackLevel — beds, fridges, sofas) whose footprint
+//     touches a wall, and reward standing-up tall items, so the heavy/upright pieces ride the walls.
+// Weights are gathered here so they are easy to retune against packing.diag.mjs.
+const W_TRAPPED = 8;
+const W_ROUGH = 3;
+const W_BACKLOAD = 2;
+const W_HEIGHT = 2;   // subtracted (reward)
+const W_WALL = 1.5;   // subtracted (reward)
+const HEAVY_LEVEL = 2; // stackLevel ≤ this counts as a "heavy base" for wall-contact scoring
+
+const truckLayoutStats = (truck) => {
+  const grid = truck.grid;
+  const { W, D, H, voxels, columnTop } = grid;
+  let occupied = 0;
+  let trapped = 0;
+  let backLoadSum = 0;
+  let heightSum = 0;     // sum of column tops over NON-empty columns
+  let nonEmptyCols = 0;
+  for (let y = 0; y < D; y += 1) {
+    for (let x = 0; x < W; x += 1) {
+      const top = columnTop[y * W + x];
+      if (top > 0) { heightSum += top; nonEmptyCols += 1; }
+      for (let z = 0; z < top; z += 1) {
+        if (voxels[idx(W, D, x, y, z)] !== 0) {
+          occupied += 1;
+          backLoadSum += W > 1 ? x / (W - 1) : 0;
+        } else {
+          trapped += 1;
+        }
+      }
+    }
+  }
+  // Skyline roughness: total absolute height step between horizontally adjacent columns (both axes).
+  let roughness = 0;
+  let pairs = 0;
+  for (let y = 0; y < D; y += 1) {
+    for (let x = 0; x < W; x += 1) {
+      const h = columnTop[y * W + x];
+      if (x + 1 < W) { roughness += Math.abs(h - columnTop[y * W + x + 1]); pairs += 1; }
+      if (y + 1 < D) { roughness += Math.abs(h - columnTop[(y + 1) * W + x]); pairs += 1; }
+    }
+  }
+  // Wall contact: fraction of heavy floor items whose footprint touches a wall, with a bonus when a
+  // tall item is actually standing up (its height is its largest dimension).
+  let heavy = 0;
+  let wallScore = 0;
+  for (const it of truck.items) {
+    if (it.z !== 0 || it.stackLevel > HEAVY_LEVEL) continue;
+    heavy += 1;
+    const touchesWall = it.x === 0 || it.y === 0 || it.x + it.width === W || it.y + it.depth === D;
+    if (touchesWall) {
+      const standingUp = it.height >= Math.max(it.width, it.depth);
+      wallScore += standingUp ? 1.5 : 1;
+    }
+  }
+  return {
+    occupied,
+    trapped,
+    envelope: W * D * H,
+    backLoadMean: occupied ? backLoadSum / occupied : 0,
+    roughnessNorm: pairs ? roughness / (pairs * H) : 0,
+    heightMean: nonEmptyCols ? heightSum / (nonEmptyCols * H) : 0,
+    wallFrac: heavy ? wallScore / heavy : 0,
+  };
+};
+
+// Returns [usedTrucks, aestheticScalar] — compared lexicographically (lower better). Keeping
+// usedTrucks strictly first preserves consolidation; the scalar blends the weighted drivers above.
+const layoutScore = (trucks) => {
+  let used = 0;
+  let trapped = 0;
+  let envelope = 0;
+  let occupied = 0;
+  let backWeighted = 0;
+  let roughWeighted = 0;
+  let heightWeighted = 0;
+  let wallWeighted = 0;
+  for (const truck of trucks) {
+    if (truck.items.length === 0) continue;
+    used += 1;
+    const s = truckLayoutStats(truck);
+    trapped += s.trapped;
+    envelope += s.envelope;
+    occupied += s.occupied;
+    backWeighted += s.backLoadMean * s.occupied;
+    roughWeighted += s.roughnessNorm;
+    heightWeighted += s.heightMean;
+    wallWeighted += s.wallFrac;
+  }
+  const trappedNorm = envelope ? trapped / envelope : 0;
+  const backMean = occupied ? backWeighted / occupied : 0;
+  const roughMean = used ? roughWeighted / used : 0;
+  const heightMean = used ? heightWeighted / used : 0;
+  const wallMean = used ? wallWeighted / used : 0;
+  const scalar =
+    W_TRAPPED * trappedNorm +
+    W_ROUGH * roughMean +
+    W_BACKLOAD * backMean -
+    W_HEIGHT * heightMean -
+    W_WALL * wallMean;
+  return [used, scalar];
+};
+
+// Fast feasibility pack: try a small diverse seed set and return the FIRST full pack (or the best
+// partial). Used to decide truck count / fleet — cheap and deterministic, no aesthetic search.
+const packFleetFast = (items, fleetSizes, seedList = FEASIBILITY_SEEDS) => {
+  let bestPartial = null;
+  for (const seed of seedList) {
     const result = packOnce(seed.order(items), makeFleetTrucks(fleetSizes), seed.bias);
     if (result.unplaced.length === 0) return result;
-    if (!best || result.placed > best.placed) best = result;
+    if (!bestPartial || result.placed > bestPartial.placed) bestPartial = result;
   }
-  return best;
+  return bestPartial;
+};
+
+// Map a bias gene (a key in [0,1)) to one of the orientation biases.
+const biasFromKey = (k) => BIASES[Math.min(BIASES.length - 1, Math.floor(k * BIASES.length))];
+const keyForBias = (bias) => (BIASES.indexOf(bias) + 0.5) / BIASES.length;
+
+// BRKGA tuning. Population scales with load; the fractions are the standard BRKGA split.
+const GA = { minPop: 16, maxPop: 48, eliteFrac: 0.2, mutantFrac: 0.2, rho: 0.7, stallGens: 25 };
+
+// Time-budgeted Biased Random-Key Genetic Algorithm for the best-LOOKING full pack of a FIXED fleet.
+//
+// A genome is a vector of random keys (one per item) + one bias key. It DECODES to a packing by
+// sorting items by (stackLevel asc, key asc) — so heavy items still go first, but the search controls
+// the order WITHIN each weight class — then greedily packing with the chosen orientation bias. Fitness
+// is layoutScore (feasible packs always beat partial ones). Each generation keeps the elite genomes,
+// injects fresh random "mutants" (exploration), and fills the rest with biased crossover of an elite
+// and a non-elite parent (exploitation) — so good orderings are inherited and refined rather than
+// rediscovered from scratch, which is the whole point over the old independent random restarts.
+// Generation 0 is warm-started from the deterministic STRUCTURED_SEEDS, so it starts at least as good
+// as the previous approach. Stops on time budget or a no-improvement stall. Seeded RNG → reproducible.
+const searchBestLayout = (items, fleetSizes, { budgetMs = 1200, tick } = {}) => {
+  const start = Date.now();
+  const overBudget = () => Date.now() - start >= budgetMs;
+  const n = items.length;
+  const rng = mulberry32(0x9e3779b1);
+
+  const pop = Math.max(GA.minPop, Math.min(GA.maxPop, n));
+  const eliteCount = Math.max(1, Math.round(pop * GA.eliteFrac));
+  const mutantCount = Math.max(1, Math.round(pop * GA.mutantFrac));
+
+  // Fitness as a comparable tuple (lower better): feasible → [0, usedTrucks, aestheticScalar];
+  // infeasible → [1, -placed, 0] so any feasible layout beats any partial, and fuller partials win.
+  const evaluate = (g) => {
+    const order = items
+      .map((it, i) => ({ it, k: g.keys[i] }))
+      .sort((a, b) => a.it.stackLevel - b.it.stackLevel || a.k - b.k)
+      .map((x) => x.it);
+    const result = packOnce(order, makeFleetTrucks(fleetSizes), biasFromKey(g.biasKey));
+    g.result = result;
+    g.fitness = result.unplaced.length === 0 ? [0, ...layoutScore(result.trucks)] : [1, -result.placed, 0];
+    return g;
+  };
+
+  const randomGenome = () => {
+    const keys = new Float64Array(n);
+    for (let i = 0; i < n; i += 1) keys[i] = rng();
+    return evaluate({ keys, biasKey: rng() });
+  };
+
+  // Warm start: encode each structured seed's ordering as keys (global rank → key) so the genome
+  // decodes back to that exact ordering, and set its bias gene to match.
+  const encodeSeed = (seed) => {
+    const ordered = seed.order(items);
+    const rank = new Map();
+    ordered.forEach((it, i) => rank.set(it, (i + 0.5) / n));
+    const keys = new Float64Array(n);
+    items.forEach((it, i) => { keys[i] = rank.get(it); });
+    return evaluate({ keys, biasKey: keyForBias(seed.bias) });
+  };
+
+  let population = [];
+  for (const seed of STRUCTURED_SEEDS) {
+    if (population.length >= pop || overBudget()) break;
+    population.push(encodeSeed(seed));
+  }
+  while (population.length < pop && !overBudget()) population.push(randomGenome());
+  population.sort((a, b) => compareScores(a.fitness, b.fitness));
+
+  let stall = 0;
+  while (!overBudget() && stall < GA.stallGens) {
+    const elites = population.slice(0, eliteCount);
+    const next = elites.slice();
+    for (let m = 0; m < mutantCount && !overBudget(); m += 1) next.push(randomGenome());
+    while (next.length < pop && !overBudget()) {
+      const elite = elites[Math.floor(rng() * eliteCount)];
+      const other = population[eliteCount + Math.floor(rng() * (pop - eliteCount))] || population[0];
+      const keys = new Float64Array(n);
+      for (let i = 0; i < n; i += 1) keys[i] = rng() < GA.rho ? elite.keys[i] : other.keys[i];
+      const biasKey = rng() < GA.rho ? elite.biasKey : other.biasKey;
+      next.push(evaluate({ keys, biasKey }));
+    }
+    next.sort((a, b) => compareScores(a.fitness, b.fitness));
+    const improved = compareScores(next[0].fitness, population[0].fitness) < 0;
+    population = next;
+    stall = improved ? 0 : stall + 1;
+    if (tick) tick();
+  }
+
+  return population.length ? population[0].result : null;
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -445,11 +742,39 @@ export const estimateFleet = (items, truckSizes) => {
   return order;
 };
 
-// Choose the cheapest feasible fleet (fewest trucks, then smallest total size) and pack into it.
-// Returns { trucks, plan, unplaced } with each placed item carrying x/y/z, oriented width/depth/
-// height, rotation/rotated, sequence and all original fields.
-export const planAndPack = (items, { truckSizes }) => {
-  if (!items.length) return { trucks: [], plan: [], unplaced: [] };
+// Choose the cheapest feasible fleet (fewest trucks, then smallest total size), then spend the time
+// budget searching for the best-LOOKING way to load that fleet. Returns { trucks, plan, unplaced }
+// with each placed item carrying x/y/z, oriented width/depth/height, rotation/rotated, sequence and
+// all original fields.
+//
+// Options:
+//   budgetMs   — soft cap on TOTAL packing time (default 1200; the worker passes ~15000). Fleet
+//                selection (phases 1-2) is bounded too, then whatever time is left funds the
+//                aesthetic search (phase 3), so the whole call stays near budgetMs.
+//   onProgress — ({ fraction, etaMs }) callback for the loading bar. Progress is TIME-based against
+//                the whole budget and reported from every phase, so the bar advances smoothly and the
+//                ETA is simply the time left in the budget (the bar snaps to 100% if a load converges
+//                early). Throttled to ~60ms.
+// Truck COUNT and fleet SIZE are decided by fast deterministic feasibility packs, so they are stable
+// run-to-run regardless of the budget; only the final layout depends on how long the search runs.
+export const planAndPack = (items, { truckSizes, budgetMs = 1200, onProgress } = {}) => {
+  const t0 = Date.now();
+  let lastReport = 0;
+  const emit = (done) => {
+    if (!onProgress) return;
+    const now = Date.now();
+    if (!done && now - lastReport < 60) return;
+    lastReport = now;
+    const elapsed = now - t0;
+    const fraction = done ? 1 : Math.min(0.99, elapsed / budgetMs);
+    onProgress({ fraction, etaMs: done ? 0 : Math.max(0, budgetMs - elapsed) });
+  };
+
+  if (!items.length) {
+    emit(true);
+    return { trucks: [], plan: [], unplaced: [] };
+  }
+  const deadline = t0 + budgetMs;
   const sizes = [...truckSizes].sort((a, b) => a.capacity - b.capacity);
   const bounds = computeBounds(items, sizes);
 
@@ -460,25 +785,33 @@ export const planAndPack = (items, { truckSizes }) => {
   // Phase 1 — minimal truck COUNT (objective #1). All-largest fleets hold the most, so the first
   // count N at which N largest trucks pack everything is the true lower bound on truck count.
   let count = 0;
-  let baseResult = null;
   for (let n = bounds.nMin; n <= maxTrucks; n += 1) {
-    const result = packFleet(items, Array.from({ length: n }, () => largest));
-    if (result.unplaced.length === 0) {
-      count = n;
-      baseResult = result;
-      break;
-    }
-    if (!bestPartial || result.placed > bestPartial.placed) bestPartial = result;
+    const result = packFleetFast(items, Array.from({ length: n }, () => largest));
+    emit(false);
+    if (result && result.unplaced.length === 0) { count = n; break; }
+    if (!bestPartial || (result && result.placed > bestPartial.placed)) bestPartial = result;
   }
-  if (!baseResult) return finalize(bestPartial, bestPartial ? bestPartial.unplaced : items);
+  if (!count) {
+    emit(true);
+    return finalize(bestPartial, bestPartial ? bestPartial.unplaced : items);
+  }
 
   // Phase 2 — cheapest fleet of that COUNT (objective #2). Candidates are sorted by total size
-  // ascending; the first that packs everything wins. The all-largest fleet is always last and is
-  // known to pack (baseResult), so this terminates.
+  // ascending; the first that packs everything (fast feasibility check) wins. Bounded so probing
+  // fleets that DON'T pack can't starve the aesthetic search — reserve most of the budget for it.
+  const feasDeadline = Date.now() + Math.max(200, (deadline - Date.now()) * 0.4);
   const fleets = candidateFleets(count, sizes, bounds).slice(0, 10);
+  let chosenFleet = Array.from({ length: count }, () => largest); // all-largest always packs
   for (const fleet of fleets) {
-    const result = packFleet(items, fleet);
-    if (result.unplaced.length === 0) return finalize(result, []);
+    const result = packFleetFast(items, fleet);
+    emit(false);
+    if (result && result.unplaced.length === 0) { chosenFleet = fleet; break; }
+    if (Date.now() > feasDeadline) break;
   }
-  return finalize(baseResult, []);
+
+  // Phase 3 — load the chosen fleet as nicely as possible with whatever time is left in the budget.
+  const remaining = Math.max(300, deadline - Date.now());
+  const best = searchBestLayout(items, chosenFleet, { budgetMs: remaining, tick: () => emit(false) });
+  emit(true);
+  return finalize(best, best ? best.unplaced : items);
 };

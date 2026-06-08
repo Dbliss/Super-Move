@@ -85,4 +85,20 @@ for (const truck of trucks) {
   }
   console.log(rows.join('\n'));
   console.log(`Trapped-air cells (empty under occupied): ${trappedTotal}`);
+
+  // Skyline roughness: sum of |height step| between horizontally adjacent columns (both axes).
+  // Lower = smoother gradient (no isolated tall stacks). Reported raw and per-adjacent-pair.
+  const colTop = new Int32Array(W * D);
+  for (let y = 0; y < D; y += 1) for (let x = 0; x < W; x += 1) {
+    let top = 0;
+    for (let z = H - 1; z >= 0; z -= 1) if (grid[idx(W, D, x, y, z)]) { top = z + 1; break; }
+    colTop[y * W + x] = top;
+  }
+  let roughness = 0, pairs = 0;
+  for (let y = 0; y < D; y += 1) for (let x = 0; x < W; x += 1) {
+    const h = colTop[y * W + x];
+    if (x + 1 < W) { roughness += Math.abs(h - colTop[y * W + x + 1]); pairs += 1; }
+    if (y + 1 < D) { roughness += Math.abs(h - colTop[(y + 1) * W + x]); pairs += 1; }
+  }
+  console.log(`Skyline roughness: ${roughness} total, ${(roughness / pairs).toFixed(3)} per adjacent column pair (lower = smoother)`);
 }

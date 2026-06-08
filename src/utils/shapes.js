@@ -34,14 +34,22 @@ const fromVoxels = (rawVoxels) => {
   // bottomFootprint: columns that actually touch the base (lowest voxel at dz=0) — the contact feet.
   // footprint: every column the shape occupies (its full vertical shadow) — used to forbid stacking
   // an item where any part of its body would hang off the edge of whatever is underneath.
+  // bottomOffsets: the lowest voxel offset (minDz) per footprint column, index-aligned with footprint.
+  // Lets the packer compute a rest height straight from a truck's column heights in O(footprint),
+  // instead of scanning every z (see findLowestZ in packing.js).
   const bottomFootprint = [];
   const footprint = [];
+  const bottomOffsets = [];
   for (const [key, minDz] of lowestPerColumn) {
     const [dx, dy] = key.split(',').map(Number);
     footprint.push([dx, dy]);
+    bottomOffsets.push(minDz);
     if (minDz === 0) bottomFootprint.push([dx, dy]);
   }
-  return { voxels, width, depth, height, bottomFootprint, footprint };
+  // solid: a full rectangular block (every cell of the bounding box is occupied). Solid items have a
+  // flat bottom and no internal caves, so the fast rest-height path is exact for them.
+  const solid = voxels.length === width * depth * height;
+  return { voxels, width, depth, height, bottomFootprint, footprint, bottomOffsets, solid };
 };
 
 const fillBox = (voxels, x0, x1, y0, y1, z0, z1) => {

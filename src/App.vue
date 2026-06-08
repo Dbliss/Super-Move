@@ -29,22 +29,25 @@ const houseTypes = [
     // Starting furniture this home type usually has, by item id. Loaded into the quote
     // when the house type is chosen, then the customer adjusts up or down.
     defaults: {
+      // Bedroom section
       bedDouble: 1,
       cabinetBedDrawer: 1,
-      sideTableDrawers: 1,
-      boxSmallBedroom: 2,
-      boxMediumBedroom: 2,
-      boxWardrobeBedroom: 1,
-      loungeSofaLong: 1,
+      sideTableDrawers: 2,
+      boxSmallBedroom: 6,
+      boxMediumBedroom: 14,
+      boxLargeBedroom: 6,
+      boxWardrobeBedroom: 2,
+      // Living section
       televisionModern: 1,
       cabinetTelevision: 1,
       tableCoffee: 1,
+      bookcaseOpen: 1,
+      pottedPlantLiving: 4,
+      // Kitchen section
       kitchenFridge: 1,
       kitchenMicrowave: 1,
-      boxSmallKitchen: 1,
-      boxMediumKitchen: 2,
-      bathroomCabinet: 1,
-      boxMediumBathroom: 1,
+      // Bathroom section
+      bathroomMirror: 1,
     },
   },
   {
@@ -58,8 +61,8 @@ const houseTypes = [
       cabinetBedDrawer: 1,
       sideTableDrawers: 2,
       boxSmallBedroom: 3,
-      boxMediumBedroom: 3,
-      boxWardrobeBedroom: 2,
+      boxMediumBedroom: 13,
+      boxWardrobeBedroom: 3,
       loungeSofaLong: 1,
       loungeChair: 1,
       televisionModern: 1,
@@ -72,13 +75,14 @@ const houseTypes = [
       kitchenMicrowave: 1,
       kitchenStove: 1,
       boxSmallKitchen: 2,
-      boxMediumKitchen: 3,
+      boxMediumKitchen: 13,
       washer: 1,
       dryer: 1,
       bathroomCabinet: 1,
       bathroomMirror: 1,
       boxSmallBathroom: 1,
-      boxMediumBathroom: 1,
+      boxMediumBathroom: 6,
+      pottedPlantLiving: 6,
     },
   },
   {
@@ -92,7 +96,7 @@ const houseTypes = [
       cabinetBedDrawer: 2,
       sideTableDrawers: 3,
       boxSmallBedroom: 5,
-      boxMediumBedroom: 5,
+      boxMediumBedroom: 15,
       boxWardrobeBedroom: 2,
       loungeSofaLong: 1,
       loungeChair: 2,
@@ -107,21 +111,22 @@ const houseTypes = [
       kitchenStove: 1,
       boxSmallKitchen: 4,
       boxMediumKitchen: 4,
-      desk: 1,
-      chairDesk: 1,
-      computerScreen: 1,
-      boxSmallOffice: 2,
+      desk: 2,
+      chairDesk: 2,
+      computerScreen: 2,
+      boxSmallOffice: 12,
       boxMediumOffice: 2,
       washer: 1,
       dryer: 1,
       bathroomCabinet: 1,
       bathroomMirror: 1,
-      boxSmallBathroom: 1,
+      boxSmallBathroom: 11,
       boxMediumBathroom: 1,
-      bench: 1,
+      bench: 2,
       bookcaseClosedGarage: 1,
       boxSmallGarage: 3,
-      boxMediumGarage: 3,
+      boxMediumGarage: 13,
+      pottedPlantLiving: 11,
     },
   },
   {
@@ -135,8 +140,8 @@ const houseTypes = [
       cabinetBedDrawer: 3,
       sideTableDrawers: 4,
       boxSmallBedroom: 7,
-      boxMediumBedroom: 7,
-      boxWardrobeBedroom: 3,
+      boxMediumBedroom: 17,
+      boxWardrobeBedroom: 6,
       loungeSofaLong: 1,
       loungeSofaCorner: 1,
       loungeChair: 2,
@@ -168,6 +173,50 @@ const houseTypes = [
       bookcaseClosedGarage: 2,
       boxSmallGarage: 5,
       boxMediumGarage: 5,
+      pottedPlantLiving: 12,
+    },
+  },
+  {
+    id: 'duplex',
+    name: 'Duplex',
+    detail: 'Two self-contained homes on one property.',
+    rooms: ['bedroom', 'living', 'dining', 'kitchen', 'office', 'laundry', 'bathroom', 'garage'],
+    defaults: {
+      bedDouble: 2,
+      bedSingle: 2,
+      cabinetBedDrawer: 2,
+      sideTableDrawers: 4,
+      boxSmallBedroom: 6,
+      boxMediumBedroom: 16,
+      boxWardrobeBedroom: 2,
+      loungeSofaLong: 2,
+      loungeChair: 2,
+      televisionModern: 2,
+      cabinetTelevision: 2,
+      tableCoffee: 2,
+      bookcaseOpen: 1,
+      table: 1,
+      chair: 6,
+      kitchenFridgeLarge: 1,
+      kitchenMicrowave: 1,
+      kitchenStove: 1,
+      boxSmallKitchen: 5,
+      boxMediumKitchen: 5,
+      desk: 1,
+      chairDesk: 1,
+      computerScreen: 1,
+      boxSmallOffice: 2,
+      boxMediumOffice: 2,
+      washer: 1,
+      dryer: 1,
+      bathroomCabinet: 2,
+      bathroomMirror: 2,
+      boxSmallBathroom: 1,
+      boxMediumBathroom: 2,
+      bench: 1,
+      boxSmallGarage: 3,
+      boxMediumGarage: 3,
+      pottedPlantLiving: 12,
     },
   },
   {
@@ -181,7 +230,7 @@ const houseTypes = [
       cabinetBedDrawer: 4,
       sideTableDrawers: 5,
       boxSmallBedroom: 9,
-      boxMediumBedroom: 9,
+      boxMediumBedroom: 19,
       boxWardrobeBedroom: 4,
       loungeSofaLong: 2,
       loungeSofaCorner: 1,
@@ -211,65 +260,35 @@ const houseTypes = [
       bathroomCabinet: 3,
       bathroomMirror: 3,
       boxSmallBathroom: 2,
-      boxMediumBathroom: 2,
+      boxMediumBathroom: 12,
       bench: 1,
       bookcaseClosedGarage: 2,
       boxSmallGarage: 6,
       boxMediumGarage: 6,
-    },
-  },
-  {
-    id: 'duplex',
-    name: 'Duplex',
-    detail: 'Two self-contained homes on one property.',
-    rooms: ['bedroom', 'living', 'dining', 'kitchen', 'office', 'laundry', 'bathroom', 'garage'],
-    defaults: {
-      bedDouble: 2,
-      bedSingle: 2,
-      cabinetBedDrawer: 2,
-      sideTableDrawers: 4,
-      boxSmallBedroom: 6,
-      boxMediumBedroom: 6,
-      boxWardrobeBedroom: 2,
-      loungeSofaLong: 2,
-      loungeChair: 2,
-      televisionModern: 2,
-      cabinetTelevision: 2,
-      tableCoffee: 2,
-      bookcaseOpen: 1,
-      table: 1,
-      chair: 6,
-      kitchenFridgeLarge: 1,
-      kitchenMicrowave: 1,
-      kitchenStove: 1,
-      boxSmallKitchen: 5,
-      boxMediumKitchen: 5,
-      desk: 1,
-      chairDesk: 1,
-      computerScreen: 1,
-      boxSmallOffice: 2,
-      boxMediumOffice: 2,
-      washer: 1,
-      dryer: 1,
-      bathroomCabinet: 2,
-      bathroomMirror: 2,
-      boxSmallBathroom: 1,
-      boxMediumBathroom: 2,
-      bench: 1,
-      boxSmallGarage: 3,
-      boxMediumGarage: 3,
+      pottedPlantLiving: 15,
     },
   },
 ];
 
 // Card copy + Move-summary facts for each home type, keyed by id.
 const houseTypeMeta = {
-  studio: { icon: 'studio', tagline: 'Single open-plan area', blurb: 'Best for compact single-level homes with one open area.', sizeRange: '10 – 20 m³', crew: '2 movers', time: '1.5 – 3 hrs' },
-  apartment: { icon: 'building', tagline: 'Multi-storey building', blurb: 'Best for apartments and units in multi-storey buildings.', sizeRange: '20 – 35 m³', crew: '2 movers', time: '2.5 – 4 hrs' },
-  townhouse: { icon: 'townhouse', tagline: 'Shares a wall', blurb: 'Best for multi-level homes that share a wall.', sizeRange: '30 – 45 m³', crew: '2 movers', time: '3 – 5 hrs' },
-  house: { icon: 'house', tagline: 'Detached home', blurb: 'Best for detached houses with separate outdoor access.', sizeRange: '40 – 60 m³', crew: '3 movers', time: '4 – 6 hrs' },
-  villa: { icon: 'villa', tagline: 'Larger / luxury home', blurb: 'Best for larger or luxury homes with more space and rooms.', sizeRange: '55 – 80 m³', crew: '3 movers', time: '5 – 7 hrs' },
-  duplex: { icon: 'duplex', tagline: 'Two self-contained homes', blurb: 'Best for two self-contained homes on one property.', sizeRange: '45 – 65 m³', crew: '3 movers', time: '4 – 6 hrs' },
+  studio: { icon: 'studio', tagline: 'Single open-plan area', blurb: 'Best for compact single-level homes with one open area.', sizeRange: '20 – 30 m³', crew: '2 movers', time: '1.5 – 3 hrs' },
+  apartment: { icon: 'building', tagline: 'Multi-storey building', blurb: 'Best for apartments and units in multi-storey buildings.', sizeRange: '25 – 40 m³', crew: '2 movers', time: '2.5 – 4 hrs' },
+  townhouse: { icon: 'townhouse', tagline: 'Shares a wall', blurb: 'Best for multi-level homes that share a wall.', sizeRange: '30 – 45 m³', crew: '3 movers', time: '3 – 5 hrs' },
+  house: { icon: 'house', tagline: 'Detached home', blurb: 'Best for detached houses with separate outdoor access.', sizeRange: '35 – 50 m³', crew: '3 – 4 movers', time: '4 – 6 hrs' },
+  villa: { icon: 'villa', tagline: 'Larger / luxury home', blurb: 'Best for larger or luxury homes with more space and rooms.', sizeRange: '45 – 60 m³', crew: '4 – 5 movers', time: '5 – 7 hrs' },
+  duplex: { icon: 'duplex', tagline: 'Two self-contained homes', blurb: 'Best for two self-contained homes on one property.', sizeRange: '40 – 55 m³', crew: '3 – 4 movers', time: '4 – 6 hrs' },
+};
+
+// Typical crew limit per home type. Extra rooms beyond what's normal for the
+// type can push the recommended crew one above this limit.
+const crewLimitByHouse = {
+  studio: 2,
+  apartment: 2,
+  townhouse: 3,
+  house: 4,
+  villa: 5,
+  duplex: 4,
 };
 
 const truckSizes = [
@@ -427,6 +446,7 @@ const step = ref(0);
 const selectedHouseType = ref('apartment');
 const previewedHouseType = ref(null);
 const activeRoomId = ref('bedroom');
+const breakdownExpanded = ref(false);
 const roomTabsEl = ref(null);
 const canScrollRoomTabsLeft = ref(false);
 const canScrollRoomTabsRight = ref(false);
@@ -494,6 +514,27 @@ const householdDefaultsByHouse = {
   duplex: { bedrooms: 4, bathrooms: 2, living: 2, dining: 1, office: 1, garage: 1 },
 };
 
+// Base volume per home type (m³) — kitchen, bathrooms, laundry and hallways
+// are already included in this figure. Per-room increments are added on top.
+const homeTypeBaseVolume = {
+  studio: 18,
+  apartment: 10,
+  townhouse: 15,
+  house: 20,
+  duplex: 25,
+  villa: 30,
+};
+
+// Volume (m³) added per counted room/feature in the home-details step.
+const roomVolumeIncrements = {
+  bedrooms: 4,
+  living: 4,
+  dining: 4,
+  office: 4,
+  garage: 6,
+  bathrooms: 1,
+};
+
 const householdDetails = reactive({ ...householdDefaultsByHouse.apartment });
 
 const householdSelectors = [
@@ -543,16 +584,10 @@ const roomIcons = {
 
 const includedRooms = computed(() =>
   isStudioSelected.value
-    ? [
-        {
-          id: 'studio',
-          name: 'Studio',
-          prompt: 'One-room studio inventory.',
-          items: rooms
-            .filter((room) => selectedHouseRoomIds.value.has(room.id))
-            .flatMap((room) => room.items.map((item) => ({ ...item, roomId: 'studio' }))),
-        },
-      ]
+    ? // A studio is one physical room, but its furniture is still organised by the areas it
+      // comes from. We surface those areas (Bedroom, Living, Kitchen, Bathroom) as their own
+      // room tabs so the picker matches the multi-room layout.
+      rooms.filter((room) => selectedHouseRoomIds.value.has(room.id))
     : rooms.filter((room) => {
         if (room.id === 'bedroom') return householdDetails.bedrooms > 0;
         if (room.id === 'bathroom') return householdDetails.bathrooms > 0;
@@ -607,6 +642,22 @@ const totalItems = computed(() => inventory.value.reduce((sum, item) => sum + it
 const totalVolume = computed(() =>
   inventory.value.reduce((sum, item) => sum + item.volume * item.quantity, 0),
 );
+
+// Estimated move profile from the home-details room counts: a base volume for
+// the home type plus a per-room increment for each counted room/feature.
+const estimatedRoomVolume = computed(() => {
+  const base = homeTypeBaseVolume[selectedHouseType.value] ?? 0;
+  return Object.entries(roomVolumeIncrements).reduce(
+    (sum, [key, perRoom]) => sum + (householdDetails[key] || 0) * perRoom,
+    base,
+  );
+});
+
+// Displayed estimate as a range: -10% (low) to +15% (high) of the point estimate.
+const estimatedVolumeRange = computed(() => {
+  const v = estimatedRoomVolume.value;
+  return `${Math.round(v * 0.9)} – ${Math.round(v * 1.15)} m³`;
+});
 
 // Inventory grouped by room type for the review breakdown, preserving the
 // catalog room order from includedRooms.
@@ -674,30 +725,115 @@ const packedUnits = computed(() =>
   ),
 );
 
-const packedTrucks = computed(() => {
-  if (!packedUnits.value.length) return [];
+// Packing is an exhaustive, time-budgeted search (up to ~15s on big loads), so it runs in a Web
+// Worker off the main thread — the UI stays responsive and shows a live progress bar + ETA. The
+// result lands in `packedTrucks` asynchronously; until the first result, dependent computeds fall
+// back to the cheap `recommendedPlan` estimate, so the screen is never blank.
+const PACKING_BUDGET_MS = 15000;
+const packedTrucks = ref([]);
+const isPacking = ref(false);
+const packingProgress = ref(0); // 0..1
+const packingEtaMs = ref(0);
 
-  const { trucks } = planAndPack(packedUnits.value, {
-    truckSizes: truckSizesWithCells.value,
-  });
-
-  return trucks.map((truck) => ({
+// Shape a raw packer truck into the view model the scene/breakdown expect (packingGrid + per-item
+// batch/zIndex). Mirrors the old computed's mapping.
+const mapPackedTrucks = (trucks) =>
+  trucks.map((truck) => ({
     ...truck,
-    packingGrid: {
-      columns: truck.cellsX,
-      rows: truck.cellsY,
-      maxHeight: truck.cellsZ,
-    },
+    packingGrid: { columns: truck.cellsX, rows: truck.cellsY, maxHeight: truck.cellsZ },
     items: truck.items.map((item) => ({
       ...item,
       batch: Math.floor(item.sequence / 4),
-      zIndex:
-        20 +
-        item.z * truck.cellsX * truck.cellsY +
-        item.y * truck.cellsX +
-        item.x,
+      zIndex: 20 + item.z * truck.cellsX * truck.cellsY + item.y * truck.cellsX + item.x,
     })),
   }));
+
+let packingWorker = null;
+let packingRunId = 0;
+let packingDebounce = null;
+
+const disposeWorker = () => {
+  if (packingWorker) {
+    packingWorker.terminate();
+    packingWorker = null;
+  }
+};
+
+const runPacking = () => {
+  const items = packedUnits.value;
+  const runId = (packingRunId += 1);
+
+  if (!items.length) {
+    disposeWorker();
+    packedTrucks.value = [];
+    isPacking.value = false;
+    packingProgress.value = 0;
+    return;
+  }
+
+  isPacking.value = true;
+  packingProgress.value = 0;
+  packingEtaMs.value = 0;
+
+  // Terminate any in-flight run and start a fresh worker so a long search is cleanly cancelled when
+  // the inventory changes.
+  disposeWorker();
+  try {
+    packingWorker = new Worker(new URL('./utils/packing.worker.js', import.meta.url), { type: 'module' });
+  } catch (err) {
+    // Fallback: no worker available — pack synchronously (UI will block briefly).
+    const { trucks } = planAndPack(items, { truckSizes: truckSizesWithCells.value, budgetMs: 2000 });
+    packedTrucks.value = mapPackedTrucks(trucks);
+    isPacking.value = false;
+    packingProgress.value = 1;
+    return;
+  }
+
+  packingWorker.onmessage = (event) => {
+    const msg = event.data || {};
+    if (msg.runId !== packingRunId) return; // stale run — ignore
+    if (msg.type === 'progress') {
+      packingProgress.value = msg.fraction;
+      packingEtaMs.value = msg.etaMs;
+    } else if (msg.type === 'done') {
+      packedTrucks.value = mapPackedTrucks(msg.trucks);
+      packingProgress.value = 1;
+      isPacking.value = false;
+      disposeWorker();
+    } else if (msg.type === 'error') {
+      console.error('Packing worker error:', msg.message);
+      isPacking.value = false;
+      disposeWorker();
+    }
+  };
+
+  packingWorker.postMessage({
+    runId,
+    items: JSON.parse(JSON.stringify(items)), // ensure structured-clone-safe (drop any reactivity)
+    truckSizes: JSON.parse(JSON.stringify(truckSizesWithCells.value)),
+    budgetMs: PACKING_BUDGET_MS,
+  });
+};
+
+// Re-pack (debounced) whenever the inventory or truck catalog changes.
+watch(
+  [packedUnits, truckSizesWithCells],
+  () => {
+    if (packingDebounce) clearTimeout(packingDebounce);
+    packingDebounce = setTimeout(runPacking, 150);
+  },
+  { immediate: true, deep: false },
+);
+
+onBeforeUnmount(() => {
+  if (packingDebounce) clearTimeout(packingDebounce);
+  disposeWorker();
+});
+
+// Human-readable ETA for the loading bar (hidden under 1s).
+const packingEtaLabel = computed(() => {
+  if (packingEtaMs.value < 1000) return '';
+  return `~${Math.ceil(packingEtaMs.value / 1000)}s remaining`;
 });
 
 // Total cargo capacity of the fleet the packer actually returned (authoritative). Falls back to
@@ -793,6 +929,13 @@ const seedFurnitureDefaults = () => {
     const isIncluded = isStudioSelected.value ? selectedHouseRoomIds.value.has(room.id) : includedRoomIds.has(room.id);
     room.items.forEach((item) => {
       if (!isIncluded) return;
+      // A studio is a single fixed unit, so its defaults are taken as-is. Multi-room homes
+      // fall back to a suggested quantity for rooms the customer hasn't counted, then scale
+      // each item by how many of that room they actually have.
+      if (isStudioSelected.value) {
+        quantities[item.id] = Math.max(0, defaults[item.id] || 0);
+        return;
+      }
       const fallbackQuantity = baseRoomCountFor(room.id, baseDetails) === 0 ? suggestedFallbackDefaults[item.id] || 0 : 0;
       const baseQuantity = defaults[item.id] || fallbackQuantity;
       const scaledQuantity = Math.round(baseQuantity * roomScaleFor(room.id, baseDetails, householdDetails));
@@ -817,7 +960,7 @@ const chooseHouse = (id) => {
 const continueFromHouse = () => {
   if (isStudioSelected.value) {
     seedFurnitureDefaults();
-    activeRoomId.value = 'studio';
+    activeRoomId.value = includedRooms.value[0]?.id || 'bedroom';
     step.value = 2;
   } else {
     step.value = 1;
@@ -931,7 +1074,17 @@ const estimatedMoveTime = computed(() => {
   return '1 - 1.5 hrs';
 });
 
-const recommendedMoverCount = computed(() => (totalVolume.value >= 45 ? 3 : 2));
+const recommendedMoverCount = computed(() => {
+  const houseId = selectedHouseType.value;
+  const limit = crewLimitByHouse[houseId] || 2;
+  const normalDefaults = householdDefaultsByHouse[houseId];
+  if (!normalDefaults) return limit;
+  const sumRooms = (rooms) =>
+    rooms.bedrooms + rooms.bathrooms + rooms.living + rooms.dining + rooms.office + rooms.garage;
+  // More rooms than is normal for this home type can add one extra mover.
+  const extraRooms = sumRooms(householdDetails) > sumRooms(normalDefaults) ? 1 : 0;
+  return limit + extraRooms;
+});
 
 const primaryTruckPrice = computed(() =>
   primaryTruck.value?.id === 'small' ? 420 : primaryTruck.value?.id === 'large' ? 680 : 540,
@@ -1118,7 +1271,7 @@ const resetQuote = () => {
 
         <div class="volume-callout">
           <span>Estimated volume</span>
-          <strong>~{{ totalVolume.toFixed(0) || 0 }} m³</strong>
+          <strong>{{ estimatedVolumeRange }}</strong>
           <p>This helps us match you with the right truck and team size.</p>
         </div>
 
@@ -1147,7 +1300,7 @@ const resetQuote = () => {
             <ul class="choice-points">
               <li><AppIcon name="check" :size="15" /> Pre-filled with typical furniture</li>
               <li><AppIcon name="check" :size="15" /> Skip straight to your truck &amp; quote</li>
-              <li><AppIcon name="check" :size="15" /> ~{{ totalVolume.toFixed(0) }} m³ estimated to start</li>
+              <li><AppIcon name="check" :size="15" /> {{ estimatedVolumeRange }} estimated to start</li>
             </ul>
             <span class="choice-cta">Use quick estimate <AppIcon name="arrowRight" :size="18" /></span>
           </button>
@@ -1178,7 +1331,7 @@ const resetQuote = () => {
 
         <div class="volume-callout">
           <span>Estimated volume</span>
-          <strong>~{{ totalVolume.toFixed(0) || 0 }} m³</strong>
+          <strong>{{ estimatedVolumeRange }}</strong>
           <p>Typical for a {{ selectedHouse?.name || 'home' }} of this size — you can still adjust it.</p>
         </div>
 
@@ -1356,6 +1509,7 @@ const resetQuote = () => {
           Review truck fit
           <span aria-hidden="true">→</span>
         </button>
+        <button class="ghost-button full-width accent-ghost" type="button" @click="step = 2"><AppIcon name="swap" :size="16" /> Back</button>
       </aside>
     </section>
 
@@ -1365,37 +1519,54 @@ const resetQuote = () => {
           <h1>Review your truck fit</h1>
           <p>Here's how your items fit in the recommended truck.</p>
         </div>
-        <button class="ghost-button" type="button" @click="step = 3"><AppIcon name="edit" :size="16" /> Edit selections</button>
       </div>
 
       <div class="review-grid">
         <div class="review-main">
           <div class="truck-fit-stage" :class="{ empty: !inventory.length }">
             <TruckFitScene v-if="packedTrucks.length" class="truck-fit-canvas" :trucks="packedTrucks" />
-            <p v-else class="empty-state">Add items with the plus buttons.</p>
+            <p v-else-if="!isPacking" class="empty-state">Add items with the plus buttons.</p>
+            <div v-if="isPacking" class="packing-overlay">
+              <div class="packing-card">
+                <span class="packing-title">Optimising your truck load…</span>
+                <div class="packing-bar"><span :style="{ width: `${Math.round(packingProgress * 100)}%` }"></span></div>
+                <div class="packing-meta">
+                  <span>{{ Math.round(packingProgress * 100) }}%</span>
+                  <span v-if="packingEtaLabel">{{ packingEtaLabel }}</span>
+                </div>
+              </div>
+            </div>
             <div class="scene-help">Click and drag to rotate</div>
           </div>
 
-          <div class="review-breakdown">
-            <div class="review-breakdown-head">
+          <div class="review-breakdown" :class="{ expanded: breakdownExpanded }">
+            <button
+              type="button"
+              class="review-breakdown-head"
+              :aria-expanded="breakdownExpanded"
+              @click="breakdownExpanded = !breakdownExpanded"
+            >
               <span class="soft-icon small"><AppIcon name="house" :size="18" /></span>
               <div>
                 <strong>{{ selectedHouse?.name || 'Home' }}</strong>
                 <span>{{ homeDetailLine || 'Home details selected' }}</span>
               </div>
-            </div>
-            <div v-if="roomBreakdown.length" class="room-breakdown">
-              <div v-for="group in roomBreakdown" :key="group.room" class="room-breakdown-group">
-                <h3>{{ group.room }}</h3>
-                <ul>
-                  <li v-for="item in group.items" :key="item.name">
-                    <span>{{ item.name }}</span>
-                    <span class="qty">×{{ item.quantity }}</span>
-                  </li>
-                </ul>
+              <AppIcon class="breakdown-chevron" name="chevronDown" :size="20" />
+            </button>
+            <div v-if="breakdownExpanded">
+              <div v-if="roomBreakdown.length" class="room-breakdown">
+                <div v-for="group in roomBreakdown" :key="group.room" class="room-breakdown-group">
+                  <h3>{{ group.room }}</h3>
+                  <ul>
+                    <li v-for="item in group.items" :key="item.name">
+                      <span>{{ item.name }}</span>
+                      <span class="qty">×{{ item.quantity }}</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
+              <p v-else class="review-breakdown-empty">No items added yet.</p>
             </div>
-            <p v-else class="review-breakdown-empty">No items added yet.</p>
           </div>
         </div>
 
@@ -1475,7 +1646,6 @@ const resetQuote = () => {
             <li><AppIcon name="check" :size="16" /> {{ recommendationCardText }} with driver</li>
             <li><AppIcon name="check" :size="16" /> {{ recommendedMoverCount }} professional movers</li>
             <li><AppIcon name="check" :size="16" /> Loading, transport and unloading</li>
-            <li><AppIcon name="check" :size="16" /> Basic transit insurance cover</li>
           </ul>
         </div>
       </div>

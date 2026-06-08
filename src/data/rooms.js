@@ -11,11 +11,11 @@
 // them render with the shared cardboard-box model via modelAssetFor() below. The Wardrobe
 // box is bedroom-only. Per-room item ids keep each room's box counts independent.
 const boxSizes = [
-  { suffix: 'Small', name: 'Small box', asset: 'boxSmall', volume: 0.036 },
-  { suffix: 'Medium', name: 'Medium box', asset: 'boxMedium', volume: 0.081 },
-  { suffix: 'Large', name: 'Large box', asset: 'boxLarge', volume: 0.162 },
+  { suffix: 'Small', name: 'Small box', asset: 'boxSmall', volume: 0.052 },
+  { suffix: 'Medium', name: 'Medium box', asset: 'boxMedium', volume: 0.104 },
+  { suffix: 'Large', name: 'Large box', asset: 'boxLarge', volume: 0.15 },
 ];
-const wardrobeBox = { suffix: 'Wardrobe', name: 'Wardrobe box', asset: 'boxWardrobe', volume: 0.36 };
+const wardrobeBox = { suffix: 'Wardrobe', name: 'Port-a-robe', asset: 'boxWardrobe', volume: 0.312 };
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 

@@ -184,19 +184,17 @@ const buildTruck = (truck, index) => {
   group.add(makeBox(railThickness, railThickness, railSpanZ, truckPalette.rail, { x: cargoLength / 2 + railThickness / 2, y: railY, z: 0 }));
   group.add(makeBox(railThickness, railThickness, railSpanZ, truckPalette.rail, { x: -cargoLength / 2 - railThickness / 2, y: railY, z: 0 }));
 
-  // Brand logo on the outside of the long side wall, facing outward like real truck livery.
-  const logoMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false });
+  // Brand logo on the truck's exterior near-side panel (the open long side facing the camera).
+  const logoMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
   const logoMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), logoMaterial);
   logoMesh.visible = false;
-  logoMesh.position.set(0, cargoHeight * 0.55, -cargoDepth / 2 - 0.05);
-  logoMesh.rotation.y = Math.PI; // turn the plane to face away from the cargo
+  logoMesh.position.set(0, cargoHeight * 0.55, cargoDepth / 2 + 0.05);
+  logoMesh.renderOrder = 2; // draw over the translucent walls so it reads cleanly
   group.add(logoMesh);
   new THREE.TextureLoader().load(logoUrl, (texture) => {
     if (disposed) return;
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 1;
-    texture.center.set(0.5, 0.5);
-    texture.repeat.x = -1; // mirror to cancel the 180° turn so the text stays readable
     logoMaterial.map = texture;
     logoMaterial.needsUpdate = true;
     const imageAspect = texture.image.width / texture.image.height;
