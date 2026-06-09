@@ -1,7 +1,1 @@
-search item from list
-
-Make custom item look a bit nicer.
-
-IMprove the "space used" to better dictate actual usable space
-
 Fix "Get Quote Button"

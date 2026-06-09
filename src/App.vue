@@ -12,6 +12,7 @@ import { buildShape, buildComposite } from './utils/shapes.js';
 import { planAndPack, estimateFleet } from './utils/packing.js';
 import { measureAsset } from './utils/assetDimensions.js';
 import logoUrl from '../images/logo.png';
+import truckUrl from '../images/truck.png';
 
 const sideImages = import.meta.glob('../Kenny/Side/*.png', {
   eager: true,
@@ -273,11 +274,11 @@ const houseTypes = [
 
 // Card copy + Move-summary facts for each home type, keyed by id.
 const houseTypeMeta = {
-  studio: { icon: 'studio', tagline: 'Single open-plan area', blurb: 'Best for compact single-level homes with one open area.', sizeRange: '20 – 30 m³', crew: '2 movers', time: '1.5 – 3 hrs' },
-  apartment: { icon: 'building', tagline: 'Multi-storey building', blurb: 'Best for apartments and units in multi-storey buildings.', sizeRange: '25 – 40 m³', crew: '2 movers', time: '2.5 – 4 hrs' },
-  townhouse: { icon: 'townhouse', tagline: 'Shares a wall', blurb: 'Best for multi-level homes that share a wall.', sizeRange: '30 – 45 m³', crew: '3 movers', time: '3 – 5 hrs' },
+  studio: { icon: 'studio', tagline: 'Single open-plan area', blurb: 'Best for compact single-level homes with one open area.', sizeRange: '15 – 20 m³', crew: '2 movers', time: '1.5 – 3 hrs' },
+  apartment: { icon: 'building', tagline: 'Multi-storey building', blurb: 'Best for apartments and units in multi-storey buildings.', sizeRange: '20 – 30 m³', crew: '2 movers', time: '2.5 – 4 hrs' },
+  townhouse: { icon: 'townhouse', tagline: 'Shares a wall', blurb: 'Best for multi-level homes that share a wall.', sizeRange: '25 – 40 m³', crew: '3 movers', time: '3 – 5 hrs' },
   house: { icon: 'house', tagline: 'Detached home', blurb: 'Best for detached houses with separate outdoor access.', sizeRange: '35 – 50 m³', crew: '3 – 4 movers', time: '4 – 6 hrs' },
-  villa: { icon: 'villa', tagline: 'Larger / luxury home', blurb: 'Best for larger or luxury homes with more space and rooms.', sizeRange: '45 – 60 m³', crew: '4 – 5 movers', time: '5 – 7 hrs' },
+  villa: { icon: 'villa', tagline: 'Larger / luxury home', blurb: 'Best for larger or luxury homes with more space and rooms.', sizeRange: '50 – 80 m³', crew: '4 – 5 movers', time: '5 – 7 hrs' },
   duplex: { icon: 'duplex', tagline: 'Two self-contained homes', blurb: 'Best for two self-contained homes on one property.', sizeRange: '40 – 55 m³', crew: '3 – 4 movers', time: '4 – 6 hrs' },
 };
 
@@ -444,6 +445,7 @@ const buildTruckTemplate = (truck, count = 1) => ({
 });
 
 const step = ref(0);
+const inventoryChoice = ref('quick');
 const selectedHouseType = ref('apartment');
 const previewedHouseType = ref(null);
 const activeRoomId = ref('bedroom');
@@ -498,6 +500,21 @@ onBeforeUnmount(() => {
 const quantities = reactive({});
 const customItems = ref([]);
 const itemSearch = ref('');
+const searchInputEl = ref(null);
+// Whether the search field has focus, used to reveal the suggestion dropdown even
+// before the customer types anything.
+const searchFocused = ref(false);
+let blurTimer = null;
+const onSearchFocus = () => {
+  if (blurTimer) clearTimeout(blurTimer);
+  searchFocused.value = true;
+};
+// Delay closing so a click on a suggestion (which blurs the input first) still registers.
+const onSearchBlur = () => {
+  blurTimer = setTimeout(() => {
+    searchFocused.value = false;
+  }, 150);
+};
 const customNameInput = ref(null);
 const customDraft = reactive({
   name: '',
@@ -1030,6 +1047,15 @@ const customiseInventory = () => {
   step.value = 3;
 };
 
+// Continue from the inventory-choice page using the currently selected option.
+const continueFromInventoryChoice = () => {
+  if (inventoryChoice.value === 'custom') {
+    customiseInventory();
+  } else {
+    useQuickEstimate();
+  }
+};
+
 const changeQuantity = (itemId, amount) => {
   quantities[itemId] = Math.max(0, (quantities[itemId] || 0) + amount);
 };
@@ -1057,6 +1083,70 @@ const searchResults = computed(() => {
   return results;
 });
 
+// Short "W × D × H cm" label from the catalog dimensions for an item.
+const dimsLabel = (item) => {
+  const d = dimsForAsset(item.asset);
+  return `${Math.round(d.widthCm)} × ${Math.round(d.depthCm)} × ${Math.round(d.heightCm)} cm`;
+};
+
+// Catalog items the customer pulled into a room via the search/suggestion dropdown, keyed by
+// room id. These render alongside the room's native items so an added item shows up where it
+// was added, not just in its original room.
+const addedRoomItems = reactive({});
+
+// Ids already present in a room's picker (its native catalog items plus anything added here).
+const roomItemIds = (roomId) => {
+  const room = rooms.find((r) => r.id === roomId);
+  const ids = new Set((room?.items || []).map((item) => item.id));
+  for (const item of addedRoomItems[roomId] || []) ids.add(item.id);
+  return ids;
+};
+
+// The native catalog items for a room plus the ones added through search, deduped.
+const roomPickerItems = (roomId) => {
+  const room = rooms.find((r) => r.id === roomId);
+  const native = (room?.items || []).map((item) => ({ ...item, room: room.name }));
+  return [...native, ...(addedRoomItems[roomId] || [])];
+};
+
+// Add an item to the active room from the search dropdown: bump its quantity and, if it isn't
+// already in this room's picker, surface it there so the customer sees what they added. Adding
+// closes the dropdown and clears the field so focus returns to the room's furniture.
+const addItemHere = (item) => {
+  const roomId = activeRoom.value?.id;
+  if (!roomId) return;
+  changeQuantity(item.id, 1);
+  if (!roomItemIds(roomId).has(item.id)) {
+    (addedRoomItems[roomId] ||= []).push({ ...item });
+  }
+  if (blurTimer) clearTimeout(blurTimer);
+  searchFocused.value = false;
+  itemSearch.value = '';
+  searchInputEl.value?.blur();
+};
+
+// On focus (before any typing) suggest a handful of items the active room doesn't already
+// list, so customers discover furniture from other rooms without leaving the page. Boxes are
+// skipped since every room already offers them.
+const searchSuggestions = computed(() => {
+  const presentIds = roomItemIds(activeRoom.value?.id);
+  const seen = new Set();
+  const results = [];
+  for (const room of rooms) {
+    if (room.id === activeRoom.value?.id) continue;
+    for (const item of room.items) {
+      if (modelAssetFor(item.asset) === 'cardboardBoxClosed') continue;
+      if (presentIds.has(item.id) || seen.has(item.name)) continue;
+      // Skip anything already on the quote so suggestions only surface new items.
+      if (quantities[item.id] > 0) continue;
+      seen.add(item.name);
+      results.push({ ...item, room: room.name });
+    }
+  }
+  // No hard cap — the dropdown is scrollable and shows ~5 rows at a time.
+  return results;
+});
+
 // Jump to the custom-item form from the "Can't find an item?" prompt.
 const goToCustomItem = async () => {
   if (customDraft.name === '' && searchQuery.value) customDraft.name = searchQuery.value;
@@ -1076,7 +1166,7 @@ const resetCustomDraft = () => {
   customDraft.heightCm = '';
 };
 
-// Step values: 0 Home type · 1 Home details · 2 Inventory choice · 3 Furniture · 4 Review · 5 Quote.
+// Step values: 0 Home type · 1 Home details · 2 Inventory choice · 3 Furniture · 4 Review · 5 Extras · 6 Quote.
 watch(step, async () => {
   await nextTick();
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -1130,17 +1220,158 @@ const recommendedMoverCount = computed(() => {
   return limit + extraRooms;
 });
 
-const primaryTruckPrice = computed(() =>
-  primaryTruck.value?.id === 'small' ? 420 : primaryTruck.value?.id === 'large' ? 680 : 540,
-);
+// Round a dollar figure to the nearest $10 so quoted prices read cleanly.
+const r10 = (n) => Math.round(n / 10) * 10;
 
-// Indicative price range shown on the Quote step: truck base + volume + extra crew.
-const quoteEstimate = computed(() => {
-  const volumeCost = Math.round(totalVolume.value * 14);
-  const crewCost = Math.max(0, recommendedMoverCount.value - 2) * 140;
-  const low = primaryTruckPrice.value + volumeCost + crewCost;
-  return { low, high: Math.round((low * 1.22) / 10) * 10 };
+// The volume that drives pricing: prefer the packed/measured total, fall back to
+// the room-based estimate before any inventory has been built.
+const pricingVolume = () => totalVolume.value || estimatedRoomVolume.value || 0;
+
+// Base move pricing — Sydney removalist rates. Driven by the two things that
+// actually move the cost: how much volume is handled and which trucks we
+// dispatch. A larger truck costs more than a smaller one (bigger vehicle,
+// higher fuel, heavier crew), so each size carries its own dispatch rate.
+const TRUCK_BASE_RATE = { small: 260, medium: 340, large: 440 };
+const VOLUME_RATE = 22; // per m³ handled (load + unload labour)
+
+// The trucks actually dispatched, flattened to a list of size ids. Falls back
+// to the live recommendation before the packer has produced a real fleet.
+const dispatchedTruckIds = computed(() => {
+  if (packedTrucks.value.length) return packedTrucks.value.map((truck) => truck.id);
+  const planned = recommendedPlan.value.flatMap((truck) => Array(truck.count).fill(truck.id));
+  return planned.length ? planned : ['medium'];
 });
+
+const baseMovePrice = computed(() => {
+  const truckCost = dispatchedTruckIds.value.reduce(
+    (sum, id) => sum + (TRUCK_BASE_RATE[id] ?? TRUCK_BASE_RATE.medium),
+    0,
+  );
+  return truckCost + Math.round(pricingVolume() * VOLUME_RATE);
+});
+
+// Indicative range shown on the Quote step. The low→high spread absorbs
+// move-distance variation: a same-suburb local move sits near the low end,
+// while a long cross-Sydney run pushes toward the high end.
+const quoteEstimate = computed(() => {
+  const low = r10(baseMovePrice.value);
+  return { low, high: r10(low * 1.25) };
+});
+
+// Add-on services offered after the truck review, before the final quote form.
+// Things that set us apart — storage isn't on the list since we don't offer it.
+// Each `price` is computed from the factor that actually scales its cost
+// (move volume, house size, or a flat specialist rate) using Sydney base rates.
+const extraDefs = [
+  {
+    id: 'tipRun',
+    name: 'Tip run',
+    icon: 'truck',
+    blurb: 'We take unwanted furniture, e-waste and rubbish straight to the tip after we load.',
+    // Flat rate — one truck run + tip disposal fees, independent of move size.
+    price: () => 150,
+  },
+  {
+    id: 'pressureCleaning',
+    name: 'Pressure cleaning',
+    icon: 'bolt',
+    blurb: 'Driveway, paths and patio blasted clean, perfect before handing back the keys.',
+    // Scales with move volume as a proxy for property size / area to clean.
+    price: () => r10(120 + pricingVolume() * 4),
+  },
+  {
+    id: 'houseCleaning',
+    name: 'End-of-lease clean',
+    icon: 'laundry',
+    blurb: 'Full bond-back clean by our trusted crew so you walk away with your deposit.',
+    // Bond clean priced on the home's rooms — beds and baths drive the bulk of it.
+    price: () =>
+      r10(
+        140 +
+          (householdDetails.bedrooms || 0) * 70 +
+          (householdDetails.bathrooms || 0) * 55 +
+          ((householdDetails.living || 0) + (householdDetails.dining || 0)) * 25 +
+          (householdDetails.office || 0) * 20,
+      ),
+  },
+  {
+    id: 'packingService',
+    name: 'Packing service',
+    icon: 'box',
+    blurb: "We pack every room into boxes the day before — you don't lift a thing.",
+    recommended: true,
+    // Packing labour scales directly with the volume being boxed up.
+    price: () => r10(120 + pricingVolume() * 9),
+  },
+  {
+    id: 'unpackingService',
+    name: 'Unpacking service',
+    icon: 'boxPlus',
+    blurb: 'We unpack and lay out essentials in the new home so you can settle in tonight.',
+    // Unpacking is lighter than packing — about 75% of the per-m³ labour.
+    price: () => r10(90 + pricingVolume() * 7),
+  },
+  {
+    id: 'furnitureAssembly',
+    name: 'Furniture assembly',
+    icon: 'sliders',
+    blurb: 'Beds, wardrobes and flat-pack disassembled and put back together at the new place.',
+    // More furniture (more volume) means more pieces to break down and rebuild.
+    price: () => r10(60 + pricingVolume() * 3.5),
+  },
+  {
+    id: 'specialtyMove',
+    name: 'Piano / pool table move',
+    icon: 'cube',
+    blurb: 'Specialist crew and equipment for pianos, pool tables, safes and oversized art.',
+    // Flat specialist rate — dedicated crew and gear regardless of the wider move.
+    price: () => 350,
+  },
+  {
+    id: 'packingMaterials',
+    name: 'Boxes & packing materials',
+    icon: 'cube',
+    blurb: 'Sturdy boxes, butcher paper, bubble wrap and tape delivered ahead of moving day.',
+    // Box and material quantities track the volume being moved.
+    price: () => r10(40 + pricingVolume() * 4),
+  },
+];
+
+// Live extras list with each price resolved against the current move profile.
+const extras = computed(() => extraDefs.map((def) => ({ ...def, priceFrom: def.price() })));
+
+const selectedExtras = reactive({});
+const toggleExtra = (id) => {
+  selectedExtras[id] = !selectedExtras[id];
+};
+const chosenExtras = computed(() => extras.value.filter((extra) => selectedExtras[extra.id]));
+const extrasSubtotal = computed(() => chosenExtras.value.reduce((sum, extra) => sum + extra.priceFrom, 0));
+
+// Flat call-out fee folded into the indicative total on the extras / quote pages.
+const CALL_OUT_FEE = 80;
+
+// Human-readable home size for the quote summary (e.g. "2-bedroom apartment").
+// Studios get their own short label since they have no bedroom count.
+const homeSizeLabel = computed(() => {
+  const house = selectedHouse.value;
+  if (!house) return '—';
+  if (isStudioSelected.value) return 'Studio';
+  const bedrooms = householdDetails.bedrooms || 0;
+  return `${bedrooms}-bedroom ${house.name.toLowerCase()}`;
+});
+
+// Estimated total = base move range + extras subtotal + call-out fee.
+const totalEstimate = computed(() => ({
+  low: quoteEstimate.value.low + extrasSubtotal.value + CALL_OUT_FEE,
+  high: quoteEstimate.value.high + extrasSubtotal.value + CALL_OUT_FEE,
+}));
+
+const formatMoney = (value) => `$${Math.round(value).toLocaleString()}`;
+
+const extrasGridEl = ref(null);
+const scrollToExtras = () => {
+  extrasGridEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 const addCustomItem = () => {
   const name = customDraft.name.trim();
@@ -1182,6 +1413,9 @@ const resetQuote = () => {
   clearAllQuantities();
   customItems.value = [];
   resetCustomDraft();
+  Object.keys(selectedExtras).forEach((key) => {
+    selectedExtras[key] = false;
+  });
 };
 </script>
 
@@ -1336,7 +1570,13 @@ const resetQuote = () => {
         </div>
 
         <div class="inventory-choice-grid">
-          <button class="inventory-choice-card recommended" type="button" @click="useQuickEstimate">
+          <button
+            class="inventory-choice-card recommended"
+            type="button"
+            :class="{ selected: inventoryChoice === 'quick' }"
+            :aria-pressed="inventoryChoice === 'quick'"
+            @click="inventoryChoice = 'quick'"
+          >
             <span class="choice-flag">Fastest</span>
             <span class="home-type-badge"><AppIcon name="bolt" :size="26" /></span>
             <span class="choice-name">Quick estimate</span>
@@ -1345,11 +1585,18 @@ const resetQuote = () => {
               <li><AppIcon name="check" :size="15" /> Pre-filled with typical furniture</li>
               <li><AppIcon name="check" :size="15" /> Skip straight to your truck &amp; quote</li>
               <li><AppIcon name="check" :size="15" /> {{ estimatedVolumeRange }} estimated to start</li>
+              <li><AppIcon name="check" :size="15" /> Ready in under a minute</li>
+              <li><AppIcon name="check" :size="15" /> Tweak the details later if you need to</li>
             </ul>
-            <span class="choice-cta">Use quick estimate <AppIcon name="arrowRight" :size="18" /></span>
           </button>
 
-          <button class="inventory-choice-card" type="button" @click="customiseInventory">
+          <button
+            class="inventory-choice-card"
+            type="button"
+            :class="{ selected: inventoryChoice === 'custom' }"
+            :aria-pressed="inventoryChoice === 'custom'"
+            @click="inventoryChoice = 'custom'"
+          >
             <span class="home-type-badge"><AppIcon name="sliders" :size="26" /></span>
             <span class="choice-name">Customise furniture</span>
             <p class="choice-blurb">Go room by room and adjust every item for the most accurate quote.</p>
@@ -1357,8 +1604,9 @@ const resetQuote = () => {
               <li><AppIcon name="check" :size="15" /> Add or remove items per room</li>
               <li><AppIcon name="check" :size="15" /> Add your own custom items</li>
               <li><AppIcon name="check" :size="15" /> Most accurate estimate</li>
+              <li><AppIcon name="check" :size="15" /> Account for bulky or fragile pieces</li>
+              <li><AppIcon name="check" :size="15" /> Avoid surprises on moving day</li>
             </ul>
-            <span class="choice-cta">Customise my inventory <AppIcon name="arrowRight" :size="18" /></span>
           </button>
         </div>
       </div>
@@ -1379,6 +1627,10 @@ const resetQuote = () => {
           <p>Typical for a {{ selectedHouse?.name || 'home' }} of this size — you can still adjust it.</p>
         </div>
 
+        <button class="primary-button full-width" type="button" @click="continueFromInventoryChoice">
+          Continue
+          <AppIcon name="arrowRight" :size="18" />
+        </button>
         <button class="ghost-button full-width accent-ghost" type="button" @click="step = isStudioSelected ? 0 : 1"><AppIcon name="swap" :size="16" /> Back</button>
         <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
       </aside>
@@ -1438,37 +1690,71 @@ const resetQuote = () => {
 
           <div class="item-search">
             <AppIcon name="search" :size="18" />
-            <input v-model="itemSearch" type="search" placeholder="Search for any item across all rooms…" aria-label="Search items" />
+            <input
+              ref="searchInputEl"
+              v-model="itemSearch"
+              type="search"
+              placeholder="Search for any item across all rooms…"
+              aria-label="Search items"
+              @focus="onSearchFocus"
+              @blur="onSearchBlur"
+            />
             <button v-if="itemSearch" type="button" class="item-search-clear" aria-label="Clear search" @click="itemSearch = ''">×</button>
+
+            <div
+              v-if="searchFocused && (searchQuery ? true : searchSuggestions.length)"
+              class="search-suggestions"
+            >
+              <template v-if="searchQuery">
+                <p class="search-suggestions-title">Search results</p>
+                <button
+                  v-for="item in searchResults"
+                  :key="item.id"
+                  type="button"
+                  class="search-suggestion"
+                  @mousedown.prevent
+                  @click="addItemHere(item)"
+                >
+                  <img :src="imageFor(item.asset)" :alt="item.name" />
+                  <span class="search-suggestion-text">
+                    <strong>{{ item.name }}</strong>
+                    <small>{{ dimsLabel(item) }} · {{ item.room }}</small>
+                  </span>
+                  <span v-if="quantities[item.id]" class="search-suggestion-count">{{ quantities[item.id] }}</span>
+                  <span class="search-suggestion-add"><AppIcon name="boxPlus" :size="16" /></span>
+                </button>
+                <p v-if="!searchResults.length" class="search-empty">No items match “{{ searchQuery }}”.</p>
+                <div class="cant-find">
+                  <span>Can't find an item?</span>
+                  <button type="button" class="ghost-button" @mousedown.prevent @click="goToCustomItem">
+                    <AppIcon name="boxPlus" :size="16" /> Add a custom item
+                  </button>
+                </div>
+              </template>
+              <template v-else>
+                <p class="search-suggestions-title">Suggested items</p>
+                <button
+                  v-for="item in searchSuggestions"
+                  :key="item.id"
+                  type="button"
+                  class="search-suggestion"
+                  @mousedown.prevent
+                  @click="addItemHere(item)"
+                >
+                  <img :src="imageFor(item.asset)" :alt="item.name" />
+                  <span class="search-suggestion-text">
+                    <strong>{{ item.name }}</strong>
+                    <small>{{ dimsLabel(item) }} · {{ item.room }}</small>
+                  </span>
+                  <span v-if="quantities[item.id]" class="search-suggestion-count">{{ quantities[item.id] }}</span>
+                  <span class="search-suggestion-add"><AppIcon name="boxPlus" :size="16" /></span>
+                </button>
+              </template>
+            </div>
           </div>
 
-          <div v-if="searchQuery" class="search-results">
-            <div v-if="searchResults.length" class="furniture-grid">
-              <article v-for="item in searchResults" :key="item.id" class="furniture-picker">
-                <img :src="imageFor(item.asset)" :alt="item.name" />
-                <div>
-                  <h3>{{ item.name }}</h3>
-                  <p>{{ item.volume.toFixed(2) }} m³ · {{ item.room }}</p>
-                </div>
-                <div class="quantity-controls">
-                  <button type="button" aria-label="Decrease quantity" @click="changeQuantity(item.id, -1)">−</button>
-                  <strong>{{ quantities[item.id] || 0 }}</strong>
-                  <button type="button" aria-label="Increase quantity" @click="changeQuantity(item.id, 1)">+</button>
-                </div>
-              </article>
-            </div>
-            <p v-else class="search-empty">No items match “{{ searchQuery }}”.</p>
-
-            <div class="cant-find">
-              <span>Can't find an item?</span>
-              <button type="button" class="ghost-button" @click="goToCustomItem">
-                <AppIcon name="boxPlus" :size="16" /> Add a custom item
-              </button>
-            </div>
-          </div>
-
-          <div v-else class="furniture-grid">
-            <article v-for="item in activeRoom.items" :key="item.id" class="furniture-picker">
+          <div class="furniture-grid">
+            <article v-for="item in roomPickerItems(activeRoom.id)" :key="item.id" class="furniture-picker">
               <img :src="imageFor(item.asset)" :alt="item.name" />
               <div>
                 <h3>{{ item.name }}</h3>
@@ -1613,77 +1899,276 @@ const resetQuote = () => {
 
         <aside class="summary-card recommendation-panel" aria-label="Truck recommendation">
           <div class="recommendation-header">
-            <h2>Recommended truck</h2>
+            <span class="rec-header-icon"><AppIcon name="star" :size="22" /></span>
+            <div class="rec-header-text">
+              <h2>Recommended truck</h2>
+              <p>Best match for your move</p>
+            </div>
           </div>
 
           <div class="recommended-truck-card">
             <div class="truck-card-title">
-              <span class="soft-icon truck-icon"><AppIcon name="truck" :size="28" /></span>
-              <div>
+              <span class="soft-icon truck-icon"><img :src="truckUrl" alt="Truck" class="truck-photo" /></span>
+              <div class="truck-card-info">
+                <span class="best-match-pill"><AppIcon name="check" :size="14" /> Best match</span>
                 <strong>{{ recommendationCardText }}</strong>
-                <span>{{ primaryTruck.capacity }} m³ capacity · {{ primaryTruck.cargoLength }}m (L) x {{ primaryTruck.cargoWidth }}m (W) x {{ primaryTruck.cargoHeight }}m (H)</span>
+                <span class="truck-capacity">{{ primaryTruck.capacity }} m³ capacity</span>
+                <span class="truck-dims">{{ primaryTruck.cargoLength }}m (L) x {{ primaryTruck.cargoWidth }}m (W) x {{ primaryTruck.cargoHeight }}m (H)</span>
               </div>
             </div>
-            <div class="truck-metrics">
-              <div>
-                <strong>{{ fillPercent }}%</strong>
-                <span>Space used</span>
+
+            <div class="usage-box">
+              <div class="truck-metrics">
+                <div>
+                  <strong>{{ fillPercent }}%</strong>
+                  <span>Space used</span>
+                </div>
+                <span class="health-pill" :class="`health-${fillHealth}`">{{ fillHealthLabel }}</span>
               </div>
-              <span class="health-pill" :class="`health-${fillHealth}`">{{ fillHealthLabel }}</span>
+              <div class="usage-bar" :class="`usage-${fillHealth}`">
+                <span :style="{ width: `${fillPercent}%` }"></span>
+              </div>
+              <div class="usage-ticks" aria-hidden="true"></div>
+              <div class="usage-scale">
+                <span>0%</span>
+                <span>50%</span>
+                <span>100%</span>
+              </div>
             </div>
-            <div class="usage-bar" :class="`usage-${fillHealth}`">
-              <span :style="{ width: `${fillPercent}%` }"></span>
-            </div>
+
             <div class="mini-facts">
-              <span>{{ totalItems }} items<br /><small>{{ truckLoadCount }} truck load{{ truckLoadCount === 1 ? '' : 's' }}</small></span>
-              <span>{{ recommendedMoverCount }} movers<br /><small>Recommended</small></span>
+              <div class="mini-fact">
+                <span class="mini-fact-icon"><AppIcon name="box" :size="20" /></span>
+                <span>{{ totalItems }} items<br /><small>{{ truckLoadCount }} truck load{{ truckLoadCount === 1 ? '' : 's' }}</small></span>
+              </div>
+              <div class="mini-fact">
+                <span class="mini-fact-icon"><AppIcon name="people" :size="20" /></span>
+                <span>{{ recommendedMoverCount }} movers<br /><small>Recommended</small></span>
+              </div>
             </div>
           </div>
 
           <button class="primary-button full-width quote-button" type="button" :disabled="!inventory.length" @click="step = 5">
-            Get quote
+            Get my quote
             <AppIcon name="arrowRight" :size="18" />
           </button>
-          <button class="ghost-button full-width accent-ghost" type="button" @click="step = 3"><AppIcon name="swap" :size="16" /> Adjust items</button>
+          <button class="ghost-button full-width accent-ghost" type="button" @click="step = 3"><AppIcon name="edit" :size="16" /> Adjust items</button>
 
           <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
         </aside>
       </div>
     </section>
 
+    <section v-else-if="step === 5" class="page-grid extras-page">
+      <div class="page-main">
+        <div class="page-title">
+          <h1>Add extras to your move</h1>
+          <p>Optional services our team can bundle in. Pick what you need, or skip and continue to your quote.</p>
+        </div>
+
+        <div class="extras-info-banner">
+          <span class="extras-info-icon"><AppIcon name="info" :size="16" /></span>
+          <span>Select any extras that apply. You can review them in your quote summary.</span>
+        </div>
+
+        <div ref="extrasGridEl" class="extras-grid">
+          <button
+            v-for="extra in extras"
+            :key="extra.id"
+            type="button"
+            class="extra-card"
+            :class="{ selected: selectedExtras[extra.id], recommended: extra.recommended }"
+            @click="toggleExtra(extra.id)"
+          >
+            <span v-if="extra.recommended" class="extra-recommended-pill">Recommended</span>
+            <span class="extra-icon"><AppIcon :name="extra.icon" :size="22" /></span>
+            <div class="extra-text">
+              <strong class="extra-name">{{ extra.name }}</strong>
+              <p class="extra-blurb">{{ extra.blurb }}</p>
+              <span class="extra-price">From ${{ extra.priceFrom }}</span>
+            </div>
+            <span class="extra-check" :class="{ checked: selectedExtras[extra.id] }" aria-hidden="true">
+              <AppIcon v-if="selectedExtras[extra.id]" name="check" :size="14" />
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <aside class="summary-card extras-summary">
+        <h2>Your quote summary</h2>
+
+        <div class="qs-details">
+          <strong class="qs-details-title">Move details</strong>
+          <div class="qs-rows">
+            <div class="qs-row">
+              <span class="qs-row-label"><AppIcon name="house" :size="15" /> Home size</span>
+              <strong>{{ homeSizeLabel }}</strong>
+            </div>
+            <div class="qs-row">
+              <span class="qs-row-label"><AppIcon name="cube" :size="15" /> Volume</span>
+              <strong>~{{ Math.round(totalVolume) || Math.round(estimatedRoomVolume) }} m³</strong>
+            </div>
+            <div class="qs-row">
+              <span class="qs-row-label"><AppIcon name="truck" :size="15" /> Truck</span>
+              <strong>{{ primaryTruck?.name || 'TBC' }}</strong>
+            </div>
+            <div class="qs-row">
+              <span class="qs-row-label"><AppIcon name="people" :size="15" /> Crew</span>
+              <strong>{{ recommendedMoverCount }} movers</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="qs-breakdown">
+          <div class="qs-breakdown-row">
+            <span>Base move ({{ homeSizeLabel }})</span>
+            <strong>{{ formatMoney(quoteEstimate.low) }} – {{ formatMoney(quoteEstimate.high) }}</strong>
+          </div>
+          <div class="qs-breakdown-row">
+            <span>Extras ({{ chosenExtras.length }} selected)</span>
+            <strong>{{ formatMoney(extrasSubtotal) }}</strong>
+          </div>
+          <div class="qs-breakdown-row">
+            <span class="qs-breakdown-label">Call-out fee <AppIcon name="info" :size="13" /></span>
+            <strong>{{ formatMoney(CALL_OUT_FEE) }}</strong>
+          </div>
+          <div class="qs-breakdown-row qs-grand-total">
+            <span>Total estimate</span>
+            <strong>{{ formatMoney(totalEstimate.low) }} – {{ formatMoney(totalEstimate.high) }}</strong>
+          </div>
+        </div>
+
+        <button class="primary-button full-width" type="button" @click="step = 6">
+          Continue to quote
+          <AppIcon name="arrowRight" :size="18" />
+        </button>
+        <button class="ghost-button full-width accent-ghost" type="button" @click="step = 4">
+          <AppIcon name="chevronLeft" :size="16" /> Back
+        </button>
+        <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
+      </aside>
+    </section>
+
     <section v-else class="page-grid quote-page">
       <div class="page-main">
         <div class="page-title">
           <h1>Your moving estimate</h1>
-          <p>Based on your inventory and the recommended truck. Final pricing is confirmed after a quick review.</p>
+          <p>Based on your inventory and selected extras. Final pricing is confirmed after a quick review.</p>
         </div>
 
-        <div class="quote-hero">
-          <div class="quote-hero-head">
-            <span class="quote-badge"><AppIcon name="shield" :size="22" /></span>
-            <div>
+        <div class="estimate-hero">
+          <div class="estimate-hero-top">
+            <div class="estimate-hero-figure">
               <strong>Estimated total</strong>
-              <span>{{ recommendationCardText }} · {{ recommendedMoverCount }} movers</span>
+              <div class="estimate-hero-amount">
+                <span class="estimate-hero-price">{{ formatMoney(totalEstimate.low) }} – {{ formatMoney(totalEstimate.high) }}</span>
+                <span class="qs-range-pill">Price range</span>
+              </div>
+              <p class="estimate-hero-note"><AppIcon name="shield" :size="16" /> Final price confirmed after review.</p>
+            </div>
+            <div class="estimate-hero-art" aria-hidden="true">
+              <span class="estimate-hero-truck"><img :src="truckUrl" alt="Truck" class="truck-photo" /></span>
+              <span class="estimate-hero-box"><AppIcon name="box" :size="26" /></span>
             </div>
           </div>
-          <div class="quote-price">
-            <strong>${{ quoteEstimate.low }} – ${{ quoteEstimate.high }}</strong>
-            <em>incl. truck, crew &amp; basic insurance</em>
+
+          <div class="estimate-breakdown">
+            <div class="estimate-seg">
+              <span class="estimate-seg-icon"><AppIcon name="box" :size="18" /></span>
+              <div>
+                <span class="estimate-seg-label">Base move</span>
+                <strong>{{ formatMoney(quoteEstimate.low) }} – {{ formatMoney(quoteEstimate.high) }}</strong>
+              </div>
+            </div>
+            <span class="estimate-op">+</span>
+            <div class="estimate-seg">
+              <span class="estimate-seg-icon"><AppIcon name="gift" :size="18" /></span>
+              <div>
+                <span class="estimate-seg-label">Extras ({{ chosenExtras.length }} selected)</span>
+                <strong>{{ formatMoney(extrasSubtotal) }}</strong>
+              </div>
+            </div>
+            <span class="estimate-op">+</span>
+            <div class="estimate-seg">
+              <span class="estimate-seg-icon"><AppIcon name="clock" :size="18" /></span>
+              <div>
+                <span class="estimate-seg-label">Call-out fee</span>
+                <strong>{{ formatMoney(CALL_OUT_FEE) }}</strong>
+              </div>
+            </div>
+            <span class="estimate-op">=</span>
+            <div class="estimate-seg estimate-seg-total">
+              <span class="estimate-seg-icon"><AppIcon name="wallet" :size="18" /></span>
+              <div>
+                <span class="estimate-seg-label">Total estimate</span>
+                <strong>{{ formatMoney(totalEstimate.low) }} – {{ formatMoney(totalEstimate.high) }}</strong>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div class="quote-includes move-summary-card">
+          <h3><AppIcon name="cube" :size="18" /> Your move summary</h3>
           <div class="quote-fact-grid">
             <div><AppIcon name="box" :size="20" /><strong>{{ totalItems }} items</strong><span>To be moved</span></div>
             <div><AppIcon name="people" :size="20" /><strong>{{ recommendedMoverCount }} movers</strong><span>Recommended crew</span></div>
-            <div><AppIcon name="clock" :size="20" /><strong>{{ estimatedMoveTime }}</strong><span>Estimated time</span></div>
+            <div><AppIcon name="truck" :size="20" /><strong>{{ primaryTruck?.name ? primaryTruck.name + ' truck' : '—' }}</strong><span>With driver</span></div>
+            <div><AppIcon name="building" :size="20" /><strong>{{ homeSizeLabel }}</strong><span>Home size</span></div>
           </div>
         </div>
 
-        <div class="quote-includes">
-          <h3>What's included</h3>
-          <ul>
-            <li><AppIcon name="check" :size="16" /> {{ recommendationCardText }} with driver</li>
-            <li><AppIcon name="check" :size="16" /> {{ recommendedMoverCount }} professional movers</li>
-            <li><AppIcon name="check" :size="16" /> Loading, transport and unloading</li>
-          </ul>
+        <div class="quote-two-col">
+          <div class="quote-includes">
+            <h3><AppIcon name="shield" :size="18" /> What's included</h3>
+            <ul>
+              <li><AppIcon name="check" :size="16" /> {{ recommendationCardText }} with driver</li>
+              <li><AppIcon name="check" :size="16" /> {{ recommendedMoverCount }} professional movers</li>
+              <li><AppIcon name="check" :size="16" /> Loading, transport and unloading</li>
+              <li><AppIcon name="check" :size="16" /> Basic furniture protection</li>
+              <li><AppIcon name="check" :size="16" /> Public liability insurance</li>
+            </ul>
+          </div>
+
+          <div class="quote-includes">
+            <h3 class="quote-extras-head">
+              <span><AppIcon name="gift" :size="18" /> Selected extras</span>
+              <span v-if="chosenExtras.length" class="qs-count-pill">{{ chosenExtras.length }} item{{ chosenExtras.length === 1 ? '' : 's' }}</span>
+            </h3>
+            <div v-if="chosenExtras.length" class="qs-extras-list">
+              <div v-for="extra in chosenExtras" :key="extra.id" class="qs-extra-row qs-extra-row-static">
+                <span class="qs-extra-icon"><AppIcon :name="extra.icon" :size="15" /></span>
+                <span class="qs-extra-name">{{ extra.name }}</span>
+                <strong>${{ extra.priceFrom }}</strong>
+              </div>
+            </div>
+            <p v-else class="qs-empty">No extras selected.</p>
+          </div>
+        </div>
+
+        <div class="quote-includes good-to-know">
+          <div class="gtk-grid">
+            <div class="gtk-item">
+              <span class="gtk-icon gtk-icon-green"><AppIcon name="lock" :size="18" /></span>
+              <div>
+                <strong>No payment required now</strong>
+                <span>Pay only after you approve the final price.</span>
+              </div>
+            </div>
+            <div class="gtk-item">
+              <span class="gtk-icon gtk-icon-blue"><AppIcon name="shield" :size="18" /></span>
+              <div>
+                <strong>We'll confirm all the final details</strong>
+                <span>Our team will confirm all the final details required to provide an accurate quote. This includes details such as parking, stairs, property access, and more.</span>
+              </div>
+            </div>
+            <div class="gtk-item">
+              <span class="gtk-icon gtk-icon-orange"><AppIcon name="edit" :size="18" /></span>
+              <div>
+                <strong>You can still edit your inventory</strong>
+                <span>Need to make a change? You can update your items anytime.</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1695,14 +2180,17 @@ const resetQuote = () => {
           <label>Full name<input type="text" placeholder="Jordan Smith" /></label>
           <label>Email<input type="email" placeholder="you@email.com" /></label>
           <label>Phone<input type="tel" placeholder="0400 000 000" /></label>
+          <label>Pickup address<input type="text" placeholder="Load from (street, suburb)" /></label>
+          <label>Drop-off address<input type="text" placeholder="Unload to (street, suburb)" /></label>
           <label>Preferred move date<input type="date" /></label>
+          <label>Any additional information<textarea rows="4" placeholder="Access details, parking, stairs, fragile items, time restrictions..."></textarea></label>
           <button class="primary-button full-width" type="submit">
             Request final quote
             <AppIcon name="arrowRight" :size="18" />
           </button>
         </form>
 
-        <button class="ghost-button full-width accent-ghost" type="button" @click="step = 4"><AppIcon name="edit" :size="16" /> Back to review</button>
+        <button class="ghost-button full-width accent-ghost" type="button" @click="step = 5"><AppIcon name="edit" :size="16" /> Back to extras</button>
         <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
       </aside>
     </section>

@@ -91,63 +91,85 @@ const makeBox = (width, height, depth, color, position, options = {}) => {
   return mesh;
 };
 
-const makeLabelTexture = (text) => {
+// Build a label texture for one box face. The canvas is sized in proportion to the face's real
+// world dimensions (uniform pixels-per-metre), so the texture is never stretched when mapped onto
+// the box — text reads at a constant size regardless of how wide or flat the item is. The name is
+// repeated across the face in a sparse, offset brick pattern rather than a single stretched word.
+const makeLabelTexture = (text, faceWidthMeters, faceHeightMeters) => {
+  const label = (String(text || 'Custom item').trim() || 'Custom item');
+  const pixelsPerMetre = 240;
+  const minPx = 96;
+  const maxPx = 1024;
+  const wPx = Math.max(minPx, Math.min(maxPx, Math.round(faceWidthMeters * pixelsPerMetre)));
+  const hPx = Math.max(minPx, Math.min(maxPx, Math.round(faceHeightMeters * pixelsPerMetre)));
+
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 256;
+  canvas.width = wPx;
+  canvas.height = hPx;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#f8fbfa';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, wPx, hPx);
+  const border = Math.max(4, Math.min(wPx, hPx) * 0.05);
   ctx.strokeStyle = '#1e8a7c';
-  ctx.lineWidth = 16;
-  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+  ctx.lineWidth = border;
+  ctx.strokeRect(border / 2, border / 2, wPx - border, hPx - border);
+
   ctx.fillStyle = '#172124';
-  ctx.font = '700 46px Inter, Arial, sans-serif';
+  const fontPx = 30;
+  ctx.font = `700 ${fontPx}px Inter, Arial, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  const words = String(text || 'Custom item').split(/\s+/);
-  const lines = [];
-  let current = '';
-  for (const word of words) {
-    const next = current ? `${current} ${word}` : word;
-    if (ctx.measureText(next).width > 420 && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = next;
+  // Sparse tiling: leave roughly two word-widths of breathing room between repeats, and offset
+  // alternate rows so the labels don't line up into rigid columns.
+  const wordWidth = ctx.measureText(label).width;
+  const stepX = Math.max(wordWidth + fontPx * 2.4, fontPx * 5);
+  const stepY = fontPx * 2.6;
+  let row = 0;
+  for (let y = stepY * 0.6; y < hPx + stepY; y += stepY) {
+    const rowOffset = (row % 2) * (stepX / 2);
+    for (let x = stepX * 0.5 - rowOffset; x < wPx + stepX; x += stepX) {
+      ctx.fillText(label, x, y);
     }
+    row += 1;
   }
-  if (current) lines.push(current);
-  const visibleLines = lines.slice(0, 3);
-  visibleLines.forEach((line, index) => {
-    ctx.fillText(line, canvas.width / 2, canvas.height / 2 + (index - (visibleLines.length - 1) / 2) * 54);
-  });
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
+  if (renderer) texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
   return texture;
 };
 
 const buildCustomBox = (item) => {
-  const width = Math.max(item.widthMeters, 0.05);
-  const height = Math.max(item.heightMeters, 0.05);
-  const depth = Math.max(item.depthMeters, 0.05);
-  const labelMaterial = new THREE.MeshStandardMaterial({
-    map: makeLabelTexture(item.name),
+  // widthMeters/depthMeters already reflect the packer's chosen orientation (the yaw is baked into
+  // item.width/item.depth), so the box is built world-aligned to its cell — no extra rotation. A
+  // small shrink leaves a ~2% gap so neighbouring boxes read as separate items instead of merging.
+  const fill = 0.98;
+  const width = Math.max(item.widthMeters * fill, 0.05);
+  const height = Math.max(item.heightMeters * fill, 0.05);
+  const depth = Math.max(item.depthMeters * fill, 0.05);
+  const plainMaterial = makeMaterial(0xd9ece8);
+  // One texture per face shape: the ±X faces span depth×height, the ±Z faces span width×height.
+  // Sizing each to its own face keeps the repeated text undistorted on every side.
+  const sideMaterial = new THREE.MeshStandardMaterial({
+    map: makeLabelTexture(item.name, depth, height),
     roughness: 0.72,
     metalness: 0.03,
   });
-  const plainMaterial = makeMaterial(0xd9ece8);
+  const frontMaterial = new THREE.MeshStandardMaterial({
+    map: makeLabelTexture(item.name, width, height),
+    roughness: 0.72,
+    metalness: 0.03,
+  });
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(width, height, depth),
     [
-      labelMaterial.clone(),
-      labelMaterial.clone(),
-      plainMaterial.clone(),
-      plainMaterial.clone(),
-      labelMaterial.clone(),
-      labelMaterial.clone(),
+      sideMaterial,        // +X
+      sideMaterial.clone(),// -X
+      plainMaterial.clone(),// +Y (top)
+      plainMaterial.clone(),// -Y (bottom)
+      frontMaterial,       // +Z
+      frontMaterial.clone(),// -Z
     ],
   );
   mesh.castShadow = true;
@@ -156,7 +178,6 @@ const buildCustomBox = (item) => {
 
   const wrapper = new THREE.Group();
   wrapper.add(mesh);
-  wrapper.rotation.y = item.rotated ? Math.PI / 2 : 0;
   wrapper.userData.targetY = 0.08;
   wrapper.userData.delay = item.batch * 0.16 + (item.sequence % 4) * 0.04;
   wrapper.userData.settled = false;
