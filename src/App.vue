@@ -11,6 +11,7 @@ import { resolveAttributes, allowedFlips } from './data/attributes.js';
 import { buildShape, buildComposite } from './utils/shapes.js';
 import { planAndPack, estimateFleet } from './utils/packing.js';
 import { measureAsset } from './utils/assetDimensions.js';
+import logoUrl from '../images/logo.png';
 
 const sideImages = import.meta.glob('../Kenny/Side/*.png', {
   eager: true,
@@ -699,16 +700,34 @@ const totalTruckCapacity = computed(() =>
   recommendedPlan.value.reduce((sum, truck) => sum + truck.capacity * truck.count, 0),
 );
 
-// Real-world packing is never perfect, so every object is budgeted 5% more than its raw volume
-// when reporting how full the truck is.
-const PACKING_SLACK = 1.05;
-
 const fillPercent = computed(() => {
-  // Measure against the capacity of the trucks actually packed (authoritative), not the live
-  // lower-bound estimate — otherwise the % is wrong whenever the packed fleet differs from it.
+  // Prefer the packer's real usable-space accounting: each truck reports the cells it consumes
+  // (cargo + dead air above closed-top items + trapped air under cargo) vs its total cells, summed
+  // fleet-wide. This charges for space that can never be filled — e.g. a plant freezes the whole
+  // column above it — so it reflects actual usable space left, not just summed item volume.
+  if (packedTrucks.value.length) {
+    const used = packedTrucks.value.reduce((sum, t) => sum + (t.usedCells || 0), 0);
+    const total = packedTrucks.value.reduce((sum, t) => sum + (t.gridCells || 0), 0);
+    if (total) return Math.min(100, Math.round((used / total) * 100));
+  }
+  // Before the first pack lands (no grid yet) fall back to a plain volume estimate so the meter
+  // is never blank during the packing spinner.
   if (!packedTruckCapacity.value) return 0;
-  return Math.min(100, Math.round(((totalVolume.value * PACKING_SLACK) / packedTruckCapacity.value) * 100));
+  return Math.min(100, Math.round((totalVolume.value / packedTruckCapacity.value) * 100));
 });
+
+// Fill health for the usage bar. 60–85% is the sweet spot — enough left for padding/awkward gaps
+// without paying for a truck that's mostly air, and not so jammed it won't actually load.
+const fillHealth = computed(() => {
+  const p = fillPercent.value;
+  if (p < 60) return 'low';
+  if (p <= 85) return 'good';
+  return 'high';
+});
+
+const fillHealthLabel = computed(
+  () => ({ low: 'Room to spare', good: 'Healthy fit', high: 'Packed tight' })[fillHealth.value],
+);
 
 const packedUnits = computed(() =>
   inventory.value.flatMap((item) =>
@@ -729,11 +748,41 @@ const packedUnits = computed(() =>
 // Worker off the main thread — the UI stays responsive and shows a live progress bar + ETA. The
 // result lands in `packedTrucks` asynchronously; until the first result, dependent computeds fall
 // back to the cheap `recommendedPlan` estimate, so the screen is never blank.
-const PACKING_BUDGET_MS = 15000;
+const PACKING_BUDGET_MS = 5000;
 const packedTrucks = ref([]);
 const isPacking = ref(false);
 const packingProgress = ref(0); // 0..1
 const packingEtaMs = ref(0);
+
+// Playful one-liners cycled on the full-screen "reviewing your truck fit" loader.
+const packingMessages = [
+  'Playing Tetris with your furniture…',
+  'Convincing the fridge it is stackable…',
+  'Making the mattress pull its weight…',
+  'Trying 10,000 ways to fit your stuff…',
+  'Politely negotiating with bulky furniture…',
+  'Checking whether the chair can go there… no, there… no, there…',
+  'Making awkward items slightly less awkward…',
+  'Optimising every cubic centimetre…',
+];
+const packingMessageIndex = ref(0);
+let packingMessageTimer = null;
+
+// Cycle the loader one-liners slowly while a full-page pack is in flight; reset when it ends.
+watch(isPacking, (packing) => {
+  if (packingMessageTimer) {
+    clearInterval(packingMessageTimer);
+    packingMessageTimer = null;
+  }
+  if (packing) {
+    packingMessageIndex.value = Math.floor(Math.random() * packingMessages.length);
+    packingMessageTimer = setInterval(() => {
+      packingMessageIndex.value = (packingMessageIndex.value + 1) % packingMessages.length;
+    }, 2600);
+  }
+});
+
+const packingMessage = computed(() => packingMessages[packingMessageIndex.value]);
 
 // Shape a raw packer truck into the view model the scene/breakdown expect (packingGrid + per-item
 // batch/zIndex). Mirrors the old computed's mapping.
@@ -827,13 +876,8 @@ watch(
 
 onBeforeUnmount(() => {
   if (packingDebounce) clearTimeout(packingDebounce);
+  if (packingMessageTimer) clearInterval(packingMessageTimer);
   disposeWorker();
-});
-
-// Human-readable ETA for the loading bar (hidden under 1s).
-const packingEtaLabel = computed(() => {
-  if (packingEtaMs.value < 1000) return '';
-  return `~${Math.ceil(packingEtaMs.value / 1000)}s remaining`;
 });
 
 // Total cargo capacity of the fleet the packer actually returned (authoritative). Falls back to
@@ -1489,10 +1533,6 @@ const resetQuote = () => {
             <strong>{{ totalItems }}</strong>
             <span>Items</span>
           </div>
-          <div>
-            <strong>~{{ totalVolume.toFixed(0) }} m³</strong>
-            <span>Estimated volume</span>
-          </div>
         </div>
         <div v-if="inventory.length" class="bucket-list">
           <div v-for="item in inventory" :key="item.id" class="bucket-item">
@@ -1513,6 +1553,17 @@ const resetQuote = () => {
       </aside>
     </section>
 
+    <section v-else-if="step === 4 && isPacking" class="packing-page">
+      <div class="packing-loader">
+        <div class="packing-orbit">
+          <span class="packing-orbit-ring"></span>
+          <span class="packing-orbit-dot"></span>
+          <img class="packing-logo" :src="logoUrl" alt="Super Move" />
+        </div>
+        <p class="packing-line" :key="packingMessageIndex">{{ packingMessage }}</p>
+      </div>
+    </section>
+
     <section v-else-if="step === 4" class="review-page">
       <div class="review-heading">
         <div>
@@ -1525,17 +1576,7 @@ const resetQuote = () => {
         <div class="review-main">
           <div class="truck-fit-stage" :class="{ empty: !inventory.length }">
             <TruckFitScene v-if="packedTrucks.length" class="truck-fit-canvas" :trucks="packedTrucks" />
-            <p v-else-if="!isPacking" class="empty-state">Add items with the plus buttons.</p>
-            <div v-if="isPacking" class="packing-overlay">
-              <div class="packing-card">
-                <span class="packing-title">Optimising your truck load…</span>
-                <div class="packing-bar"><span :style="{ width: `${Math.round(packingProgress * 100)}%` }"></span></div>
-                <div class="packing-meta">
-                  <span>{{ Math.round(packingProgress * 100) }}%</span>
-                  <span v-if="packingEtaLabel">{{ packingEtaLabel }}</span>
-                </div>
-              </div>
-            </div>
+            <p v-else class="empty-state">Add items with the plus buttons.</p>
             <div class="scene-help">Click and drag to rotate</div>
           </div>
 
@@ -1585,15 +1626,12 @@ const resetQuote = () => {
             </div>
             <div class="truck-metrics">
               <div>
-                <strong>~{{ totalVolume.toFixed(0) }} m³</strong>
-                <span>Estimated volume</span>
-              </div>
-              <div>
                 <strong>{{ fillPercent }}%</strong>
                 <span>Space used</span>
               </div>
+              <span class="health-pill" :class="`health-${fillHealth}`">{{ fillHealthLabel }}</span>
             </div>
-            <div class="usage-bar">
+            <div class="usage-bar" :class="`usage-${fillHealth}`">
               <span :style="{ width: `${fillPercent}%` }"></span>
             </div>
             <div class="mini-facts">
@@ -1633,7 +1671,6 @@ const resetQuote = () => {
             <em>incl. truck, crew &amp; basic insurance</em>
           </div>
           <div class="quote-fact-grid">
-            <div><AppIcon name="cube" :size="20" /><strong>~{{ totalVolume.toFixed(0) }} m³</strong><span>Estimated volume</span></div>
             <div><AppIcon name="box" :size="20" /><strong>{{ totalItems }} items</strong><span>To be moved</span></div>
             <div><AppIcon name="people" :size="20" /><strong>{{ recommendedMoverCount }} movers</strong><span>Recommended crew</span></div>
             <div><AppIcon name="clock" :size="20" /><strong>{{ estimatedMoveTime }}</strong><span>Estimated time</span></div>

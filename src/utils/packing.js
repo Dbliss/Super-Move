@@ -12,8 +12,9 @@
 //     beds, fridges) that ride the floor and never stack on their own kind.
 //   - Lowest stackLevel goes first, so floor-bound items claim the base before anything stacks.
 //   - An item can only rest on items whose `openTop` is true.
-//   - 100% contact: when stacked (not on the floor), an item's ENTIRE footprint must be supported
-//     by item(s) directly below — never partly over empty space — so nothing hangs off an edge.
+//   - ≥70% contact: when stacked (not on the floor), at least 70% of an item's footprint columns
+//     must be supported by item(s) directly below — a little overhang is allowed for leeway, but a
+//     clear majority must be carried so nothing topples or floats off an edge.
 //   - Placement builds walls from the back forward: it scores by (x, then y, then z), so the load
 //     fills each back cross-section — column by column across the width, stacking up — before
 //     advancing toward the doors, the way a removalist loads a truck.
@@ -30,6 +31,11 @@
 import { orientedShapes } from './shapes.js';
 
 const idx = (W, D, x, y, z) => z * D * W + y * W + x;
+
+// Fraction of a stacked item's footprint columns that must rest on a supporter directly below. 1.0
+// is full contact (nothing hangs); 0.7 gives real loads some leeway so an item may overhang a gap
+// by up to 30% of its footprint and still be accepted.
+const SUPPORT_FRACTION = 0.7;
 
 const makeTruckGrid = (cellsX, cellsY, cellsZ) => ({
   W: cellsX,
@@ -75,7 +81,7 @@ const orientationsFor = (item) => {
 // Fast rest height: rather than scan every z from the floor up, compute the lowest z at which no
 // footprint column's bottom collides with the cargo already there — `zRest = max(columnTop[col] -
 // bottomOffset[col])` over the footprint, an O(footprint) read of the truck's skyline. `placementOK`
-// then validates that exact resting spot (collision + 100% support + open-top + stack level), bumping
+// then validates that exact resting spot (collision + ≥70% support + open-top + stack level), bumping
 // up only in the rare overhang case. This drops the old ~H× z-scan, which is the dominant pack cost.
 //
 // Trade-off vs the old floor-up scan: an item no longer settles into a CAVE *below* a column's top
@@ -101,21 +107,25 @@ const findLowestZ = (grid, shape, x, y, item) => {
 
   // Fast path for solid blocks (the common case): at zRest a solid box is collision-free by
   // construction (every footprint column is clear from zRest up), so we skip the O(voxels) scan and
-  // only verify the 100%-support contract in O(footprint) straight off the skyline. This is the hot
+  // only verify the ≥70%-support contract in O(footprint) straight off the skyline. This is the hot
   // path that lets the GA run thousands of packs in the budget.
   if (shape.solid) {
     if (zRest === 0) return 0; // on the floor — always supported
     const lvl = item.stackLevel;
+    let supported = 0;
     for (let i = 0; i < fp.length; i += 1) {
       const dx = fp[i][0];
       const dy = fp[i][1];
-      if (columnTop[(y + dy) * W + (x + dx)] !== zRest) return null; // uneven surface → not fully supported
+      // A column whose surface sits below the rest plane leaves a gap under the block: allowed as
+      // overhang (counts as unsupported) as long as ≥70% of columns DO carry the block.
+      if (columnTop[(y + dy) * W + (x + dx)] !== zRest) continue;
       const sup = itemAt(grid, x + dx, y + dy, zRest - 1);
       if (!sup || !sup.openTop) return null;
       if (sup.stackLevel > lvl) return null;
       if (sup.stackLevel === lvl && lvl === 0) return null;
+      supported += 1;
     }
-    return zRest;
+    return supported >= fp.length * SUPPORT_FRACTION ? zRest : null;
   }
 
   // General (composite) shapes: validate the resting spot with the full voxel/support check.
@@ -132,19 +142,23 @@ const placementOK = (grid, shape, x, y, z, item) => {
   }
   // 2. Support contract. The truck floor supports any item.
   if (z === 0) return true;
-  // 100% contact: every column the item occupies (its full footprint, not just the contact feet)
-  // must sit on a supporting item directly below — so nothing is stacked hanging off an edge.
-  for (const [dx, dy] of shape.footprint) {
+  // ≥70% contact: at least 70% of the columns the item occupies must sit on a supporting item
+  // directly below; the remaining (up to 30%) may overhang a gap, giving real loads some leeway.
+  // Any column that DOES rest on something must rest on an open-top item of equal-or-lower stack
+  // level — so identical stackables (boxes on boxes) pile up, while resting on a closed-top or
+  // heavier item is never allowed. The one exception is level 0: those are heavy "base" items
+  // (sofas, beds, fridges) that ride the floor and never stack on their own kind.
+  const fp = shape.footprint;
+  let supported = 0;
+  for (const [dx, dy] of fp) {
     const supporter = itemAt(grid, x + dx, y + dy, z - 1);
-    if (!supporter) return false;                          // empty below → would overhang/float → reject
+    if (!supporter) continue;                              // empty below → overhang, counts as unsupported
     if (!supporter.openTop) return false;                  // can't put anything on top of this item
-    // May rest on an item of equal-or-lower level — so identical stackables (boxes on boxes)
-    // pile up. The one exception is level 0: those are heavy "base" items (sofas, beds, fridges)
-    // that ride the floor and never stack on their own kind.
     if (supporter.stackLevel > item.stackLevel) return false;
     if (supporter.stackLevel === item.stackLevel && item.stackLevel === 0) return false;
+    supported += 1;
   }
-  return true;
+  return supported >= fp.length * SUPPORT_FRACTION;
 };
 
 // Wall-building scoring (how a removalist actually loads a truck): start at the back wall and
@@ -162,12 +176,26 @@ const biasKey = (shape, orientBias) =>
       : orientBias === 'tall' ? -shape.height
         : 0;
 
+// Items that should be loaded LAST (so they come off first and aren't buried under cargo) — e.g.
+// potted plants: fragile and awkward. They still tuck against the nearest cargo with the normal
+// back-building score; "last" is about load ORDER, not being pushed to the doors. Matched loosely
+// by asset/id/name so the catalog's `pottedPlant*` assets qualify with no extra configuration.
+const isLoadLast = (item) => /plant/i.test(`${item.asset || ''} ${item.id || ''} ${item.name || ''}`);
+
+// Closed-top base items: pieces that can't be stacked onto (`openTop` false) and must ride the floor
+// (level 0) — tall awkward things like a stood-up wardrobe or fridge. Like plants they load LAST and
+// tallest-first so they aren't buried under stacks. Plants take precedence (matched first).
+const isClosedBase = (item) => !isLoadLast(item) && !item.openTop && item.stackLevel === 0;
+
+// All cargo hugs the BACK wall (low x) and builds forward, one column at a time. Load-last items
+// (plants, closed-top base pieces) go in last by ORDER, but they still tuck against the nearest
+// cargo with this same back-building score — never pushed off to the far (door) end of the truck.
 const scorePlacement = (grid, shape, x, y, z, orientBias) => [
-  x,                                  // 1. hug the back wall — only move forward once it's full
-  y,                                  // 2. fill across the width, one column at a time
-  z,                                  // 3. stack the current back column up before starting a new one
-  biasKey(shape, orientBias),         // 4. orientation bias (deep / wide / tall)
-  x + shape.width,                    // 5. keep the wall thin (don't poke forward needlessly)
+  x,                            // 1. hug the back wall
+  y,                            // 2. fill across the width, one column at a time
+  z,                            // 3. stack the current column up before starting a new one
+  biasKey(shape, orientBias),   // 4. orientation bias (deep / wide / tall)
+  x + shape.width,              // 5. keep the wall thin
 ];
 
 const compareScores = (a, b) => {
@@ -345,7 +373,19 @@ const candidateFleets = (N, sizes, bounds) => {
 // Deterministic seeds: an item ordering paired with an orientation bias. Floor-bound (low
 // stackLevel) items always go first so they claim base space; varying the tiebreak and bias gives
 // a tight fleet several chances to pack fully before we escalate to a bigger one.
-const byLevel = (cmp) => (items) => [...items].sort((a, b) => a.stackLevel - b.stackLevel || cmp(a, b));
+// Ordering: lowest stackLevel first (heavy bases claim the floor), but the awkward load-last groups
+// are forced to the very end regardless of level — first closed-top base items, then plants — so they
+// pack after everything else. Within a load-last group the TALLEST goes first (loads deepest / sits
+// against the wall); normal cargo stays heavy-first by stack level. `loadOrder` is the fixed part of
+// every ordering; callers append their own final tiebreak (volume, footprint, …).
+const loadRank = (item) => (isLoadLast(item) ? 2 : isClosedBase(item) ? 1 : 0);
+const loadOrder = (a, b) => {
+  const ra = loadRank(a);
+  const rb = loadRank(b);
+  if (ra !== rb) return ra - rb;
+  return ra > 0 ? b.shape.height - a.shape.height : a.stackLevel - b.stackLevel;
+};
+const byLevel = (cmp) => (items) => [...items].sort((a, b) => loadOrder(a, b) || cmp(a, b));
 
 // "Effective wall height" of a floor-bound item — how tall a column it ultimately contributes to
 // the back wall. An open-top base gets boxes piled on it up to the roof, so it effectively reaches
@@ -601,7 +641,7 @@ const GA = { minPop: 16, maxPop: 48, eliteFrac: 0.2, mutantFrac: 0.2, rho: 0.7, 
 // Time-budgeted Biased Random-Key Genetic Algorithm for the best-LOOKING full pack of a FIXED fleet.
 //
 // A genome is a vector of random keys (one per item) + one bias key. It DECODES to a packing by
-// sorting items by (stackLevel asc, key asc) — so heavy items still go first, but the search controls
+// sorting items by (loadOrder, key asc) — so heavy bases and load-last groups stay fixed, but the search controls
 // the order WITHIN each weight class — then greedily packing with the chosen orientation bias. Fitness
 // is layoutScore (feasible packs always beat partial ones). Each generation keeps the elite genomes,
 // injects fresh random "mutants" (exploration), and fills the rest with biased crossover of an elite
@@ -624,7 +664,7 @@ const searchBestLayout = (items, fleetSizes, { budgetMs = 1200, tick } = {}) => 
   const evaluate = (g) => {
     const order = items
       .map((it, i) => ({ it, k: g.keys[i] }))
-      .sort((a, b) => a.it.stackLevel - b.it.stackLevel || a.k - b.k)
+      .sort((a, b) => loadOrder(a.it, b.it) || a.k - b.k)
       .map((x) => x.it);
     const result = packOnce(order, makeFleetTrucks(fleetSizes), biasFromKey(g.biasKey));
     g.result = result;
@@ -684,6 +724,88 @@ const searchBestLayout = (items, fleetSizes, { budgetMs = 1200, tick } = {}) => 
 // Public API
 // ---------------------------------------------------------------------------------------------
 
+// Smallest empty box (in 10cm cells) that counts as genuinely reusable free space. Anything smaller
+// — slivers under the roof, notches between unevenly stacked boxes, thin gaps wedged between cargo —
+// is space you can't actually fit another item into, so it's counted as USED. 5 cells ≈ a 50cm cube
+// (about the smallest carton/nightstand). Bump this up to count more space as used, down for less.
+const MIN_FREE_CELL = 5;
+
+// "Usable-space" accounting for the capacity meter — what's actually consumed, not raw item volume.
+// Free space is only the empty space you could really put another item into. Two filters:
+//
+//   1. Reachability. An empty cell is a free CANDIDATE only if it rests on the floor or on top of an
+//      OPEN-TOP item — i.e. something could be placed/stacked there. Air above a CLOSED-TOP item (a
+//      plant, lamp, anything you can't pile onto) is unreachable: the whole column above it is used.
+//      Trapped air below cargo (the cave under a table) isn't a candidate either — it sits beneath
+//      the column top, not on a support surface — so it's used too.
+//
+//   2. Large-rectangle test (morphological opening). A candidate cell only stays free if it belongs
+//      to at least one fully-candidate MIN_FREE_CELL³ box — a rectangle actually big enough to hold
+//      an item. Slivers and narrow notches fit no such box, so they fall back to used. A 3D prefix
+//      sum makes the "is this whole box free?" test O(1) per anchor.
+//
+// Returns { used, total } in cells; used / total is the fill %.
+const computeTruckUsage = (grid) => {
+  const { W, D, H, columnTop } = grid;
+  const total = W * D * H;
+
+  // (1) Candidate-free mask.
+  const candidate = new Uint8Array(total);
+  for (let y = 0; y < D; y += 1) {
+    for (let x = 0; x < W; x += 1) {
+      const top = columnTop[y * W + x];
+      if (top > 0) {
+        const topItem = itemAt(grid, x, y, top - 1);
+        if (!topItem || !topItem.openTop) continue; // closed top → column above is unreachable
+      }
+      for (let z = top; z < H; z += 1) candidate[idx(W, D, x, y, z)] = 1;
+    }
+  }
+
+  const m = MIN_FREE_CELL;
+  if (W < m || D < m || H < m) return { used: total, total }; // no real item fits anywhere
+
+  // (2) 3D prefix sum over the candidate mask: P[x,y,z] = candidates in [0,x)×[0,y)×[0,z).
+  const pw = W + 1;
+  const pd = D + 1;
+  const P = new Int32Array(pw * pd * (H + 1));
+  const pIdx = (x, y, z) => (z * pd + y) * pw + x;
+  for (let z = 1; z <= H; z += 1) {
+    for (let y = 1; y <= D; y += 1) {
+      for (let x = 1; x <= W; x += 1) {
+        P[pIdx(x, y, z)] = candidate[idx(W, D, x - 1, y - 1, z - 1)]
+          + P[pIdx(x - 1, y, z)] + P[pIdx(x, y - 1, z)] + P[pIdx(x, y, z - 1)]
+          - P[pIdx(x - 1, y - 1, z)] - P[pIdx(x - 1, y, z - 1)] - P[pIdx(x, y - 1, z - 1)]
+          + P[pIdx(x - 1, y - 1, z - 1)];
+      }
+    }
+  }
+  const boxSum = (x0, y0, z0, x1, y1, z1) =>
+    P[pIdx(x1, y1, z1)] - P[pIdx(x0, y1, z1)] - P[pIdx(x1, y0, z1)] - P[pIdx(x1, y1, z0)]
+    + P[pIdx(x0, y0, z1)] + P[pIdx(x0, y1, z0)] + P[pIdx(x1, y0, z0)] - P[pIdx(x0, y0, z0)];
+
+  // Dilate every fully-candidate m³ box back over its cells: a cell is truly free iff some such box
+  // covers it (the opening of the candidate set by an m³ structuring element).
+  const usable = new Uint8Array(total);
+  const need = m * m * m;
+  for (let z = 0; z + m <= H; z += 1) {
+    for (let y = 0; y + m <= D; y += 1) {
+      for (let x = 0; x + m <= W; x += 1) {
+        if (boxSum(x, y, z, x + m, y + m, z + m) !== need) continue;
+        for (let dz = 0; dz < m; dz += 1) {
+          for (let dy = 0; dy < m; dy += 1) {
+            for (let dx = 0; dx < m; dx += 1) usable[idx(W, D, x + dx, y + dy, z + dz)] = 1;
+          }
+        }
+      }
+    }
+  }
+
+  let freeCount = 0;
+  for (let i = 0; i < total; i += 1) freeCount += usable[i];
+  return { used: total - freeCount, total };
+};
+
 const collapsePlan = (trucks) => {
   const order = [];
   const byId = new Map();
@@ -709,9 +831,12 @@ const finalize = (packResult, unplaced) => {
     const n = (seen.get(truck.id) || 0) + 1;
     seen.set(truck.id, n);
     const sameSize = used.filter((t) => t.id === truck.id).length;
+    const usage = computeTruckUsage(truck.grid);
     return {
       ...truck,
       label: truck.name + ' Truck' + (multiple && sameSize > 1 ? ` ${n}` : ''),
+      usedCells: usage.used,
+      gridCells: usage.total,
     };
   });
   return { trucks, plan: collapsePlan(used), unplaced: unplaced || [] };
