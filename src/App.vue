@@ -297,33 +297,22 @@ const truckSizes = [
   {
     id: 'small',
     name: 'Small',
-    capacity: 18,
+    capacity: 15,
     width: 130,
     gridColumns: 10,
     gridRows: 5,
-    cargoLength: 4.1,
+    cargoLength: 3.25,
     cargoWidth: 2.2,
     cargoHeight: 2.1,
   },
   {
-    id: 'medium',
-    name: 'Medium',
-    capacity: 32,
-    width: 170,
-    gridColumns: 14,
-    gridRows: 5,
-    cargoLength: 6.2,
-    cargoWidth: 2.35,
-    cargoHeight: 2.25,
-  },
-  {
     id: 'large',
     name: 'Large',
-    capacity: 50,
+    capacity: 35,
     width: 220,
     gridColumns: 18,
     gridRows: 5,
-    cargoLength: 8.8,
+    cargoLength: 6.1,
     cargoWidth: 2.4,
     cargoHeight: 2.4,
   },
@@ -522,6 +511,25 @@ const customDraft = reactive({
   depthCm: '',
   heightCm: '',
 });
+
+const quoteFormDefaults = {
+  fullName: 'John Smith',
+  email: '',
+  phone: '',
+  pickupAddress: '',
+  dropoffAddress: '',
+  preferredMoveDate: '',
+  notes: '',
+};
+
+const quoteForm = reactive({ ...quoteFormDefaults });
+const quoteSubmitted = ref(false);
+const requiredQuoteFields = Object.keys(quoteFormDefaults);
+const WIX_QUOTE_MESSAGE_TYPE = 'superMove.quoteSubmitted';
+
+const quoteFormIsComplete = computed(() =>
+  requiredQuoteFields.every((field) => String(quoteForm[field] || '').trim().length > 0),
+);
 
 const householdDefaultsByHouse = {
   studio: { bedrooms: 1, bathrooms: 0, living: 0, dining: 0, office: 0, garage: 0 },
@@ -1220,79 +1228,28 @@ const recommendedMoverCount = computed(() => {
   return limit + extraRooms;
 });
 
-// Round a dollar figure to the nearest $10 so quoted prices read cleanly.
-const r10 = (n) => Math.round(n / 10) * 10;
-
-// The volume that drives pricing: prefer the packed/measured total, fall back to
-// the room-based estimate before any inventory has been built.
-const pricingVolume = () => totalVolume.value || estimatedRoomVolume.value || 0;
-
-// Base move pricing — Sydney removalist rates. Driven by the two things that
-// actually move the cost: how much volume is handled and which trucks we
-// dispatch. A larger truck costs more than a smaller one (bigger vehicle,
-// higher fuel, heavier crew), so each size carries its own dispatch rate.
-const TRUCK_BASE_RATE = { small: 260, medium: 340, large: 440 };
-const VOLUME_RATE = 22; // per m³ handled (load + unload labour)
-
-// The trucks actually dispatched, flattened to a list of size ids. Falls back
-// to the live recommendation before the packer has produced a real fleet.
-const dispatchedTruckIds = computed(() => {
-  if (packedTrucks.value.length) return packedTrucks.value.map((truck) => truck.id);
-  const planned = recommendedPlan.value.flatMap((truck) => Array(truck.count).fill(truck.id));
-  return planned.length ? planned : ['medium'];
-});
-
-const baseMovePrice = computed(() => {
-  const truckCost = dispatchedTruckIds.value.reduce(
-    (sum, id) => sum + (TRUCK_BASE_RATE[id] ?? TRUCK_BASE_RATE.medium),
-    0,
-  );
-  return truckCost + Math.round(pricingVolume() * VOLUME_RATE);
-});
-
-// Indicative range shown on the Quote step. The low→high spread absorbs
-// move-distance variation: a same-suburb local move sits near the low end,
-// while a long cross-Sydney run pushes toward the high end.
-const quoteEstimate = computed(() => {
-  const low = r10(baseMovePrice.value);
-  return { low, high: r10(low * 1.25) };
-});
-
 // Add-on services offered after the truck review, before the final quote form.
 // Things that set us apart — storage isn't on the list since we don't offer it.
-// Each `price` is computed from the factor that actually scales its cost
-// (move volume, house size, or a flat specialist rate) using Sydney base rates.
+// No prices are shown: the move cost varies too much by access, stairs, distance,
+// weather and item weight, so the team confirms it after reviewing the request.
 const extraDefs = [
   {
     id: 'tipRun',
     name: 'Tip run',
     icon: 'truck',
     blurb: 'We take unwanted furniture, e-waste and rubbish straight to the tip after we load.',
-    // Flat rate — one truck run + tip disposal fees, independent of move size.
-    price: () => 150,
   },
   {
     id: 'pressureCleaning',
     name: 'Pressure cleaning',
     icon: 'bolt',
     blurb: 'Driveway, paths and patio blasted clean, perfect before handing back the keys.',
-    // Scales with move volume as a proxy for property size / area to clean.
-    price: () => r10(120 + pricingVolume() * 4),
   },
   {
     id: 'houseCleaning',
     name: 'End-of-lease clean',
     icon: 'laundry',
     blurb: 'Full bond-back clean by our trusted crew so you walk away with your deposit.',
-    // Bond clean priced on the home's rooms — beds and baths drive the bulk of it.
-    price: () =>
-      r10(
-        140 +
-          (householdDetails.bedrooms || 0) * 70 +
-          (householdDetails.bathrooms || 0) * 55 +
-          ((householdDetails.living || 0) + (householdDetails.dining || 0)) * 25 +
-          (householdDetails.office || 0) * 20,
-      ),
   },
   {
     id: 'packingService',
@@ -1300,55 +1257,40 @@ const extraDefs = [
     icon: 'box',
     blurb: "We pack every room into boxes the day before — you don't lift a thing.",
     recommended: true,
-    // Packing labour scales directly with the volume being boxed up.
-    price: () => r10(120 + pricingVolume() * 9),
   },
   {
     id: 'unpackingService',
     name: 'Unpacking service',
     icon: 'boxPlus',
     blurb: 'We unpack and lay out essentials in the new home so you can settle in tonight.',
-    // Unpacking is lighter than packing — about 75% of the per-m³ labour.
-    price: () => r10(90 + pricingVolume() * 7),
   },
   {
     id: 'furnitureAssembly',
     name: 'Furniture assembly',
     icon: 'sliders',
     blurb: 'Beds, wardrobes and flat-pack disassembled and put back together at the new place.',
-    // More furniture (more volume) means more pieces to break down and rebuild.
-    price: () => r10(60 + pricingVolume() * 3.5),
   },
   {
     id: 'specialtyMove',
     name: 'Piano / pool table move',
     icon: 'cube',
     blurb: 'Specialist crew and equipment for pianos, pool tables, safes and oversized art.',
-    // Flat specialist rate — dedicated crew and gear regardless of the wider move.
-    price: () => 350,
   },
   {
     id: 'packingMaterials',
     name: 'Boxes & packing materials',
     icon: 'cube',
     blurb: 'Sturdy boxes, butcher paper, bubble wrap and tape delivered ahead of moving day.',
-    // Box and material quantities track the volume being moved.
-    price: () => r10(40 + pricingVolume() * 4),
   },
 ];
 
-// Live extras list with each price resolved against the current move profile.
-const extras = computed(() => extraDefs.map((def) => ({ ...def, priceFrom: def.price() })));
+const extras = computed(() => extraDefs);
 
 const selectedExtras = reactive({});
 const toggleExtra = (id) => {
   selectedExtras[id] = !selectedExtras[id];
 };
 const chosenExtras = computed(() => extras.value.filter((extra) => selectedExtras[extra.id]));
-const extrasSubtotal = computed(() => chosenExtras.value.reduce((sum, extra) => sum + extra.priceFrom, 0));
-
-// Flat call-out fee folded into the indicative total on the extras / quote pages.
-const CALL_OUT_FEE = 80;
 
 // Human-readable home size for the quote summary (e.g. "2-bedroom apartment").
 // Studios get their own short label since they have no bedroom count.
@@ -1360,13 +1302,67 @@ const homeSizeLabel = computed(() => {
   return `${bedrooms}-bedroom ${house.name.toLowerCase()}`;
 });
 
-// Estimated total = base move range + extras subtotal + call-out fee.
-const totalEstimate = computed(() => ({
-  low: quoteEstimate.value.low + extrasSubtotal.value + CALL_OUT_FEE,
-  high: quoteEstimate.value.high + extrasSubtotal.value + CALL_OUT_FEE,
-}));
+const trimQuoteForm = () =>
+  Object.fromEntries(Object.entries(quoteForm).map(([key, value]) => [key, String(value || '').trim()]));
 
-const formatMoney = (value) => `$${Math.round(value).toLocaleString()}`;
+const buildQuoteSubmissionPayload = () => {
+  const customer = trimQuoteForm();
+  return {
+    source: 'super-move-quote-builder',
+    type: WIX_QUOTE_MESSAGE_TYPE,
+    submittedAt: new Date().toISOString(),
+    customer,
+    move: {
+      homeSize: homeSizeLabel.value,
+      houseType: selectedHouse.value?.name || null,
+      householdDetails: { ...householdDetails },
+      totalItems: totalItems.value,
+      totalVolumeM3: Number(totalVolume.value.toFixed(2)),
+      recommendedTruck: recommendationCardText.value,
+      truckLoadCount: truckLoadCount.value,
+      recommendedMoverCount: recommendedMoverCount.value,
+      estimatedMoveTime: estimatedMoveTime.value,
+    },
+    extras: chosenExtras.value.map((extra) => ({
+      id: extra.id,
+      name: extra.name,
+    })),
+    inventory: inventory.value.map((item) => ({
+      id: item.id,
+      name: item.name,
+      room: item.room,
+      quantity: item.quantity,
+      volumeM3: Number((item.volume || 0).toFixed(3)),
+      custom: Boolean(item.custom),
+      dimensionsCm: item.custom
+        ? { width: item.widthCm, depth: item.depthCm, height: item.heightCm }
+        : dimsForAsset(item.asset),
+    })),
+  };
+};
+
+const sendQuoteToWix = (payload) => {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: WIX_QUOTE_MESSAGE_TYPE, payload }, '*');
+  }
+  window.dispatchEvent(new CustomEvent(WIX_QUOTE_MESSAGE_TYPE, { detail: payload }));
+};
+
+const submitQuoteRequest = (event) => {
+  const form = event?.currentTarget;
+  Object.assign(quoteForm, trimQuoteForm());
+  if (form && !form.reportValidity()) return;
+  if (!quoteFormIsComplete.value) return;
+
+  const payload = buildQuoteSubmissionPayload();
+  sendQuoteToWix(payload);
+  quoteSubmitted.value = true;
+};
+
+const resetQuoteForm = () => {
+  Object.assign(quoteForm, quoteFormDefaults);
+  quoteSubmitted.value = false;
+};
 
 const extrasGridEl = ref(null);
 const scrollToExtras = () => {
@@ -1416,6 +1412,7 @@ const resetQuote = () => {
   Object.keys(selectedExtras).forEach((key) => {
     selectedExtras[key] = false;
   });
+  resetQuoteForm();
 };
 </script>
 
@@ -1977,15 +1974,13 @@ const resetQuote = () => {
             :key="extra.id"
             type="button"
             class="extra-card"
-            :class="{ selected: selectedExtras[extra.id], recommended: extra.recommended }"
+            :class="{ selected: selectedExtras[extra.id] }"
             @click="toggleExtra(extra.id)"
           >
-            <span v-if="extra.recommended" class="extra-recommended-pill">Recommended</span>
             <span class="extra-icon"><AppIcon :name="extra.icon" :size="22" /></span>
             <div class="extra-text">
               <strong class="extra-name">{{ extra.name }}</strong>
               <p class="extra-blurb">{{ extra.blurb }}</p>
-              <span class="extra-price">From ${{ extra.priceFrom }}</span>
             </div>
             <span class="extra-check" :class="{ checked: selectedExtras[extra.id] }" aria-hidden="true">
               <AppIcon v-if="selectedExtras[extra.id]" name="check" :size="14" />
@@ -2021,20 +2016,8 @@ const resetQuote = () => {
 
         <div class="qs-breakdown">
           <div class="qs-breakdown-row">
-            <span>Base move ({{ homeSizeLabel }})</span>
-            <strong>{{ formatMoney(quoteEstimate.low) }} – {{ formatMoney(quoteEstimate.high) }}</strong>
-          </div>
-          <div class="qs-breakdown-row">
-            <span>Extras ({{ chosenExtras.length }} selected)</span>
-            <strong>{{ formatMoney(extrasSubtotal) }}</strong>
-          </div>
-          <div class="qs-breakdown-row">
-            <span class="qs-breakdown-label">Call-out fee <AppIcon name="info" :size="13" /></span>
-            <strong>{{ formatMoney(CALL_OUT_FEE) }}</strong>
-          </div>
-          <div class="qs-breakdown-row qs-grand-total">
-            <span>Total estimate</span>
-            <strong>{{ formatMoney(totalEstimate.low) }} – {{ formatMoney(totalEstimate.high) }}</strong>
+            <span>Extras selected</span>
+            <strong>{{ chosenExtras.length }}</strong>
           </div>
         </div>
 
@@ -2052,59 +2035,8 @@ const resetQuote = () => {
     <section v-else class="page-grid quote-page">
       <div class="page-main">
         <div class="page-title">
-          <h1>Your moving estimate</h1>
-          <p>Based on your inventory and selected extras. Final pricing is confirmed after a quick review.</p>
-        </div>
-
-        <div class="estimate-hero">
-          <div class="estimate-hero-top">
-            <div class="estimate-hero-figure">
-              <strong>Estimated total</strong>
-              <div class="estimate-hero-amount">
-                <span class="estimate-hero-price">{{ formatMoney(totalEstimate.low) }} – {{ formatMoney(totalEstimate.high) }}</span>
-                <span class="qs-range-pill">Price range</span>
-              </div>
-              <p class="estimate-hero-note"><AppIcon name="shield" :size="16" /> Final price confirmed after review.</p>
-            </div>
-            <div class="estimate-hero-art" aria-hidden="true">
-              <span class="estimate-hero-truck"><img :src="truckUrl" alt="Truck" class="truck-photo" /></span>
-              <span class="estimate-hero-box"><AppIcon name="box" :size="26" /></span>
-            </div>
-          </div>
-
-          <div class="estimate-breakdown">
-            <div class="estimate-seg">
-              <span class="estimate-seg-icon"><AppIcon name="box" :size="18" /></span>
-              <div>
-                <span class="estimate-seg-label">Base move</span>
-                <strong>{{ formatMoney(quoteEstimate.low) }} – {{ formatMoney(quoteEstimate.high) }}</strong>
-              </div>
-            </div>
-            <span class="estimate-op">+</span>
-            <div class="estimate-seg">
-              <span class="estimate-seg-icon"><AppIcon name="gift" :size="18" /></span>
-              <div>
-                <span class="estimate-seg-label">Extras ({{ chosenExtras.length }} selected)</span>
-                <strong>{{ formatMoney(extrasSubtotal) }}</strong>
-              </div>
-            </div>
-            <span class="estimate-op">+</span>
-            <div class="estimate-seg">
-              <span class="estimate-seg-icon"><AppIcon name="clock" :size="18" /></span>
-              <div>
-                <span class="estimate-seg-label">Call-out fee</span>
-                <strong>{{ formatMoney(CALL_OUT_FEE) }}</strong>
-              </div>
-            </div>
-            <span class="estimate-op">=</span>
-            <div class="estimate-seg estimate-seg-total">
-              <span class="estimate-seg-icon"><AppIcon name="wallet" :size="18" /></span>
-              <div>
-                <span class="estimate-seg-label">Total estimate</span>
-                <strong>{{ formatMoney(totalEstimate.low) }} – {{ formatMoney(totalEstimate.high) }}</strong>
-              </div>
-            </div>
-          </div>
+          <h1>Review &amp; request your quote</h1>
+          <p>Send us your move details and a specialist will get back to you with a tailored quote.</p>
         </div>
 
         <div class="quote-includes move-summary-card">
@@ -2138,7 +2070,7 @@ const resetQuote = () => {
               <div v-for="extra in chosenExtras" :key="extra.id" class="qs-extra-row qs-extra-row-static">
                 <span class="qs-extra-icon"><AppIcon :name="extra.icon" :size="15" /></span>
                 <span class="qs-extra-name">{{ extra.name }}</span>
-                <strong>${{ extra.priceFrom }}</strong>
+                <AppIcon name="check" :size="15" />
               </div>
             </div>
             <p v-else class="qs-empty">No extras selected.</p>
@@ -2150,8 +2082,8 @@ const resetQuote = () => {
             <div class="gtk-item">
               <span class="gtk-icon gtk-icon-green"><AppIcon name="lock" :size="18" /></span>
               <div>
-                <strong>No payment required now</strong>
-                <span>Pay only after you approve the final price.</span>
+                <strong>No obligation</strong>
+                <span>Sending your details is free and commits you to nothing.</span>
               </div>
             </div>
             <div class="gtk-item">
@@ -2174,16 +2106,16 @@ const resetQuote = () => {
 
       <aside class="summary-card quote-summary">
         <h2>Request your quote</h2>
-        <p class="quote-summary-sub">Send your details and a move specialist will confirm your final price.</p>
+        <p class="quote-summary-sub">Send your details and a move specialist will be in touch with your tailored quote.</p>
 
-        <form class="quote-form" @submit.prevent>
-          <label>Full name<input type="text" placeholder="Jordan Smith" /></label>
-          <label>Email<input type="email" placeholder="you@email.com" /></label>
-          <label>Phone<input type="tel" placeholder="0400 000 000" /></label>
-          <label>Pickup address<input type="text" placeholder="Load from (street, suburb)" /></label>
-          <label>Drop-off address<input type="text" placeholder="Unload to (street, suburb)" /></label>
-          <label>Preferred move date<input type="date" /></label>
-          <label>Any additional information<textarea rows="4" placeholder="Access details, parking, stairs, fragile items, time restrictions..."></textarea></label>
+        <form class="quote-form" @submit.prevent="submitQuoteRequest">
+          <label>Full name<input v-model="quoteForm.fullName" type="text" placeholder="John Smith" autocomplete="name" required /></label>
+          <label>Email<input v-model="quoteForm.email" type="email" placeholder="you@email.com" autocomplete="email" required /></label>
+          <label>Phone<input v-model="quoteForm.phone" type="tel" placeholder="0400 000 000" autocomplete="tel" required /></label>
+          <label>Pickup address<input v-model="quoteForm.pickupAddress" type="text" placeholder="Load from (street, suburb)" autocomplete="street-address" required /></label>
+          <label>Drop-off address<input v-model="quoteForm.dropoffAddress" type="text" placeholder="Unload to (street, suburb)" required /></label>
+          <label>Preferred move date<input v-model="quoteForm.preferredMoveDate" type="text" placeholder="e.g. Friday 26 June, flexible" required /></label>
+          <label>Any additional information<textarea v-model="quoteForm.notes" rows="4" placeholder="Access details, parking, stairs, fragile items, time restrictions..." required></textarea></label>
           <button class="primary-button full-width" type="submit">
             Request final quote
             <AppIcon name="arrowRight" :size="18" />
@@ -2194,5 +2126,14 @@ const resetQuote = () => {
         <p class="privacy-note"><AppIcon name="lock" :size="14" /> Your details are secure and private</p>
       </aside>
     </section>
+
+    <div v-if="quoteSubmitted" class="quote-modal-backdrop" role="presentation" @click.self="quoteSubmitted = false">
+      <div class="quote-modal" role="dialog" aria-modal="true" aria-labelledby="quote-modal-title">
+        <span class="quote-modal-icon"><AppIcon name="check" :size="24" /></span>
+        <h2 id="quote-modal-title">Quote request submitted</h2>
+        <p>Thank you for sending through your move details. Our team will review your request and contact you shortly to confirm the final quote.</p>
+        <button class="primary-button full-width" type="button" @click="quoteSubmitted = false">Close</button>
+      </div>
+    </div>
   </main>
 </template>
