@@ -929,6 +929,21 @@ const recommendationCardText = computed(() => {
     .join(' + ');
 });
 
+// Truck size summary for the quote summary row (e.g. "Small + Large").
+const quoteTruckList = computed(() => {
+  const source = packedTrucks.value.length ? packedTrucks.value : recommendedPlan.value;
+  if (!source.length) return [];
+  const counts = new Map();
+  for (const truck of source) {
+    counts.set(truck.name, (counts.get(truck.name) || 0) + (truck.count || 1));
+  }
+  return [...counts.entries()].map(([name, count]) => (count > 1 ? `${count} x ${name}` : name));
+});
+
+const quoteTruckNames = computed(() => quoteTruckList.value.join(' + ') || 'TBC');
+
+const quoteTruckLabel = computed(() => (quoteTruckList.value.length > 1 ? 'Trucks' : 'Truck'));
+
 const formatSelectorOptionNumber = (selector, value) => {
   if (selector.labels?.[value]) return selector.labels[value];
   // The largest option of each selector reads as an open-ended "N+".
@@ -1255,7 +1270,7 @@ const extraDefs = [
     id: 'packingService',
     name: 'Packing service',
     icon: 'box',
-    blurb: "We pack every room into boxes the day before — you don't lift a thing.",
+    blurb: "We pack every room into boxes the day before, so you don't lift a thing.",
     recommended: true,
   },
   {
@@ -1296,7 +1311,7 @@ const chosenExtras = computed(() => extras.value.filter((extra) => selectedExtra
 // Studios get their own short label since they have no bedroom count.
 const homeSizeLabel = computed(() => {
   const house = selectedHouse.value;
-  if (!house) return '—';
+  if (!house) return '-';
   if (isStudioSelected.value) return 'Studio';
   const bedrooms = householdDetails.bedrooms || 0;
   return `${bedrooms}-bedroom ${house.name.toLowerCase()}`;
@@ -1621,7 +1636,7 @@ const resetQuote = () => {
         <div class="volume-callout">
           <span>Estimated volume</span>
           <strong>{{ estimatedVolumeRange }}</strong>
-          <p>Typical for a {{ selectedHouse?.name || 'home' }} of this size — you can still adjust it.</p>
+          <p>Typical for a {{ selectedHouse?.name || 'home' }} of this size, but you can still adjust it.</p>
         </div>
 
         <button class="primary-button full-width" type="button" @click="continueFromInventoryChoice">
@@ -2004,8 +2019,8 @@ const resetQuote = () => {
               <strong>~{{ Math.round(totalVolume) || Math.round(estimatedRoomVolume) }} m³</strong>
             </div>
             <div class="qs-row">
-              <span class="qs-row-label"><AppIcon name="truck" :size="15" /> Truck</span>
-              <strong>{{ primaryTruck?.name || 'TBC' }}</strong>
+              <span class="qs-row-label"><AppIcon name="truck" :size="15" /> {{ quoteTruckLabel }}</span>
+              <strong>{{ quoteTruckNames }}</strong>
             </div>
             <div class="qs-row">
               <span class="qs-row-label"><AppIcon name="people" :size="15" /> Crew</span>
@@ -2044,7 +2059,7 @@ const resetQuote = () => {
           <div class="quote-fact-grid">
             <div><AppIcon name="box" :size="20" /><strong>{{ totalItems }} items</strong><span>To be moved</span></div>
             <div><AppIcon name="people" :size="20" /><strong>{{ recommendedMoverCount }} movers</strong><span>Recommended crew</span></div>
-            <div><AppIcon name="truck" :size="20" /><strong>{{ primaryTruck?.name ? primaryTruck.name + ' truck' : '—' }}</strong><span>With driver</span></div>
+            <div><AppIcon name="truck" :size="20" /><strong>{{ primaryTruck?.name ? primaryTruck.name + ' truck' : '-' }}</strong><span>With driver</span></div>
             <div><AppIcon name="building" :size="20" /><strong>{{ homeSizeLabel }}</strong><span>Home size</span></div>
           </div>
         </div>
