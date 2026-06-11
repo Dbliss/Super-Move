@@ -14,7 +14,7 @@ const loader = new GLTFLoader();
 const cache = new Map(); // asset -> Promise<{widthCm, depthCm, heightCm} | null>
 
 // The Kenny "Furniture Kit" models render at roughly half real-world scale
-// (e.g. a "Double bed" is ~96 cm wide instead of ~140 cm). Trucks in this app
+// (e.g. a "King/Queen bed" is ~96 cm wide instead of ~140 cm). Trucks in this app
 // are modelled at full real-world scale, so we up-scale every measured asset
 // by this factor to make the load look right inside the truck. The same scale
 // is used everywhere (packer cells + rendered mesh) so adjacent items stay flush.

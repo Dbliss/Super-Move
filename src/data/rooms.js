@@ -11,9 +11,9 @@
 // them render with the shared cardboard-box model via modelAssetFor() below. The Wardrobe
 // box is bedroom-only. Per-room item ids keep each room's box counts independent.
 const boxSizes = [
-  { suffix: 'Small', name: 'Small box', asset: 'boxSmall', volume: 0.052 },
-  { suffix: 'Medium', name: 'Medium box', asset: 'boxMedium', volume: 0.104 },
-  { suffix: 'Large', name: 'Large box', asset: 'boxLarge', volume: 0.15 },
+  { suffix: 'Small', name: 'Book box', asset: 'boxSmall', volume: 0.052 },
+  { suffix: 'Medium', name: 'Wine box', asset: 'boxMedium', volume: 0.025 },
+  { suffix: 'Large', name: 'Tea Chest', asset: 'boxLarge', volume: 0.103 },
 ];
 const wardrobeBox = { suffix: 'Wardrobe', name: 'Port-a-robe', asset: 'boxWardrobe', volume: 0.312 };
 
@@ -37,7 +37,7 @@ export const rooms = [
     name: 'Bedroom',
     prompt: 'Beds, side tables, storage, and boxed personal items.',
     items: [
-      { id: 'bedDouble', name: 'Double bed', asset: 'bedDouble', volume: 3.2 },
+      { id: 'bedDouble', name: 'King/Queen bed', asset: 'bedDouble', volume: 3.2 },
       { id: 'bedSingle', name: 'Single bed', asset: 'bedSingle', volume: 2.1 },
       { id: 'bedBunk', name: 'Bunk bed', asset: 'bedBunk', volume: 3.8 },
       { id: 'cabinetBedDrawer', name: 'Tall drawers', asset: 'cabinetBedDrawer', volume: 1.7 },

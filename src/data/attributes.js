@@ -9,7 +9,7 @@
 //
 // Seeded from furniture.csv; the /dimensions editor writes overrides to objectAttributes.json,
 // which take precedence (see resolveAttributes). Keyed by ASSET (the GLTF model), so every item
-// that reuses a model — e.g. every room's "Medium box", all on the `boxMedium` asset — shares one
+// that reuses a model — e.g. every room's "Wine box", all on the `boxMedium` asset — shares one
 // rating. There is no per-room divergence: the physical object is what determines how it packs.
 
 import furnitureCsvRaw from './furniture.csv?raw';

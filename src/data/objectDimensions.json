@@ -143,19 +143,19 @@
     "heightCm": 68
   },
   "boxLarge": {
-    "widthCm": 50,
-    "depthCm": 50,
+    "widthCm": 43,
+    "depthCm": 40,
     "heightCm": 60
   },
   "boxMedium": {
-    "widthCm": 43.1,
-    "depthCm": 40.6,
-    "heightCm": 59.6
+    "widthCm": 49,
+    "depthCm": 32,
+    "heightCm": 16
   },
   "boxSmall": {
-    "widthCm": 40.6,
-    "depthCm": 29.8,
-    "heightCm": 43.1
+    "widthCm": 40,
+    "depthCm": 30,
+    "heightCm": 43
   },
   "boxWardrobe": {
     "widthCm": 59.5,
