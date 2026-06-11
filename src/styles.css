@@ -2632,6 +2632,16 @@ button {
     grid-template-columns: 76px minmax(0, 1fr);
   }
 
+  .truck-card-title .truck-icon,
+  .truck-card-title .truck-icon .truck-photo {
+    width: 100%;
+  }
+
+  .truck-card-info {
+    text-align: right;
+    justify-items: end;
+  }
+
   .mini-fact + .mini-fact {
     border-left: 0;
     border-top: 1px solid #e6ebf2;

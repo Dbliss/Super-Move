@@ -274,12 +274,12 @@ const houseTypes = [
 
 // Card copy + Move-summary facts for each home type, keyed by id.
 const houseTypeMeta = {
-  studio: { icon: 'studio', tagline: 'Single open-plan area', blurb: 'Best for compact single-level homes with one open area.', sizeRange: '15 – 20 m³', crew: '2 movers', time: '1.5 – 3 hrs' },
-  apartment: { icon: 'building', tagline: 'Multi-storey building', blurb: 'Best for apartments and units in multi-storey buildings.', sizeRange: '20 – 30 m³', crew: '2 movers', time: '2.5 – 4 hrs' },
-  townhouse: { icon: 'townhouse', tagline: 'Shares a wall', blurb: 'Best for multi-level homes that share a wall.', sizeRange: '25 – 40 m³', crew: '3 movers', time: '3 – 5 hrs' },
-  house: { icon: 'house', tagline: 'Detached home', blurb: 'Best for detached houses with separate outdoor access.', sizeRange: '35 – 50 m³', crew: '3 – 4 movers', time: '4 – 6 hrs' },
-  villa: { icon: 'villa', tagline: 'Larger / luxury home', blurb: 'Best for larger or luxury homes with more space and rooms.', sizeRange: '50 – 80 m³', crew: '4 – 5 movers', time: '5 – 7 hrs' },
-  duplex: { icon: 'duplex', tagline: 'Two self-contained homes', blurb: 'Best for two self-contained homes on one property.', sizeRange: '40 – 55 m³', crew: '3 – 4 movers', time: '4 – 6 hrs' },
+  studio: { icon: 'studio', tagline: 'Single open-plan area', blurb: 'Best for compact single-level homes with one open area.', sizeRange: '15 – 20 m³', crew: '2 movers', time: '4 – 6 hrs' },
+  apartment: { icon: 'building', tagline: 'Multi-storey building', blurb: 'Best for apartments and units in multi-storey buildings.', sizeRange: '20 – 30 m³', crew: '2 movers', time: '6 – 8 hrs' },
+  townhouse: { icon: 'townhouse', tagline: 'Shares a wall', blurb: 'Best for multi-level homes that share a wall.', sizeRange: '25 – 40 m³', crew: '3 movers', time: '6 – 8 hrs' },
+  house: { icon: 'house', tagline: 'Detached home', blurb: 'Best for detached houses with separate outdoor access.', sizeRange: '35 – 50 m³', crew: '3 – 4 movers', time: '6 – 8 hrs' },
+  villa: { icon: 'villa', tagline: 'Larger / luxury home', blurb: 'Best for larger or luxury homes with more space and rooms.', sizeRange: '50 – 80 m³', crew: '4 – 5 movers', time: '8 – 10 hrs' },
+  duplex: { icon: 'duplex', tagline: 'Two self-contained homes', blurb: 'Best for two self-contained homes on one property.', sizeRange: '40 – 55 m³', crew: '3 – 4 movers', time: '8 – 10 hrs' },
 };
 
 // Typical crew limit per home type. Extra rooms beyond what's normal for the
@@ -1280,16 +1280,10 @@ const extraDefs = [
     blurb: 'We unpack and lay out essentials in the new home so you can settle in tonight.',
   },
   {
-    id: 'furnitureAssembly',
-    name: 'Furniture assembly',
-    icon: 'sliders',
-    blurb: 'Beds, wardrobes and flat-pack disassembled and put back together at the new place.',
-  },
-  {
     id: 'specialtyMove',
-    name: 'Piano / pool table move',
+    name: 'Piano move',
     icon: 'cube',
-    blurb: 'Specialist crew and equipment for pianos, pool tables, safes and oversized art.',
+    blurb: 'Specialist crew and equipment for pianos, safes and oversized art.',
   },
   {
     id: 'packingMaterials',
