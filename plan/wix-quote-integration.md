@@ -188,11 +188,7 @@ The quote builder posts this message to Wix:
 {
   type: "superMove.quoteSubmitted",
   payload: {
-    customer: {},
-    move: {},
-    estimate: {},
-    extras: [],
-    inventory: []
+    extras: []
   }
 }
 ```
