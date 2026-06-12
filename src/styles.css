@@ -575,6 +575,10 @@ button {
   line-height: 1;
 }
 
+.mobile-compact-value {
+  display: none;
+}
+
 .volume-callout em {
   align-self: center;
   padding: 6px 12px;
@@ -2584,6 +2588,24 @@ button {
   .home-type-card,
   .property-selector-card {
     padding: 16px;
+  }
+
+  .volume-callout {
+    gap: 6px 8px;
+    padding: 18px 16px;
+  }
+
+  .volume-callout strong {
+    font-size: clamp(26px, 8vw, 30px);
+    white-space: nowrap;
+  }
+
+  .desktop-roomy-value {
+    display: none;
+  }
+
+  .mobile-compact-value {
+    display: inline;
   }
 
   .house-preview-wrap {

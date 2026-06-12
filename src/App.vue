@@ -685,6 +685,9 @@ const estimatedVolumeRange = computed(() => {
   return `${Math.round(v * 0.9)} – ${Math.round(v * 1.15)} m³`;
 });
 
+const compactVolumeRange = (range) =>
+  range.replace(/\s*[\u2013-]\s*/u, '-').replace(/\s*m\u00b3/u, 'm\u00b3');
+
 // Inventory grouped by room type for the review breakdown, preserving the
 // catalog room order from includedRooms.
 const roomBreakdown = computed(() => {
@@ -1473,7 +1476,9 @@ const resetQuote = () => {
           <div class="profile-callout">
             <span class="profile-label">Estimated move profile <AppIcon name="info" :size="14" /></span>
             <div class="profile-value">
-              <strong>~{{ moveSummaryMeta.sizeRange }}</strong>
+              <strong>
+                ~<span class="desktop-roomy-value">{{ moveSummaryMeta.sizeRange }}</span><span class="mobile-compact-value">{{ compactVolumeRange(moveSummaryMeta.sizeRange) }}</span>
+              </strong>
               <em>Typical</em>
             </div>
             <p>This helps us suggest the right truck size and crew for your move.</p>
@@ -1544,7 +1549,9 @@ const resetQuote = () => {
 
         <div class="volume-callout">
           <span>Estimated volume</span>
-          <strong>{{ estimatedVolumeRange }}</strong>
+          <strong>
+            <span class="desktop-roomy-value">{{ estimatedVolumeRange }}</span><span class="mobile-compact-value">{{ compactVolumeRange(estimatedVolumeRange) }}</span>
+          </strong>
           <p>This helps us match you with the right truck and team size.</p>
         </div>
 
@@ -1618,7 +1625,9 @@ const resetQuote = () => {
 
         <div class="volume-callout">
           <span>Estimated volume</span>
-          <strong>{{ estimatedVolumeRange }}</strong>
+          <strong>
+            <span class="desktop-roomy-value">{{ estimatedVolumeRange }}</span><span class="mobile-compact-value">{{ compactVolumeRange(estimatedVolumeRange) }}</span>
+          </strong>
           <p>Typical for a {{ selectedHouse?.name || 'home' }} of this size, but you can still adjust it.</p>
         </div>
 
