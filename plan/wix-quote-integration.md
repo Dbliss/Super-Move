@@ -188,6 +188,11 @@ The quote builder posts this message to Wix:
 {
   type: "superMove.quoteSubmitted",
   payload: {
+    source: "super-move-quote-builder",
+    type: "superMove.quoteSubmitted",
+    submittedAt: "2026-06-12T05:03:21.846Z",
+    customer: {},
+    move: {},
     extras: []
   }
 }

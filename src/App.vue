@@ -1315,7 +1315,23 @@ const trimQuoteForm = () =>
   Object.fromEntries(Object.entries(quoteForm).map(([key, value]) => [key, String(value || '').trim()]));
 
 const buildQuoteSubmissionPayload = () => {
+  const customer = trimQuoteForm();
   return {
+    source: 'super-move-quote-builder',
+    type: WIX_QUOTE_MESSAGE_TYPE,
+    submittedAt: new Date().toISOString(),
+    customer,
+    move: {
+      homeSize: homeSizeLabel.value,
+      houseType: selectedHouse.value?.name || null,
+      householdDetails: { ...householdDetails },
+      totalItems: totalItems.value,
+      totalVolumeM3: Number(totalVolume.value.toFixed(2)),
+      recommendedTruck: recommendationCardText.value,
+      truckLoadCount: truckLoadCount.value,
+      recommendedMoverCount: recommendedMoverCount.value,
+      estimatedMoveTime: estimatedMoveTime.value,
+    },
     extras: chosenExtras.value.map((extra) => ({
       id: extra.id,
       name: extra.name,
