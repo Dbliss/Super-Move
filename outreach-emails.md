@@ -1,4 +1,4 @@
-# Outreach emails — Super Move quote UI
+# Outreach emails  — Super Move quote UI
 
 **Demo link used in every email:** https://www.supermovesydney.com/quote
 

@@ -1,4 +1,4 @@
-Best Australian prospects
+Best  Australian prospects
 Priority	Company	Why they fit	Quote form / UX signal	Fit
 A	Smoothmoves, NSW	Strong local trust signal: Google rating shown as 4.9 from 267 reviews. They appear professional, but not enterprise-scale.	Their quote form is a fairly standard field-based form: name, moving date, email, phone, moving from/to, insurance, message, and photo upload.	9/10
 A	Premier Removals, Brisbane	Has clear brand positioning around fixed-price removals and a visible review signal of 4.8 based on 72 reviews.	Quote form asks for first name, last name, phone, email, from/to locations, move type, move size, move date, and notes. Useful fields, but still a conventional form.	8.5/10
